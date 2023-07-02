@@ -27,7 +27,7 @@ class Example():
         self.root = ttkb.Window(themename='darkly') # 'journal', 'darkly', 'superhero', 'solar', 'litera' (default) 
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
-        self.root.geometry(f"{1136}x{main_window_minheight}")
+        self.root.geometry(f"{1100}x{600}")
         # self.root.attributes('-fullscreen', True)# add exit button first
         self._Get_Old_Folderpath()
         self._Main_App()
@@ -164,21 +164,16 @@ class Example():
         self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.h_space.insert(0, '0.4')
         self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
-        # full_phase_range = True # this will overwrite the cbar
-        self.checkbox_full_phase_range = ttkb.IntVar()
-        self.checkbox_full_phase_range.set(1)
-        self.full_phase_range = ttkb.Checkbutton(self.menu_left_lower, text='Full phase range', variable=self.checkbox_full_phase_range, onvalue=1, offvalue=0)
-        self.full_phase_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        # amp_cbar_range = True
-        self.checkbox_amp_cbar_range = ttkb.IntVar()
-        self.checkbox_amp_cbar_range.set(0)
-        self.amp_cbar_range = ttkb.Checkbutton(self.menu_left_lower, text='Shared amp range', variable=self.checkbox_amp_cbar_range, onvalue=1, offvalue=0)
-        self.amp_cbar_range.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        # real_cbar_range = True
-        self.checkbox_real_cbar_range = ttkb.IntVar()
-        self.checkbox_real_cbar_range.set(0)
-        self.real_cbar_range = ttkb.Checkbutton(self.menu_left_lower, text='Shared real range', variable=self.checkbox_real_cbar_range, onvalue=1, offvalue=0)
-        self.real_cbar_range.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # add scalebar
+        # self.checkbox_add_scalebar = ttkb.IntVar()
+        # self.checkbox_add_scalebar.set(0)
+        # self.add_scalebar = ttkb.Checkbutton(self.menu_right_upper, text='Add scalebar', variable=self.checkbox_add_scalebar, onvalue=1, offvalue=0)
+        # self.add_scalebar.grid(column=0, row=15, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
+        self.label_add_scalebar.grid(column=0, row=6)
+        self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.add_scalebar.insert(0, '')
+        self.add_scalebar.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
 
 
 
@@ -232,25 +227,30 @@ class Example():
         self.checkbox_gaussian_blurr.set(0)
         self.gaussian_blurr = ttkb.Checkbutton(self.menu_right_upper, text='Blurr Data', variable=self.checkbox_gaussian_blurr, onvalue=1, offvalue=0)
         self.gaussian_blurr.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
-        # add scalebar
-        # self.checkbox_add_scalebar = ttkb.IntVar()
-        # self.checkbox_add_scalebar.set(0)
-        # self.add_scalebar = ttkb.Checkbutton(self.menu_right_upper, text='Add scalebar', variable=self.checkbox_add_scalebar, onvalue=1, offvalue=0)
-        # self.add_scalebar.grid(column=0, row=15, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.label_add_scalebar = ttkb.Label(self.menu_right_upper, text='Scalebar channel:')
-        self.label_add_scalebar.grid(column=0, row=4)
-        self.add_scalebar = ttkb.Entry(self.menu_right_upper, width=input_width, justify='center')
-        self.add_scalebar.insert(0, '')
-        self.add_scalebar.grid(column=1, row=4, padx=button_padx, pady=button_pady, sticky='ew')
+        # full_phase_range = True # this will overwrite the cbar
+        self.checkbox_full_phase_range = ttkb.IntVar()
+        self.checkbox_full_phase_range.set(1)
+        self.full_phase_range = ttkb.Checkbutton(self.menu_right_upper, text='Full phase range', variable=self.checkbox_full_phase_range, onvalue=1, offvalue=0)
+        self.full_phase_range.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # amp_cbar_range = True
+        self.checkbox_amp_cbar_range = ttkb.IntVar()
+        self.checkbox_amp_cbar_range.set(0)
+        self.amp_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared amp range', variable=self.checkbox_amp_cbar_range, onvalue=1, offvalue=0)
+        self.amp_cbar_range.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # real_cbar_range = True
+        self.checkbox_real_cbar_range = ttkb.IntVar()
+        self.checkbox_real_cbar_range.set(0)
+        self.real_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared real range', variable=self.checkbox_real_cbar_range, onvalue=1, offvalue=0)
+        self.real_cbar_range.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
-        self.menu_right_separator = ttkb.Separator(self.menu_right, orient='horizontal')
-        self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
+        # self.menu_right_separator = ttkb.Separator(self.menu_right, orient='horizontal')
+        # self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
 
         # additional controls
-        self.menu_right_additional_controls = ttkb.LabelFrame(self.menu_right, text='Additional controls', width=200)
-        self.menu_right_additional_controls.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.menu_right_additional_controls_button = ttkb.Button(self.menu_right_additional_controls)
-        self.menu_right_additional_controls_button.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.menu_right_additional_controls = ttkb.LabelFrame(self.menu_right, text='Additional controls', width=200)
+        # self.menu_right_additional_controls.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.menu_right_additional_controls_button = ttkb.Button(self.menu_right_additional_controls)
+        # self.menu_right_additional_controls_button.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
 
 
 

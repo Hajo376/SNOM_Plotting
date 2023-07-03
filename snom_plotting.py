@@ -12,13 +12,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 # from random import randint
+import sys
 import os
 import pathlib
 this_files_path = pathlib.Path(__file__).parent.absolute()
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions
-# import numpy as np
+from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type
+import numpy as np
 # import scipy
 
 class Example():
@@ -28,6 +29,14 @@ class Example():
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
         self.root.geometry(f"{1100}x{600}")
+        self.root.iconbitmap(os.path.join(this_files_path,'snom_plotter.ico'))
+        # try:
+        #     from ctypes import windll  # Only exists on Windows.
+
+        #     myappid = "mycompany.myproduct.subproduct.version"
+        #     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        # except ImportError:
+        #     pass
         # self.root.attributes('-fullscreen', True)# add exit button first
         self._Get_Old_Folderpath()
         self._Main_App()
@@ -174,6 +183,7 @@ class Example():
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, '')
         self.add_scalebar.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
+        
 
 
 
@@ -182,7 +192,6 @@ class Example():
 
 
         # plot title, colorbar width, colorbar, add scalebar, ...
-        # height_cbar_range = True
         # figsizex = 10
         # figsizey = 5
         # colorbar_width = 10 # in percent, standard is 5 or 10
@@ -242,13 +251,37 @@ class Example():
         self.checkbox_real_cbar_range.set(0)
         self.real_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared real range', variable=self.checkbox_real_cbar_range, onvalue=1, offvalue=0)
         self.real_cbar_range.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # height_cbar_range = True
+        self.checkbox_height_cbar_range = ttkb.IntVar()
+        self.checkbox_height_cbar_range.set(0)
+        self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
+        self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        
 
-        # self.menu_right_separator = ttkb.Separator(self.menu_right, orient='horizontal')
-        # self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
+        self.menu_right_separator = ttkb.Separator(self.menu_right, orient='horizontal')
+        self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
 
         # additional controls
-        # self.menu_right_additional_controls = ttkb.LabelFrame(self.menu_right, text='Additional controls', width=200)
-        # self.menu_right_additional_controls.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.menu_right_synccorrection = ttkb.LabelFrame(self.menu_right, text='Synccorrection', width=200)
+        self.menu_right_synccorrection.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # synccorrection
+        self.label_synccorrection_wavelength = ttkb.Label(self.menu_right_synccorrection, text='Wavelength in µm:')
+        self.label_synccorrection_wavelength.grid(column=0, row=0)
+        self.synccorrection_wavelength = ttkb.Entry(self.menu_right_synccorrection, width=input_width, justify='center')
+        self.synccorrection_wavelength.insert(0, '')
+        self.synccorrection_wavelength.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
+        # first generate preview
+        self.button_synccorrection_preview = ttkb.Button(self.menu_right_synccorrection, text='Generate preview', command=self._Synccorrection_Preview)
+        self.button_synccorrection_preview.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        # then enter phasedir from preview
+        self.label_synccorrection_phasedir = ttkb.Label(self.menu_right_synccorrection, text='Phasedir (n or p):')
+        self.label_synccorrection_phasedir.grid(column=0, row=2)
+        self.synccorrection_phasedir = ttkb.Entry(self.menu_right_synccorrection, width=input_width, justify='center')
+        self.synccorrection_phasedir.insert(0, '')
+        self.synccorrection_phasedir.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # if phasedir and wavelength are known start synccorrection
+        self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
+        self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # self.menu_right_additional_controls_button = ttkb.Button(self.menu_right_additional_controls)
         # self.menu_right_additional_controls_button.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
 
@@ -308,7 +341,12 @@ class Example():
             Plot_Definitions.real_cbar_range = True
         else:
             Plot_Definitions.real_cbar_range = False
+        if self.checkbox_height_cbar_range.get() == 1:
+            Plot_Definitions.height_cbar_range = True
+        else:
+            Plot_Definitions.height_cbar_range = False
 
+        
         Plot_Definitions.hspace = float(self.h_space.get())
 
 
@@ -336,6 +374,9 @@ class Example():
                 self.measurement.Scalebar(channels=scalebar_channel)
         # plt.clf()
         self.measurement.Display_Channels(show_plot=False)
+        self._Fill_Canvas()
+        
+        '''
         self.fig = plt.gcf()
         # change fig size and possibly dpi
         # self.fig.set_figheight(int(self.canvas_fig_height.get()))
@@ -370,11 +411,24 @@ class Example():
         # self.canvas_area.update_idletasks()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
         # self.canvas_fig.get_tk_widget().grid(column=0, row=0)
+        '''
 
 
         
         # canvas.get_tk_widget().pack(side=LEFT, fill=BOTH, expand=TRUE) 
     
+    def _Fill_Canvas(self):
+        self.fig = plt.gcf()
+        try:
+            self.canvas_fig.get_tk_widget().destroy()
+        except:
+            pass
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+        self.canvas_fig.draw()
+        self._Change_Mainwindow_Size()
+        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+
+
     def _Save_Plot(self):
         file = filedialog.asksaveasfile(mode='wb', defaultextension=".png", filetypes=(("PNG file", "*.png"),("All Files", "*.*") ))
         self.fig.savefig(file)
@@ -389,7 +443,9 @@ class Example():
             file.write('#' + self.folder_path)
 
     def _Exit(self):
-        self.menu_left.quit()
+        # self.menu_left.quit()
+        self.root.quit()
+        sys.exit()
 
     def _Get_Old_Folderpath(self):
         try:
@@ -415,16 +471,49 @@ class Example():
         # print('fig-widdth: ', self.canvas_fig_width.get())
         # self.root.update_idletasks()
 
-class Generate_Plot():
-    def __init__(self, folder_path):
-        self.folder_path = folder_path
-        self.create_figure_test()
+    def _Synccorrection_Preview(self):
+        if self.synccorrection_wavelength.get() != '':
+            wavelength = float(self.synccorrection_wavelength.get())
+            channels = self.select_channels.get().split(',')
+            measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
+            measurement.show_plot = False
+            scanangle = measurement.measurement_tag_dict[Tag_Type.rotation]*np.pi/180
+            measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
+            self._Fill_Canvas()
+            # self.fig = plt.gcf()
+            # plt.show()
     
-    def create_figure_test(self):
-        measurement = Open_Measurement(self.folder_path)
-        measurement.Set_Min_to_Zero()
-        measurement.Display_Channels(show_plot=False)
-        self.fig = plt.gcf()
+    def _Synccorrection(self):
+        if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir != '':
+            wavelength = float(self.synccorrection_wavelength.get())
+            phasedir = str(self.synccorrection_phasedir.get())
+            if phasedir == 'n':
+                phasedir = -1
+            elif phasedir == 'p':
+                phasedir = 1
+            else:
+                print('Phasedir must be either \'n\' or \'p\'')
+            # print('trying to do the synccorrection')
+            # print('wavelength = ', wavelength)
+            channels = self.select_channels.get().split(',')
+            measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
+            # measurement.show_plot = False
+            # phasedir = measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength)
+            # self.fig = plt.gcf()
+            # plt.show()
+            measurement.Synccorrection(wavelength, phasedir)
+            print('finished synccorrection')
+
+# class Generate_Plot():
+#     def __init__(self, folder_path):
+#         self.folder_path = folder_path
+#         self.create_figure_test()
+    
+#     def create_figure_test(self):
+#         measurement = Open_Measurement(self.folder_path)
+#         measurement.Set_Min_to_Zero()
+#         measurement.Display_Channels(show_plot=False)
+#         self.fig = plt.gcf()
         
         
 

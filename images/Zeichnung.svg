@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="Zeichnung.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1"
+     inkscape:cx="375"
+     inkscape:cy="410"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-2"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1733"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1729"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1725"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1721"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1717"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1713"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1709"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <marker
+       style="overflow:visible"
+       id="marker1374"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1372" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker1310"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1308" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker1264"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1262" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleStart"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135" />
+    </marker>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1653">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1655"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1709"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="M 80.228268,132.37968 H 96.80794 v 22.93565 H 80.228268 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1657">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1659"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1713"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="m 83.584947,118.04343 h 28.215263 v 19.38746 H 83.584947 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1661">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1663"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1717"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="m 54.110515,130.63263 h 22.648079 v 14.8418 H 54.110515 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1665">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1667"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1721"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="m 51.094059,115.16012 h 26.255125 v 19.42424 H 51.094059 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1669">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1671"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1725"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="M 61.758979,79.596563 H 101.46695 V 140.64117 H 61.758979 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1673">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1675"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1729"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="M 30.351372,69.028794 H 140.61637 V 179.29379 H 30.351372 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1677">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1679"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1733"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="M 30.403046,111.59182 H 140.87112 v 67.72554 H 30.403046 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <marker
+       style="overflow:visible"
+       id="marker1374-1"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path1372-9" />
+    </marker>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath1653-2">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path1655-4"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1709-0"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="M 80.228268,132.37968 H 96.80794 v 22.93565 H 80.228268 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+    <inkscape:path-effect
+       effect="powerclip"
+       id="path-effect1709-3"
+       is_visible="true"
+       lpeversion="1"
+       inverse="true"
+       flatten="false"
+       hide_clip="false"
+       message="Füllregel Gerade-Ungerade im &lt;b&gt;Füllung und Kontur&lt;/b&gt;-Dialog verwenden, wenn das Anwenden des Ausschnitts mit nachfolgendem Umwandeln in Pfade kein Ergebnis bringt" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipath_lpe_path-effect1709-3">
+      <path
+         style="display:none;fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         d="M 80.016128,139.22348 75.225804,143"
+         id="path2200"
+         sodipodi:nodetypes="cc" />
+      <path
+         id="lpe_path-effect1709-3"
+         style="fill:none;stroke:#000000;stroke-width:0.565002;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1310)"
+         class="powerclip"
+         d="m 73.494293,132.34389 h 17.225036 v 20.69934 H 73.494293 Z M 75.225804,143 l 4.790324,-3.77652" />
+    </clipPath>
+  </defs>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#cc2457;fill-opacity:1;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 35.483871,145.48387 43.469983,-28.74194 56.662516,24.87996 -41.146042,32.49665 c -0.06857,-0.0121 -29.225664,0.0664 -29.225664,0.0664 L 35.476193,154.43091"
+       id="path1508"
+       clip-path="url(#clipPath1677)"
+       inkscape:path-effect="#path-effect1733"
+       inkscape:original-d="m 35.483871,145.48387 43.469983,-28.74194 56.662516,24.87996 -41.146042,32.49665 c -0.06857,-0.0121 -29.225664,0.0664 -29.225664,0.0664 L 35.476193,154.43091"
+       sodipodi:nodetypes="cccccc"
+       inkscape:export-filename="path1508.png"
+       inkscape:export-xdpi="252.81665"
+       inkscape:export-ydpi="252.81665" />
+    <path
+       style="fill:#727272;fill-opacity:1;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 66.887098,84.983875 10.999997,42.753285 c 0,0 3.19355,16.50499 7.096776,1.42412 3.645564,-14.08534 11.354838,-44.532245 11.354838,-44.532245"
+       id="path899"
+       sodipodi:nodetypes="ccsc"
+       clip-path="url(#clipPath1669)"
+       inkscape:path-effect="#path-effect1725"
+       inkscape:original-d="m 66.887098,84.983875 10.999997,42.753285 c 0,0 3.19355,16.50499 7.096776,1.42412 3.645564,-14.08534 11.354838,-44.532245 11.354838,-44.532245" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#TriangleStart);stroke-dasharray:none"
+       d="M 72.209678,129.33871 57.83871,121.17742"
+       id="path955"
+       clip-path="url(#clipPath1665)"
+       inkscape:path-effect="#path-effect1721"
+       inkscape:original-d="M 72.209678,129.33871 57.83871,121.17742" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#marker1264)"
+       d="m 71.677418,135.90322 -10.645161,3.19355"
+       id="path957"
+       clip-path="url(#clipPath1661)"
+       inkscape:path-effect="#path-effect1717"
+       inkscape:original-d="m 71.677418,135.90322 -10.645161,3.19355" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#marker1374)"
+       d="M 88.709676,132.17742 105,124.16129"
+       id="path959"
+       clip-path="url(#clipPath1657)"
+       inkscape:path-effect="#path-effect1713"
+       inkscape:original-d="M 88.709676,132.17742 105,124.16129" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#marker1374)"
+       d="M 85.483871,137.49999 90.66129,148.5"
+       id="path961"
+       clip-path="url(#clipPath1653)"
+       inkscape:path-effect="#path-effect1709"
+       inkscape:original-d="M 85.483871,137.49999 90.66129,148.5" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.565;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1374-1)"
+       d="m 85.483871,137.49999 -5.880965,8.87098"
+       id="path961-8"
+       clip-path="url(#clipath_lpe_path-effect1709-3)"
+       inkscape:path-effect="#path-effect1709-3"
+       inkscape:original-d="m 85.483871,137.49999 -5.880965,8.87098"
+       transform="translate(-7.8443125,0.84751)"
+       sodipodi:nodetypes="cc" />
+    <rect
+       style="fill:none;stroke-width:0.264999;stroke-linecap:square;stroke:#000000;stroke-opacity:1;fill-opacity:1"
+       id="rect184"
+       width="100"
+       height="100"
+       x="35.483871"
+       y="74.161293"
+       clip-path="url(#clipPath1673)"
+       d="M 35.483871,74.161293 H 135.48387 V 174.16129 H 35.483871 Z"
+       inkscape:path-effect="#path-effect1729" />
+  </g>
+</svg>

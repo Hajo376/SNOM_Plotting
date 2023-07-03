@@ -8,7 +8,7 @@ a = Analysis(
     ['snom_plotting.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('images/snom_plotter.ico', '.--icon=images/snom_plotter.ico')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

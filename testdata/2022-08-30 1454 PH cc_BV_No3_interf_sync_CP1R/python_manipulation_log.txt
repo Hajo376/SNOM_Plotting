@@ -1018,3 +1018,77 @@ gaussian_filter_complex_sigma = 2
 filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
 quadratic_pixels = True
 set_min_to_zero = True
+03/07/2023 19:10:25
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:10:30
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+03/07/2023 19:10:36
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+synccorrection_wavelength = 1.6
+synccorrection_phasedir = 1
+03/07/2023 19:11:24
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:11:40
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:11:51
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+03/07/2023 19:11:58
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:12:20
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:12:26
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:12:33
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:12:43
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:12:48
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+03/07/2023 19:14:00
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+03/07/2023 19:14:32
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+03/07/2023 19:14:39
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+03/07/2023 19:15:29
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+03/07/2023 19:15:36
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+03/07/2023 19:16:21
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True

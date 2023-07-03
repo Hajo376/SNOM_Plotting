@@ -34,5 +34,10 @@ append_string = ''
 for mod in excluded_modules:
     append_string += f' --exclude-module {mod}'
 
+
+iconpath = 'images/snom_plotter.ico'
+append_string += f'--add-data {iconpath};.'
+append_string += f'--icon={iconpath}'
+
 # Run the shell command with all the exclude module parameters
 os.system(f'pyinstaller snom_plotting.py --noconfirm {append_string}') # --onefile

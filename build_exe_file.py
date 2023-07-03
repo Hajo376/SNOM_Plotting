@@ -1,8 +1,8 @@
 import os
 # Just add or remove values to this list based on the imports you don't want : )
 excluded_modules = [
-    'tkterm',
-    'tkterminal'
+    # 'tkterm',
+    # 'tkterminal'
     # 'numpy' # must be included!
     # 'scipy'
     # 'kiwisolver'

@@ -9,9 +9,9 @@ from gui_parameters import *
 # import matplotlib
 # matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+# from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from random import randint
+# from random import randint
 import os
 import pathlib
 this_files_path = pathlib.Path(__file__).parent.absolute()

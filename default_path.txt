@@ -1,1 +1,1 @@
-#C:/Users/hajos/git_projects/SNOM_Plotting/testdata/2020-01-08 1337 PH denmark_skurve_02_synchronize
+#C:/Users/Hajo/sciebo/Phd/python/SNOM/testdata/2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R

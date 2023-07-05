@@ -1,14 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+# test
 
 block_cipher = None
-
+#noconfirm=True
 
 a = Analysis(
     ['snom_plotting.py'],
     pathex=[],
     binaries=[],
-    datas=[('images/snom_plotter.ico', '.--icon=images/snom_plotter.ico')],
+    datas=[('images/snom_plotting.ico', '.')], # 'src;dest'
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -18,6 +18,7 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
     noarchive=False,
+    #noconfirm=True,
 )
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
@@ -37,6 +38,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['snom_plotting.ico'],
 )
 coll = COLLECT(
     exe,

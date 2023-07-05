@@ -303,3 +303,7 @@ set_min_to_zero = True
 filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
 quadratic_pixels = True
 set_min_to_zero = True
+04/07/2023 10:27:35
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True

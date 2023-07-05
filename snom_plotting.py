@@ -11,6 +11,10 @@ from gui_parameters import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+#import backends explicitly or they wont work in exe format
+import matplotlib.backends.backend_pdf
+import matplotlib.backends.backend_ps
+import matplotlib.backends.backend_svg
 # from random import randint
 import sys
 import os
@@ -28,8 +32,8 @@ class Example():
         self.root = ttkb.Window(themename='darkly') # 'journal', 'darkly', 'superhero', 'solar', 'litera' (default) 
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
-        self.root.geometry(f"{1100}x{600}")
-        self.root.iconbitmap(os.path.join(this_files_path,'snom_plotter.ico'))
+        self.root.geometry(f"{1100}x{570}")
+        self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
         # try:
         #     from ctypes import windll  # Only exists on Windows.
 
@@ -91,33 +95,39 @@ class Example():
 
         # top level controls for plot
         self.load_data = ttkb.Button(self.menu_left_upper, text="Load Data", bootstyle=PRIMARY, command=lambda:self._Get_Folderpath_from_Input())
-        self.load_data.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.load_data.grid(column=0, row=0, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # self.select_channels = ttkb.Button(self.menu_left_upper, text="Select Channels", bootstyle=SECONDARY)
         # self.select_channels.grid(column=0, row=1, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.select_channels_frame = ttkb.Frame(self.menu_left_upper)
-        self.select_channels_frame.grid(column=0, row=1)
+        # self.select_channels_frame = ttkb.Frame(self.menu_left_upper)
+        # self.select_channels_frame.grid(column=0, row=1)
         # self.select_channels_label = ttkb.Label(self.select_channels_frame, text='')
 
-        self.label_select_channels = ttkb.Label(self.select_channels_frame, text='Select Channels:')
-        self.label_select_channels.grid(column=0, row=0)
-        self.select_channels = ttkb.Entry(self.select_channels_frame, justify='center')
+        self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
+        self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
+        self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
         self.select_channels.insert(0, 'O2A,O2P,Z C')
-        self.select_channels.grid(column=0, row=1, padx=button_padx, pady=button_pady, sticky='ew')
+        self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
 
         self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Generate Plot", bootstyle=INFO, command=lambda:self._Generate_Plot())
-        self.generate_plot_button.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.generate_plot_button.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # set dpi for save method
+        self.label_figure_dpi = ttkb.Label(self.menu_left_upper, text='DPI:')
+        self.label_figure_dpi.grid(column=0, row=4)
+        self.figure_dpi = ttkb.Entry(self.menu_left_upper, width=input_width, justify='center')
+        self.figure_dpi.insert(0, '100')
+        self.figure_dpi.grid(column=1, row=4, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
-        self.save_plot_button.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.save_plot_button.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._Exit, bootstyle=DANGER)
-        self.exit_button.grid(column=0, row=4, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.exit_button.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # 
         # plot channels
         # display all plots in memory
         # ...
         
         self.menu_left_separator = ttkb.Separator(self.menu_left, orient='horizontal')
-        self.menu_left_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
+        self.menu_left_separator.grid(column=0, row=1, columnspan=1, sticky='ew', padx=button_padx, pady=20)
 
         # plot styles
         self.menu_left_lower = ttkb.LabelFrame(self.menu_left, text='Plot controls')
@@ -430,8 +440,11 @@ class Example():
 
 
     def _Save_Plot(self):
-        file = filedialog.asksaveasfile(mode='wb', defaultextension=".png", filetypes=(("PNG file", "*.png"),("All Files", "*.*") ))
-        self.fig.savefig(file)
+        allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
+        file = filedialog.asksaveasfile(mode='wb', defaultextension=".png", filetypes=allowed_filetypes) #(("PNG file", "*.png"),("All Files", "*.*") )
+        extension = file.name.split('.')[-1]
+        dpi = int(self.figure_dpi.get())
+        self.fig.savefig(file, format=extension, dpi=dpi)
 
     def _Get_Folderpath_from_Input(self):
         

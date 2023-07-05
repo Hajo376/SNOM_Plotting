@@ -22,7 +22,7 @@ import pathlib
 this_files_path = pathlib.Path(__file__).parent.absolute()
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type
+from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type
 import numpy as np
 # import scipy
 
@@ -42,6 +42,7 @@ class Example():
         # except ImportError:
         #     pass
         # self.root.attributes('-fullscreen', True)# add exit button first
+        self._Generate_Savefolder()
         self._Get_Old_Folderpath()
         self._Main_App()
         
@@ -105,7 +106,10 @@ class Example():
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
         self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
         self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
-        self.select_channels.insert(0, 'O2A,O2P,Z C')
+        default_channels = self._Get_Default_Channels()
+        self._Set_Default_Channels(default_channels)
+        
+        # self.select_channels.insert(0, default_channels) # 'O2A,O2P,Z C'
         self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
 
@@ -248,7 +252,8 @@ class Example():
         self.gaussian_blurr.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
         # full_phase_range = True # this will overwrite the cbar
         self.checkbox_full_phase_range = ttkb.IntVar()
-        self.checkbox_full_phase_range.set(1)
+        self._Set_Phase_Range()
+        
         self.full_phase_range = ttkb.Checkbutton(self.menu_right_upper, text='Full phase range', variable=self.checkbox_full_phase_range, onvalue=1, offvalue=0)
         self.full_phase_range.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # amp_cbar_range = True
@@ -369,19 +374,20 @@ class Example():
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
-            if self.checkbox_gaussian_blurr.get() == 1:
-                self.measurement.Scale_Channels()
-                self.measurement.Gauss_Filter_Channels_complex()
-            # if self.checkbox_add_scalebar.get() == 1:
-            #     self.measurement.Scalebar()
-            try:
-                scalebar_channel = self.add_scalebar.get().split(',')
-            except:
-                scalebar_channel = [self.add_scalebar.get()]
-            if scalebar_channel != '':
-                # if len(scalebar_channel) == 1:
-                #     scalebar_channel = [scalebar_channel]
-                self.measurement.Scalebar(channels=scalebar_channel)
+        if self.checkbox_gaussian_blurr.get() == 1:
+            self.measurement.Scale_Channels()
+            self.measurement.Gauss_Filter_Channels_complex()
+        # if self.checkbox_add_scalebar.get() == 1:
+        #     self.measurement.Scalebar()
+        try:
+            scalebar_channel = self.add_scalebar.get().split(',')
+        except:
+            scalebar_channel = [self.add_scalebar.get()]
+        if scalebar_channel != '':
+            # if len(scalebar_channel) == 1:
+            #     scalebar_channel = [scalebar_channel]
+            # print(scalebar_channel)
+            self.measurement.Scalebar(channels=scalebar_channel)
         # plt.clf()
         self.measurement.Display_Channels(show_plot=False)
         self._Fill_Canvas()
@@ -446,14 +452,23 @@ class Example():
         dpi = int(self.figure_dpi.get())
         self.fig.savefig(file, format=extension, dpi=dpi)
 
+    def _Generate_Savefolder(self):
+        self.logging_folder = os.path.join(os.environ['APPDATA'], 'SNOM_Plotter')
+        if not os.path.exists(self.logging_folder):
+            os.makedirs(self.logging_folder)
+
     def _Get_Folderpath_from_Input(self):
         
         # check if old default path exists to use as initialdir
         self._Get_Old_Folderpath()
         self.folder_path = filedialog.askdirectory(initialdir=self.initialdir)
         # save filepath to txt and use as next initialdir
-        with open(os.path.join(this_files_path, 'default_path.txt'), 'w') as file:
+        with open(os.path.join(self.logging_folder, 'default_path.txt'), 'w') as file:
             file.write('#' + self.folder_path)
+        # reinitialize the default channels
+        default_channels = self._Get_Default_Channels()
+        self._Set_Default_Channels(default_channels)
+        self._Set_Phase_Range()
 
     def _Exit(self):
         # self.menu_left.quit()
@@ -462,7 +477,7 @@ class Example():
 
     def _Get_Old_Folderpath(self):
         try:
-            with open(os.path.join(this_files_path, 'default_path.txt'), 'r') as file:
+            with open(os.path.join(self.logging_folder, 'default_path.txt'), 'r') as file:
                 content = file.read()
             if content[0:1] == '#':
                 self.initialdir = content[1:] # to do change to one level higher
@@ -470,6 +485,34 @@ class Example():
             self.initialdir = this_files_path
         #set old path to folder as default
         self.folder_path = self.initialdir
+
+    def _Get_Default_Channels(self) -> list:
+        if self.folder_path != this_files_path:
+            Measurement = Open_Measurement(self.folder_path)
+            default_channels = Measurement.channels
+            return default_channels
+        else:
+            return ['O2A','O2P','Z C']
+
+    def _Set_Default_Channels(self, default_channels):
+        default_channels = ','.join(default_channels)
+        self.select_channels.delete(0,END)
+        self.select_channels.insert(0, default_channels)
+
+    def _Set_Phase_Range(self):
+        filetype = self._Get_Measurement_Filetype()
+        if filetype is File_Type.aachen_ascii:
+            self.checkbox_full_phase_range.set(0)  
+        else: 
+            self.checkbox_full_phase_range.set(1)
+
+    def _Get_Measurement_Filetype(self) -> File_Type:
+        if self.folder_path != this_files_path:
+            Measurement = Open_Measurement(self.folder_path)
+            filetype = Measurement.file_type
+            return filetype
+        else:
+            return None
 
     def _Change_Mainwindow_Size(self):
         # change size of main window to adjust size of plot

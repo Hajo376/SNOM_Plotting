@@ -1124,3 +1124,21 @@ set_min_to_zero = True
 filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
 quadratic_pixels = True
 set_min_to_zero = True
+05/07/2023 14:36:55
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+05/07/2023 14:36:55
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+05/07/2023 14:36:56
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+set_min_to_zero = True
+05/07/2023 14:36:59
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+05/07/2023 14:42:58
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True
+05/07/2023 14:42:58
+filename = 2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+quadratic_pixels = True

@@ -1,1 +1,1 @@
-#C:/Users/Hajo/git_projects/SNOM_Plotting/testdata/2022-08-30 1454 PH cc_BV_No3_interf_sync_CP1R
+#C:/Users/Hajo/git_projects/SNOM_Plotting/testdata/2018-09-10_16-44-27_scan

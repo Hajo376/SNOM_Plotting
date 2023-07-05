@@ -2,3 +2,4 @@
 /build
 /.venv
 /default_path.txt
+test_appdata_folder.py

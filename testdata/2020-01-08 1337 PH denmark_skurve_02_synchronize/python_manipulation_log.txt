@@ -419,3 +419,9 @@ quadratic_pixels = True
 filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
 quadratic_pixels = True
 set_min_to_zero = True
+07/07/2023 18:27:45
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+07/07/2023 18:27:46
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True

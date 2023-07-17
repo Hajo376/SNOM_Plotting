@@ -17,9 +17,8 @@ class ScrollFrame(tk.Frame):
         self.canvas_height = heigth
         self.canvas_width = width
         super().__init__(parent) # create a frame (self)
-        # self.pack(expand=True, fill='both')
 
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=self.canvas_height, width=self.canvas_width)#, height=heigth, width=width          #place canvas on self
+        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=heigth, width=width)          #place canvas on self
         self.viewPort = tk.Frame(self.canvas, background="#ffffff")                    #place a frame on the canvas, this frame will hold the child widgets 
         self.vsb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
         self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas
@@ -45,7 +44,6 @@ class ScrollFrame(tk.Frame):
         '''Reset the canvas window to encompass inner frame when required'''
         canvas_width = event.width
         self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
-        print('test')
 
     def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
         if platform.system() == 'Windows':
@@ -71,9 +69,6 @@ class ScrollFrame(tk.Frame):
             self.canvas.unbind_all("<Button-5>")
         else:
             self.canvas.unbind_all("<MouseWheel>")
-
-    def changeCanvasHeight(self, height):
-        self.canvas.itemconfig(self.canvas_window, height=height)  
 
 
 

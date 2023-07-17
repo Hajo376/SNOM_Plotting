@@ -68,6 +68,10 @@ class Example():
         self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
         self.canvas_fig_width.delete(0, END)
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
+
+        # update the size of the left menue scroll region
+        # self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # print('changed the scroll region height')
         # self._Update_Canvas_Area()
         # frame.update_idletasks()
         # pass    
@@ -95,9 +99,12 @@ class Example():
         self.menu_left = ttkb.Frame(self.root, width=200, padding=5)
         self.menu_left.grid(column=0, row=0)
 
+        # self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady, 160) # make adaptable to fig height
         self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady, 160) # make adaptable to fig height
         # self.menu_left_scrollframe = ScrollFrame(self.menu_left, self.canvas_fig_height, 200)
-        self.menu_left_scrollframe.grid(column=0, row=0)
+        # self.menu_left_scrollframe.grid(column=0, row=0, sticky='ns')
+        self.menu_left_scrollframe.pack(expand=True, fill='both')
+        # self.menu_left_scrollframe.changeCanvasHeight(100)
 
         self.menu_left_upper = ttkb.LabelFrame(self.menu_left_scrollframe.viewPort, text='Main controls')
         self.menu_left_upper.grid(column=0, row=0)

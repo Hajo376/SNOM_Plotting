@@ -1,0 +1,20 @@
+18/07/2023 15:35:01
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True
+18/07/2023 15:35:01
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True
+18/07/2023 15:35:06
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True
+set_min_to_zero = True
+18/07/2023 15:35:12
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True
+set_min_to_zero = True
+18/07/2023 15:49:48
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True
+18/07/2023 15:49:48
+filename = 2023-03-03 142617 PH 1468Lipids
+quadratic_pixels = True

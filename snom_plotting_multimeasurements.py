@@ -104,7 +104,7 @@ class Example():
         # self.menu_left_scrollframe = ScrollFrame(self.menu_left, self.canvas_fig_height, 200)
         # self.menu_left_scrollframe.grid(column=0, row=0, sticky='ns')
         self.menu_left_scrollframe.pack(expand=True, fill='both')
-        # self.menu_left_scrollframe.changeCanvasHeight(100)
+        self.menu_left_scrollframe.changeCanvasHeight(100)
 
         self.menu_left_upper = ttkb.LabelFrame(self.menu_left_scrollframe.viewPort, text='Main controls')
         self.menu_left_upper.grid(column=0, row=0)

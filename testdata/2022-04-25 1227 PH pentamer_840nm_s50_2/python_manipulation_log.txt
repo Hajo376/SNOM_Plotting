@@ -374,3 +374,9 @@ quadratic_pixels = True
 17/07/2023 16:32:50
 filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
 quadratic_pixels = True
+18/07/2023 15:34:53
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+18/07/2023 15:34:53
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True

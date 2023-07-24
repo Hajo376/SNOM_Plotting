@@ -1,0 +1,26 @@
+# www.neaspec.com
+# Scan:	 	2D (PsHetKpfm)
+# Project:	 	AC - Andrea Mancini 2D mat
+# Description:	 	FPCP 1630 cm-1
+# Date:	 	01/18/2022 17:10:08
+# Scanner Center Position (X, Y):	[µm]	49.34	47.86	 
+# Rotation:	[°]	-41	 	 
+# Scan Area (X, Y, Z):	[µm]	0.388	0.530	0.000
+# Pixel Area (X, Y, Z):	[px]	200	200	1
+# Averaging:	 	1	 	 
+# Integration time:	[ms]	3	 	 
+# Laser Source:	 	Tunable MIR laser (QCL)
+# Detector:	 	MIR
+# Target Wavelength:	[µm]	6.143	 	 
+# Demodulation Mode:	 	PsHetKpfm
+# Tip Frequency:	[Hz]	250,272.145	 	 
+# Tip Amplitude:	[mV]	41.100	 	 
+# Tapping Amplitude:	[nm]	38.478	 	 
+# Modulation Frequency:	[Hz]	303.728	 	 
+# Modulation Amplitude:	[mV]	57,771.499	 	 
+# Modulation Offset:	[mV]	-19,853.570	 	 
+# Setpoint:	[%]	80.32	 	 
+# Regulator (P, I, D):	 	2.854422	4.353743	1.276131
+# Tip Potential:	[mV]	0.000	 	 
+# M1A Scaling:	[nm/V]	1.160	 	 
+# Version:	 	2.0.9278.0

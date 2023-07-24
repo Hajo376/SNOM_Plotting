@@ -73,7 +73,9 @@ class ScrollFrame(tk.Frame):
             self.canvas.unbind_all("<MouseWheel>")
 
     def changeCanvasHeight(self, height):
-        self.canvas.itemconfig(self.canvas_window, height=height)  
+        # self.canvas.itemconfig(self.canvas_window, height=height)  
+        self.canvas.configure(height=height)  
+        # self.viewPort.config(height=height)  
 
 
 

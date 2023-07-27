@@ -8,7 +8,7 @@ input_width = 5
 canvas_width = 800
 canvas_height = 605
 main_window_minwidth = 500
-main_window_minheight = 400
+main_window_minheight = 200
 
 # defaults:
 # default_cmap = 'viridis'

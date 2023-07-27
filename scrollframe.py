@@ -16,6 +16,8 @@ class ScrollFrame(tk.Frame):
     def __init__(self, parent, heigth, width):
         self.canvas_height = heigth
         self.canvas_width = width
+
+        self.full_menu_visible = False
         super().__init__(parent) # create a frame (self)
         # self.pack(expand=True, fill='both')
 
@@ -45,7 +47,8 @@ class ScrollFrame(tk.Frame):
         '''Reset the canvas window to encompass inner frame when required'''
         canvas_width = event.width
         self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
-        print('test')
+        # print('test')
+        # self.canvas.configure(height=height) 
 
     def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
         if platform.system() == 'Windows':
@@ -63,18 +66,30 @@ class ScrollFrame(tk.Frame):
             self.canvas.bind_all("<Button-4>", self.onMouseWheel)
             self.canvas.bind_all("<Button-5>", self.onMouseWheel)
         else:
-            self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
+            if self.full_menu_visible is False:
+                self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
 
     def onLeave(self, event):                                                       # unbind wheel events when the cursorl leaves the control
         if platform.system() == 'Linux':
             self.canvas.unbind_all("<Button-4>")
             self.canvas.unbind_all("<Button-5>")
         else:
-            self.canvas.unbind_all("<MouseWheel>")
+            if self.full_menu_visible is False:
+                self.canvas.unbind_all("<MouseWheel>")
 
     def changeCanvasHeight(self, height):
         # self.canvas.itemconfig(self.canvas_window, height=height)  
         self.canvas.configure(height=height)  
+        # print('viewport height: ', self.viewPort.winfo_height())
+        if height > self.viewPort.winfo_height():
+            self.canvas.unbind_all("<MouseWheel>")
+            self.vsb.pack_forget()    
+            self.full_menu_visible = True
+        elif height < self.viewPort.winfo_height():
+            self.canvas.bind_all("<MouseWheel>")
+            self.vsb.pack(side="right", fill="y")    
+            self.full_menu_visible = False
+
         # self.viewPort.config(height=height)  
 
 

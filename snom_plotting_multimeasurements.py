@@ -47,6 +47,7 @@ class Example():
         # self.root.attributes('-fullscreen', True)# add exit button first
         self._Generate_Savefolder()
         self._Get_Old_Folderpath()
+        print(self.folder_path)
         self._Main_App()
         
     # def _Get_initial_Geometry(self):
@@ -70,6 +71,9 @@ class Example():
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
 
         # update the size of the left menue scroll region
+        self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # also for right menu
+        self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
         # self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
         # print('changed the scroll region height')
         # self._Update_Canvas_Area()
@@ -104,7 +108,9 @@ class Example():
         # self.menu_left_scrollframe = ScrollFrame(self.menu_left, self.canvas_fig_height, 200)
         # self.menu_left_scrollframe.grid(column=0, row=0, sticky='ns')
         self.menu_left_scrollframe.pack(expand=True, fill='both')
-        self.menu_left_scrollframe.changeCanvasHeight(100)
+        # self.menu_left_scrollframe.changeCanvasHeight(200)
+        # print(self.root.winfo_height())
+        self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height()) # initialize to stretch to full height
 
         self.menu_left_upper = ttkb.LabelFrame(self.menu_left_scrollframe.viewPort, text='Main controls')
         self.menu_left_upper.grid(column=0, row=0)
@@ -257,10 +263,15 @@ class Example():
 
         # organize multiple menues in notebooks -> tabs
         self.menu_right_notebook = ttkb.Notebook(self.menu_right)
-        self.menu_right_notebook.pack(fill=BOTH, expand=1)
-        # self.menu_right_notebook.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.menu_right_notebook.pack()
+        # self.menu_right_notebook.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='ew')
 
-        self.menu_right_1 = ttkb.Frame(self.menu_right_notebook)
+        self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady, 170)
+        self.menu_right_1_scrollframe.pack()
+        # self.menu_right_1_scrollframe.changeCanvasHeight(self.menu_right_1_scrollframe.viewPort.winfo_height())
+
+        self.menu_right_1 = ttkb.Frame(self.menu_right_1_scrollframe.viewPort)
+        # self.menu_right_1 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_1.grid(column=0, row=0)
 
         #add scrollframe:
@@ -344,12 +355,13 @@ class Example():
 
         # second tab:
         self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
-        self.menu_right_2.grid(column=0, row=1)
+        # self.menu_right_2.grid(column=0, row=1)
+        self.menu_right_2.pack()
 
         self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='test')
         self.menu_right_2_test.grid(column=0, row=0)
 
-        self.menu_right_notebook.add(self.menu_right_1, text='Basic')
+        self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
         self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
 
     def _Canvas_Area(self):
@@ -439,7 +451,8 @@ class Example():
             # print(scalebar_channel)
             self.measurement.Scalebar(channels=scalebar_channel)
         # plt.clf()
-        self.measurement.Display_Channels(show_plot=False)
+        Plot_Definitions.show_plot = False
+        self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
         
         '''
@@ -513,12 +526,13 @@ class Example():
         self._Get_Old_Folderpath()
         self.folder_path = filedialog.askdirectory(initialdir=self.initialdir)
         # save filepath to txt and use as next initialdir
-        with open(os.path.join(self.logging_folder, 'default_path.txt'), 'w') as file:
-            file.write('#' + self.folder_path)
+        # first check if folder_path is correct, user might abort filedialog
+        if len(self.folder_path) > 5:
+            with open(os.path.join(self.logging_folder, 'default_path.txt'), 'w') as file:
+                file.write('#' + self.folder_path)
         # reinitialize the default channels
-        default_channels = self._Get_Default_Channels()
-        self._Set_Default_Channels(default_channels)
-        self._Set_Phase_Range()
+        # default_channels = self._Get_channels)
+        # self._Set_Phase_Range()
 
     def _Exit(self):
         # self.menu_left.quit()
@@ -529,10 +543,16 @@ class Example():
         try:
             with open(os.path.join(self.logging_folder, 'default_path.txt'), 'r') as file:
                 content = file.read()
-            if content[0:1] == '#':
+            if content[0:1] == '#' and len(content) > 5:
                 self.initialdir = content[1:] # to do change to one level higher
         except:
             self.initialdir = this_files_path
+        else:
+            try:
+                #check if the program can read in the default channels otherwise the folder might not exist anymore
+                self._Get_Default_Channels()
+            except:
+                self.initialdir = this_files_path
         #set old path to folder as default
         self.folder_path = self.initialdir
 
@@ -582,7 +602,8 @@ class Example():
             wavelength = float(self.synccorrection_wavelength.get())
             channels = self.select_channels.get().split(',')
             measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
-            measurement.show_plot = False
+            # measurement.show_plot = False
+            Plot_Definitions.show_plot = False
             scanangle = measurement.measurement_tag_dict[Tag_Type.rotation]*np.pi/180
             measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
             self._Fill_Canvas()

@@ -28,6 +28,7 @@ import numpy as np
 #for scrollframe
 import platform
 from scrollframe import ScrollFrame
+import pickle # for saving of defaults in a binary dictionary
 
 class Example():
     def __init__(self):
@@ -149,6 +150,15 @@ class Example():
         # plot all plot in memory:
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
         self.generate_all_plot_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # save all defaults:
+        self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_Defaults)
+        self.save_defaults_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # load all defaults:
+        self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Load User Defaults', bootstyle=WARNING, command=self._Load_Defaults)
+        self.load_defaults_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # restore all old defaults:
+        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=SUCCESS, command=self._Restore_Defaults)
+        self.restore_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         # 
         # plot channels
@@ -170,9 +180,9 @@ class Example():
         # change width of colorbar:
         self.label_colorbar_width = ttkb.Label(self.menu_left_lower, text='Colorbar width:')
         self.label_colorbar_width.grid(column=0, row=0)
-        self.cb_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.cb_width.insert(0, '5')
-        self.cb_width.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
+        self.colorbar_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.colorbar_width.insert(0, '5')
+        self.colorbar_width.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # change figure width:
         # self.canvas_fig_width_frame = ttkb.Frame(self.menu_left_lower)
         # self.canvas_fig_width_frame.grid(column=0, row=4)
@@ -383,7 +393,6 @@ class Example():
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
         # pass
 
-
     def _Generate_Plot(self):
         
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
@@ -393,7 +402,7 @@ class Example():
         # Plot_Definitions.vmax_phase = 0
         Plot_Definitions.vmin_real = 0
         Plot_Definitions.vmax_real = 0
-        Plot_Definitions.colorbar_width = float(self.cb_width.get())
+        Plot_Definitions.colorbar_width = float(self.colorbar_width.get())
         if self.checkbox_hide_ticks.get() == 1:
             Plot_Definitions.hide_ticks = True
         else:
@@ -506,7 +515,6 @@ class Example():
         self.canvas_fig.draw()
         self._Change_Mainwindow_Size()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
-
 
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
@@ -635,6 +643,93 @@ class Example():
         self.measurement.Display_All_Subplots()
         self._Fill_Canvas()
 
+    def _Save_Defaults(self):
+        default_dict = {
+            'channels'          : self.select_channels.get(),
+            'dpi'               : self.figure_dpi.get(),
+            'colorbar_width'    : self.colorbar_width.get(),
+            'figure_width'      : self.canvas_fig_width.get(),
+            'figure_height'     : self.canvas_fig_height.get(),
+            'hide_ticks'        : self.checkbox_hide_ticks.get(),
+            'show_titles'       : self.checkbox_show_titles.get(),
+            'tight_layout'      : self.checkbox_tight_layout.get(),
+            'scalebar_channel'  : self.add_scalebar.get(),
+            'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
+            'autoscale'         : self.checkbox_autoscale.get(),
+            'gaussian_blurr'    : self.checkbox_gaussian_blurr.get(),
+            'full_phase'        : self.checkbox_full_phase_range.get(),
+            'shared_amp'        : self.checkbox_amp_cbar_range.get(),
+            'shared_real'       : self.checkbox_real_cbar_range.get(),
+            'shared_height'     : self.checkbox_height_cbar_range.get(),
+            'synccorr_lambda'   : self.synccorrection_wavelength.get(),
+            'synccorr_phasedir' : self.synccorrection_phasedir.get()
+
+        }
+        with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'wb') as f:
+            pickle.dump(default_dict, f)
+
+    def _Load_Defaults(self):
+        with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
+            self.default_dict = pickle.load(f)
+        # reload gui
+        self._Update_Gui_Parameters()
+
+    def _Restore_Defaults(self):
+        self.default_dict = {
+            'channels'          : 'O2A,O2P,Z C',
+            'dpi'               : 100,
+            'colorbar_width'    : 5,
+            'figure_width'      : canvas_width,
+            'figure_height'     : canvas_height,
+            'hide_ticks'        : 1,
+            'show_titles'       : 1,
+            'tight_layout'      : 1,
+            'scalebar_channel'  : '',
+            'set_min_to_zero'   : 1,
+            'autoscale'         : 1,
+            'gaussian_blurr'    : 0,
+            'full_phase'        : 0,
+            'shared_amp'        : 0,
+            'shared_real'       : 0,
+            'shared_height'     : 0,
+            'synccorr_lambda'   : '',
+            'synccorr_phasedir' : ''
+
+        }
+        self._Update_Gui_Parameters()
+        
+
+
+    def _Update_Gui_Parameters(self):
+        self.select_channels.delete(0, END)
+        self.select_channels.insert(0, self.default_dict['channels']),
+        self.figure_dpi.delete(0, END)
+        self.figure_dpi.insert(0, self.default_dict['dpi']),
+        self.colorbar_width.delete(0, END)
+        self.colorbar_width.insert(0, self.default_dict['colorbar_width']),
+        self.canvas_fig_width.delete(0, END)
+        self.canvas_fig_width.insert(0, self.default_dict['figure_width']),
+        self.canvas_fig_height.delete(0, END)
+        self.canvas_fig_height.insert(0, self.default_dict['figure_height']),
+        # change mainwindow size to adjust for new canvas size:
+        self._Change_Mainwindow_Size()
+
+        self.checkbox_hide_ticks.set(self.default_dict['hide_ticks']),
+        self.checkbox_show_titles.set(self.default_dict['show_titles']),
+        self.checkbox_tight_layout.set(self.default_dict['tight_layout']),
+        self.add_scalebar.delete(0, END)
+        self.add_scalebar.insert(0, self.default_dict['scalebar_channel']),
+        self.checkbox_setmintozero_var.set(self.default_dict['set_min_to_zero']),
+        self.checkbox_autoscale.set(self.default_dict['autoscale']),
+        self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr']),
+        self.checkbox_full_phase_range.set(self.default_dict['full_phase']),
+        self.checkbox_amp_cbar_range.set(self.default_dict['shared_amp']),
+        self.checkbox_real_cbar_range.set(self.default_dict['shared_real']),
+        self.checkbox_height_cbar_range.set(self.default_dict['shared_height']),
+        self.synccorrection_wavelength.delete(0, END)
+        self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda']),
+        self.synccorrection_phasedir.delete(0, END)
+        self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
 
 # class Generate_Plot():
 #     def __init__(self, folder_path):

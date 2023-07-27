@@ -48,7 +48,9 @@ class Example():
         # self.root.attributes('-fullscreen', True)# add exit button first
         self._Generate_Savefolder()
         self._Get_Old_Folderpath()
-        print(self.folder_path)
+        self._Load_User_Defaults()
+        # self._Load_Old_Defaults()
+        # print(self.folder_path)
         self._Main_App()
         
     # def _Get_initial_Geometry(self):
@@ -90,6 +92,7 @@ class Example():
         # new_main_window_width = canvas_width + self.menu_left.winfo_width() + self.menu_right.winfo_width()
         # self.root.geometry(f'{new_main_window_width}x{main_window_minheight}')
         # self.root.update()
+        # self._Fill_Canvas()
         # self._Change_Mainwindow_Size()
         
         # configure canvas to scale with window
@@ -141,7 +144,8 @@ class Example():
         self.label_figure_dpi = ttkb.Label(self.menu_left_upper, text='DPI:')
         self.label_figure_dpi.grid(column=0, row=4)
         self.figure_dpi = ttkb.Entry(self.menu_left_upper, width=input_width, justify='center')
-        self.figure_dpi.insert(0, '100')
+        # self.figure_dpi.insert(0, '100')
+        self.figure_dpi.insert(0, self.default_dict['dpi'])
         self.figure_dpi.grid(column=1, row=4, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
         self.save_plot_button.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -151,13 +155,13 @@ class Example():
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
         self.generate_all_plot_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # save all defaults:
-        self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_Defaults)
+        self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
         self.save_defaults_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # load all defaults:
-        self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Load User Defaults', bootstyle=WARNING, command=self._Load_Defaults)
+        self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._Restore_User_Defaults)
         self.load_defaults_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # restore all old defaults:
-        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=SUCCESS, command=self._Restore_Defaults)
+        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=SUCCESS, command=self._Restore_Old_Defaults)
         self.restore_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         # 
@@ -181,7 +185,8 @@ class Example():
         self.label_colorbar_width = ttkb.Label(self.menu_left_lower, text='Colorbar width:')
         self.label_colorbar_width.grid(column=0, row=0)
         self.colorbar_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.colorbar_width.insert(0, '5')
+        # self.colorbar_width.insert(0, '5')
+        self.colorbar_width.insert(0, self.default_dict['colorbar_width'])
         self.colorbar_width.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # change figure width:
         # self.canvas_fig_width_frame = ttkb.Frame(self.menu_left_lower)
@@ -195,7 +200,8 @@ class Example():
         self.label_canvas_fig_width = ttkb.Label(self.menu_left_lower, text='Figure width:')
         self.label_canvas_fig_width.grid(column=0, row=1)
         self.canvas_fig_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.canvas_fig_width.insert(0, f'{canvas_width}')
+        # self.canvas_fig_width.insert(0, f'{canvas_width}')
+        self.canvas_fig_width.insert(0, self.default_dict['figure_width'])
         self.canvas_fig_width.grid(column=1, row=1, padx=button_padx, pady=button_pady, sticky='ew')
 
         # change figure height:
@@ -204,28 +210,30 @@ class Example():
         self.label_canvas_fig_height = ttkb.Label(self.menu_left_lower, text='Figure height:')
         self.label_canvas_fig_height.grid(column=0, row=2)
         self.canvas_fig_height = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.canvas_fig_height.insert(0, f'{canvas_height}')
+        # self.canvas_fig_height.insert(0, f'{canvas_height}')
+        self.canvas_fig_height.insert(0, self.default_dict['figure_height'])
         self.canvas_fig_height.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
         # hide_ticks = True
         self.checkbox_hide_ticks = ttkb.IntVar()
-        self.checkbox_hide_ticks.set(1)
+        # self.checkbox_hide_ticks.set(1)
+        self.checkbox_hide_ticks.set(self.default_dict['hide_ticks'])
         self.hide_ticks = ttkb.Checkbutton(self.menu_left_lower, text='Hide ticks', variable=self.checkbox_hide_ticks, onvalue=1, offvalue=0)
         self.hide_ticks.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # show_titles = True
         self.checkbox_show_titles = ttkb.IntVar()
-        self.checkbox_show_titles.set(1)
+        self.checkbox_show_titles.set(self.default_dict['show_titles'])
         self.show_titles = ttkb.Checkbutton(self.menu_left_lower, text='Show titles', variable=self.checkbox_show_titles, onvalue=1, offvalue=0)
         self.show_titles.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # tight_layout = True
         self.checkbox_tight_layout = ttkb.IntVar()
-        self.checkbox_tight_layout.set(1)
+        self.checkbox_tight_layout.set(self.default_dict['tight_layout'])
         self.tight_layout = ttkb.Checkbutton(self.menu_left_lower, text='Tight layout', variable=self.checkbox_tight_layout, onvalue=1, offvalue=0)
         self.tight_layout.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # hspace = 0.4 #standard is 0.4
         self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
         self.label_h_space.grid(column=0, row=6)
         self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.h_space.insert(0, '0.4')
+        self.h_space.insert(0, self.default_dict['h_space'])
         self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
         # self.checkbox_add_scalebar = ttkb.IntVar()
@@ -233,10 +241,10 @@ class Example():
         # self.add_scalebar = ttkb.Checkbutton(self.menu_right_upper, text='Add scalebar', variable=self.checkbox_add_scalebar, onvalue=1, offvalue=0)
         # self.add_scalebar.grid(column=0, row=15, padx=button_padx, pady=button_pady, sticky='nsew')
         self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
-        self.label_add_scalebar.grid(column=0, row=6)
+        self.label_add_scalebar.grid(column=0, row=7)
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.add_scalebar.insert(0, '')
-        self.add_scalebar.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
+        self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
+        self.add_scalebar.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
         
 
 
@@ -296,38 +304,39 @@ class Example():
         
         # set min to zero
         self.checkbox_setmintozero_var = ttkb.IntVar()
-        self.checkbox_setmintozero_var.set(1)
+        self.checkbox_setmintozero_var.set(self.default_dict['set_min_to_zero'])
         self.set_min_to_zero = ttkb.Checkbutton(self.menu_right_upper, text='Set min to zero', variable=self.checkbox_setmintozero_var, onvalue=1, offvalue=0)
         self.set_min_to_zero.grid(column=0, row=1, padx=button_padx, pady=button_pady, sticky='nsew')
         # autoscale
         self.checkbox_autoscale = ttkb.IntVar()
-        self.checkbox_autoscale.set(1)
+        self.checkbox_autoscale.set(self.default_dict['autoscale'])
         self.autoscale = ttkb.Checkbutton(self.menu_right_upper, text='Autoscale data', variable=self.checkbox_autoscale, onvalue=1, offvalue=0)
         self.autoscale.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # apply gaussian filter
         self.checkbox_gaussian_blurr = ttkb.IntVar()
-        self.checkbox_gaussian_blurr.set(0)
+        self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr'])
         self.gaussian_blurr = ttkb.Checkbutton(self.menu_right_upper, text='Blurr Data', variable=self.checkbox_gaussian_blurr, onvalue=1, offvalue=0)
         self.gaussian_blurr.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
         # full_phase_range = True # this will overwrite the cbar
         self.checkbox_full_phase_range = ttkb.IntVar()
-        self._Set_Phase_Range()
+        self.checkbox_full_phase_range.set(self.default_dict['full_phase'])
+        # self._Set_Phase_Range()
         
         self.full_phase_range = ttkb.Checkbutton(self.menu_right_upper, text='Full phase range', variable=self.checkbox_full_phase_range, onvalue=1, offvalue=0)
         self.full_phase_range.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # amp_cbar_range = True
         self.checkbox_amp_cbar_range = ttkb.IntVar()
-        self.checkbox_amp_cbar_range.set(0)
+        self.checkbox_amp_cbar_range.set(self.default_dict['shared_amp'])
         self.amp_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared amp range', variable=self.checkbox_amp_cbar_range, onvalue=1, offvalue=0)
         self.amp_cbar_range.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # real_cbar_range = True
         self.checkbox_real_cbar_range = ttkb.IntVar()
-        self.checkbox_real_cbar_range.set(0)
+        self.checkbox_real_cbar_range.set(self.default_dict['shared_real'])
         self.real_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared real range', variable=self.checkbox_real_cbar_range, onvalue=1, offvalue=0)
         self.real_cbar_range.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # height_cbar_range = True
         self.checkbox_height_cbar_range = ttkb.IntVar()
-        self.checkbox_height_cbar_range.set(0)
+        self.checkbox_height_cbar_range.set(self.default_dict['shared_height'])
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
@@ -346,7 +355,7 @@ class Example():
         self.label_synccorrection_wavelength = ttkb.Label(self.menu_right_synccorrection, text='Wavelength in µm:')
         self.label_synccorrection_wavelength.grid(column=0, row=0)
         self.synccorrection_wavelength = ttkb.Entry(self.menu_right_synccorrection, width=input_width, justify='center')
-        self.synccorrection_wavelength.insert(0, '')
+        self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda'])
         self.synccorrection_wavelength.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # first generate preview
         self.button_synccorrection_preview = ttkb.Button(self.menu_right_synccorrection, text='Generate preview', command=self._Synccorrection_Preview)
@@ -355,7 +364,7 @@ class Example():
         self.label_synccorrection_phasedir = ttkb.Label(self.menu_right_synccorrection, text='Phasedir (n or p):')
         self.label_synccorrection_phasedir.grid(column=0, row=2)
         self.synccorrection_phasedir = ttkb.Entry(self.menu_right_synccorrection, width=input_width, justify='center')
-        self.synccorrection_phasedir.insert(0, '')
+        self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
         self.synccorrection_phasedir.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
         # if phasedir and wavelength are known start synccorrection
         self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
@@ -643,7 +652,7 @@ class Example():
         self.measurement.Display_All_Subplots()
         self._Fill_Canvas()
 
-    def _Save_Defaults(self):
+    def _Save_User_Defaults(self):
         default_dict = {
             'channels'          : self.select_channels.get(),
             'dpi'               : self.figure_dpi.get(),
@@ -653,6 +662,7 @@ class Example():
             'hide_ticks'        : self.checkbox_hide_ticks.get(),
             'show_titles'       : self.checkbox_show_titles.get(),
             'tight_layout'      : self.checkbox_tight_layout.get(),
+            'h_space'           : self.h_space.get(),
             'scalebar_channel'  : self.add_scalebar.get(),
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
@@ -668,13 +678,16 @@ class Example():
         with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'wb') as f:
             pickle.dump(default_dict, f)
 
-    def _Load_Defaults(self):
+    def _Load_User_Defaults(self):
         with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
             self.default_dict = pickle.load(f)
+
+    def _Restore_User_Defaults(self):
+        self._Load_User_Defaults()
         # reload gui
         self._Update_Gui_Parameters()
 
-    def _Restore_Defaults(self):
+    def _Load_Old_Defaults(self):
         self.default_dict = {
             'channels'          : 'O2A,O2P,Z C',
             'dpi'               : 100,
@@ -684,6 +697,7 @@ class Example():
             'hide_ticks'        : 1,
             'show_titles'       : 1,
             'tight_layout'      : 1,
+            'h_space'           : '0.4',
             'scalebar_channel'  : '',
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
@@ -696,10 +710,11 @@ class Example():
             'synccorr_phasedir' : ''
 
         }
+    
+    def _Restore_Old_Defaults(self):
+        self._Load_Old_Defaults()
         self._Update_Gui_Parameters()
         
-
-
     def _Update_Gui_Parameters(self):
         self.select_channels.delete(0, END)
         self.select_channels.insert(0, self.default_dict['channels']),
@@ -717,6 +732,8 @@ class Example():
         self.checkbox_hide_ticks.set(self.default_dict['hide_ticks']),
         self.checkbox_show_titles.set(self.default_dict['show_titles']),
         self.checkbox_tight_layout.set(self.default_dict['tight_layout']),
+        self.h_space.delete(0, END)
+        self.h_space.insert(0, self.default_dict['h_space'])
         self.add_scalebar.delete(0, END)
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel']),
         self.checkbox_setmintozero_var.set(self.default_dict['set_min_to_zero']),

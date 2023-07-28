@@ -28,7 +28,8 @@ import numpy as np
 #for scrollframe
 import platform
 from scrollframe import ScrollFrame
-import pickle # for saving of defaults in a binary dictionary
+# import pickle # for saving of defaults in a binary dictionary
+import json # json is a plain text file, so easy to read and manual changes possible
 
 class Example():
     def __init__(self):
@@ -687,13 +688,17 @@ class Example():
             'synccorr_phasedir' : self.synccorrection_phasedir.get()
 
         }
-        with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'wb') as f:
-            pickle.dump(default_dict, f)
+        # with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'wb') as f:
+            # pickle.dump(default_dict, f)
+        with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'w') as f:
+            json.dump(default_dict, f, sort_keys=True, indent=4)
 
     def _Load_User_Defaults(self):
         try:
-            with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
-                self.default_dict = pickle.load(f)
+            # with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
+                # self.default_dict = pickle.load(f)
+            with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'r') as f:
+                self.default_dict = json.load(f)
         except:
             self._Load_Old_Defaults()
             print('Could not find user defaults, continouing with old defaults!')

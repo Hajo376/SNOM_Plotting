@@ -138,6 +138,7 @@ class Example():
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
         self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
         self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
+        self.select_channels.insert(0, self.default_dict['channels'])
         default_channels = self._Get_Default_Channels()
         self._Set_Default_Channels(default_channels)
         
@@ -576,7 +577,8 @@ class Example():
             with open(self.logging_folder / Path('default_path.txt'), 'w') as file:
                 file.write('#' + self.folder_path)
         # reinitialize the default channels
-        # default_channels = self._Get_channels)
+        default_channels = self._Get_Default_Channels()
+        self._Set_Default_Channels(default_channels)
         # self._Set_Phase_Range()
 
     def _Exit(self):

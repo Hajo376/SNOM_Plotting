@@ -315,3 +315,64 @@ quadratic_pixels = True
 filename = 2018-09-10_16-44-27_scan
 quadratic_pixels = True
 set_min_to_zero = True
+28/07/2023 17:10:48
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:14:59
+filename = 2018-09-10_16-44-27_scan
+28/07/2023 17:18:23
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:18:26
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:19:05
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:19:07
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:23:59
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:24:00
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:25:24
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:25:27
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:27:06
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:27:08
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:27:39
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:27:41
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:28:53
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:28:55
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 17:33:02
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+28/07/2023 17:33:03
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True

@@ -5,7 +5,8 @@ block_cipher = None
 #noconfirm=True
 
 a = Analysis(
-    ['snom_plotting.py'],
+    ['snom_plotting_multimeasurements.py'],
+    #['snom_plotting.py'],
     pathex=[],
     binaries=[],
     datas=[('images/snom_plotting.ico', '.')], # 'src;dest'

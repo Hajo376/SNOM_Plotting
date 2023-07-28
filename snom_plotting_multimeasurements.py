@@ -104,11 +104,11 @@ class Example():
         self.root.mainloop()
 
     def _Left_Menu(self):
-        self.menu_left = ttkb.Frame(self.root, width=200, padding=5)
+        self.menu_left = ttkb.Frame(self.root, padding=5)
         self.menu_left.grid(column=0, row=0)
 
         # self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady, 160) # make adaptable to fig height
-        self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady, 160) # make adaptable to fig height
+        self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady) #, 160 make adaptable to fig height
         # self.menu_left_scrollframe = ScrollFrame(self.menu_left, self.canvas_fig_height, 200)
         # self.menu_left_scrollframe.grid(column=0, row=0, sticky='ns')
         self.menu_left_scrollframe.pack(expand=True, fill='both')
@@ -117,7 +117,7 @@ class Example():
         self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height()) # initialize to stretch to full height
 
         self.menu_left_upper = ttkb.LabelFrame(self.menu_left_scrollframe.viewPort, text='Main controls')
-        self.menu_left_upper.grid(column=0, row=0)
+        self.menu_left_upper.grid(column=0, row=0, padx=button_padx, pady=button_pady)
 
         # top level controls for plot
         self.load_data = ttkb.Button(self.menu_left_upper, text="Load Data", bootstyle=PRIMARY, command=lambda:self._Get_Folderpath_from_Input())
@@ -179,7 +179,7 @@ class Example():
 
         # plot styles
         self.menu_left_lower = ttkb.LabelFrame(self.menu_left_scrollframe.viewPort, text='Plot controls')
-        self.menu_left_lower.grid(column=0, row=2)
+        self.menu_left_lower.grid(column=0, row=2, padx=button_padx, pady=button_pady)
 
         # change width of colorbar:
         self.label_colorbar_width = ttkb.Label(self.menu_left_lower, text='Colorbar width:')
@@ -246,8 +246,16 @@ class Example():
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
         self.add_scalebar.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
         
-
-
+        # reconfigure size of left menu
+        self.menu_left.update()
+        print('left menu width: ', self.menu_left.winfo_width())
+        print('left menu upper: ', self.menu_left_upper.winfo_width())
+        print('left menu lower: ', self.menu_left_lower.winfo_width())
+        # upper_menu_width = self.menu_left_upper.winfo_width()
+        # lower_menu_width = self.menu_left_lower.winfo_width()
+        # if upper_menu_width > lower_menu_width: width = upper_menu_width 
+        width = max(self.menu_left_upper.winfo_width() + 3*button_padx, self.menu_left_lower.winfo_width() + 3*button_padx)
+        self.menu_left_scrollframe.canvas.config(width=width)
 
         
         
@@ -276,15 +284,15 @@ class Example():
         # vmax_real = 0
 
     def _Right_Menu(self):
-        self.menu_right = ttkb.Frame(self.root, width=200)
-        self.menu_right.grid(column=2, row=0)
+        self.menu_right = ttkb.Frame(self.root) #, width=200
+        self.menu_right.grid(column=2, row=0, padx=button_padx, pady=button_pady)
 
         # organize multiple menues in notebooks -> tabs
         self.menu_right_notebook = ttkb.Notebook(self.menu_right)
         self.menu_right_notebook.pack()
         # self.menu_right_notebook.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='ew')
 
-        self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady, 170)
+        self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
         self.menu_right_1_scrollframe.pack()
         # self.menu_right_1_scrollframe.changeCanvasHeight(self.menu_right_1_scrollframe.viewPort.winfo_height())
 
@@ -297,7 +305,7 @@ class Example():
         # self.menu_right_1_scrollframe.grid(column=0, row=0)
 
         # self.menu_right_upper = ttkb.LabelFrame(self.menu_right, text='Manipulate Data', width=200)
-        self.menu_right_upper = ttkb.LabelFrame(self.menu_right_1, text='Manipulate Data', width=200)
+        self.menu_right_upper = ttkb.LabelFrame(self.menu_right_1, text='Manipulate Data') # , width=200
         self.menu_right_upper.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # self.menu_right_upper.pack(fill=BOTH, expand=1)
 
@@ -382,6 +390,10 @@ class Example():
 
         self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
         self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
+        #reconfigure canvas size 
+        self.menu_right_1.update()
+        # print('width of right menu: ',self.menu_right_1.winfo_width())
+        self.menu_right_1_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
 
     def _Canvas_Area(self):
         # canvas area

@@ -13,7 +13,7 @@ import platform
 # Scrollable Frame Class
 # ************************
 class ScrollFrame(tk.Frame):
-    def __init__(self, parent, heigth, width):
+    def __init__(self, parent, heigth, width=None):
         self.canvas_height = heigth
         self.canvas_width = width
 
@@ -21,7 +21,10 @@ class ScrollFrame(tk.Frame):
         super().__init__(parent) # create a frame (self)
         # self.pack(expand=True, fill='both')
 
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=self.canvas_height, width=self.canvas_width)#, height=heigth, width=width          #place canvas on self
+        if self.canvas_width is None:
+            self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=self.canvas_height)#, height=heigth, width=width          #place canvas on self
+        else:
+            self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=self.canvas_height, width=self.canvas_width)#, height=heigth, width=width          #place canvas on self
         self.viewPort = tk.Frame(self.canvas, background="#ffffff")                    #place a frame on the canvas, this frame will hold the child widgets 
         self.vsb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview) #place a scrollbar on self 
         self.canvas.configure(yscrollcommand=self.vsb.set)                          #attach scrollbar action to scroll of canvas

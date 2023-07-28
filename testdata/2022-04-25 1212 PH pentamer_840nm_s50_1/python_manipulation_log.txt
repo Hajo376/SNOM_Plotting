@@ -25,3 +25,15 @@ quadratic_pixels = True
 filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
 quadratic_pixels = True
 set_min_to_zero = True
+28/07/2023 15:04:27
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 15:14:11
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+28/07/2023 15:14:29
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True

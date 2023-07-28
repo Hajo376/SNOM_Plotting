@@ -691,8 +691,12 @@ class Example():
             pickle.dump(default_dict, f)
 
     def _Load_User_Defaults(self):
-        with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
-            self.default_dict = pickle.load(f)
+        try:
+            with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
+                self.default_dict = pickle.load(f)
+        except:
+            self._Load_Old_Defaults()
+            print('Could not find user defaults, continouing with old defaults!')
 
     def _Restore_User_Defaults(self):
         self._Load_User_Defaults()

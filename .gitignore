@@ -3,3 +3,4 @@
 /.venv
 /default_path.txt
 test_appdata_folder.py
+/__pycache__

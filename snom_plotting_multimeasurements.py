@@ -18,8 +18,9 @@ import matplotlib.backends.backend_svg
 # from random import randint
 import sys
 import os
-import pathlib
-this_files_path = pathlib.Path(__file__).parent.absolute()
+# import pathlib
+# this_files_path = pathlib.Path(__file__).parent.absolute()
+
 
 # from SNOM_AFM_analysis.python_classes_snom import *
 from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type
@@ -30,6 +31,8 @@ import platform
 from scrollframe import ScrollFrame
 # import pickle # for saving of defaults in a binary dictionary
 import json # json is a plain text file, so easy to read and manual changes possible
+from pathlib import Path, PurePath
+this_files_path = Path(__file__).parent
 
 class Example():
     def __init__(self):
@@ -38,7 +41,8 @@ class Example():
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
         self.root.geometry(f"{1100}x{570}")
-        self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
+        # self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
+        self.root.iconbitmap(this_files_path / Path('snom_plotting.ico'))
         # try:
         #     from ctypes import windll  # Only exists on Windows.
 
@@ -65,6 +69,7 @@ class Example():
 
 
     def _Windowsize_changed(self, event):
+        # print('windowsize changed')
         # print('window width =', self.root.winfo_width())
         # print('window height =', self.root.winfo_height())
         # print('canvas width =', self.canvas_area.winfo_width())
@@ -101,7 +106,8 @@ class Example():
         self.root.grid_columnconfigure(1, weight=1)
 
         # start mainloop
-        self.root.bind("<Configure>", self._Windowsize_changed)
+        # self.root.bind("<Configure>", self._Windowsize_changed) # this gets also called on just scrolling?
+        self.canvas_area.bind("<Configure>", self._Windowsize_changed)
         self.root.mainloop()
 
     def _Left_Menu(self):
@@ -249,9 +255,9 @@ class Example():
         
         # reconfigure size of left menu
         self.menu_left.update()
-        print('left menu width: ', self.menu_left.winfo_width())
-        print('left menu upper: ', self.menu_left_upper.winfo_width())
-        print('left menu lower: ', self.menu_left_lower.winfo_width())
+        # print('left menu width: ', self.menu_left.winfo_width())
+        # print('left menu upper: ', self.menu_left_upper.winfo_width())
+        # print('left menu lower: ', self.menu_left_lower.winfo_width())
         # upper_menu_width = self.menu_left_upper.winfo_width()
         # lower_menu_width = self.menu_left_lower.winfo_width()
         # if upper_menu_width > lower_menu_width: width = upper_menu_width 
@@ -464,6 +470,7 @@ class Example():
         else:
             autoscale = False
         channels = self.select_channels.get().split(',')
+        print('folder path for measurement: ', self.folder_path)
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
@@ -546,19 +553,27 @@ class Example():
         self.fig.savefig(file, format=extension, dpi=dpi)
 
     def _Generate_Savefolder(self):
-        self.logging_folder = os.path.join(os.environ['APPDATA'], 'SNOM_Plotter')
-        if not os.path.exists(self.logging_folder):
+        # self.logging_folder = os.path.join(os.environ['APPDATA'], 'SNOM_Plotter')
+        self.logging_folder = Path(os.environ['APPDATA']) / Path('SNOM_Plotter')
+        # if not os.path.exists(self.logging_folder):
+        #     os.makedirs(self.logging_folder)
+        if not Path.exists(self.logging_folder):
             os.makedirs(self.logging_folder)
 
     def _Get_Folderpath_from_Input(self):
         
         # check if old default path exists to use as initialdir
         self._Get_Old_Folderpath()
-        self.folder_path = filedialog.askdirectory(initialdir=self.initialdir)
+        initialdir = self.initialdir.parent
+        # initialdir = Path(PurePath(self.initialdir).parts[0:-1])
+        # print('initialdir?: ', initialdir.name)
+        self.folder_path = filedialog.askdirectory(initialdir=initialdir)
+        # print('folder path: ', self.folder_path)
         # save filepath to txt and use as next initialdir
         # first check if folder_path is correct, user might abort filedialog
         if len(self.folder_path) > 5:
-            with open(os.path.join(self.logging_folder, 'default_path.txt'), 'w') as file:
+            # with open(os.path.join(self.logging_folder, 'default_path.txt'), 'w') as file:
+            with open(self.logging_folder / Path('default_path.txt'), 'w') as file:
                 file.write('#' + self.folder_path)
         # reinitialize the default channels
         # default_channels = self._Get_channels)
@@ -571,20 +586,19 @@ class Example():
 
     def _Get_Old_Folderpath(self):
         try:
-            with open(os.path.join(self.logging_folder, 'default_path.txt'), 'r') as file:
+            # with open(os.path.join(self.logging_folder, 'default_path.txt'), 'r') as file:
+            with open(self.logging_folder / Path('default_path.txt'), 'r') as file:
                 content = file.read()
             if content[0:1] == '#' and len(content) > 5:
-                self.initialdir = content[1:] # to do change to one level higher
+                self.initialdir = Path(content[1:]) # to do change to one level higher
+                print('initialdir: ', self.initialdir)
         except:
             self.initialdir = this_files_path
-        else:
-            try:
-                #check if the program can read in the default channels otherwise the folder might not exist anymore
-                self._Get_Default_Channels()
-            except:
-                self.initialdir = this_files_path
+        
+            
         #set old path to folder as default
-        self.folder_path = self.initialdir
+        self.folder_path = Path(self.initialdir)
+        print('setting folder path to: ', self.folder_path)
 
     def _Get_Default_Channels(self) -> list:
         if self.folder_path != this_files_path:
@@ -690,14 +704,17 @@ class Example():
         }
         # with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'wb') as f:
             # pickle.dump(default_dict, f)
-        with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'w') as f:
+        # with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'w') as f:
+        # with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'w') as f:
+        with open(self.logging_folder / Path('user_defaults.json'), 'w') as f:
             json.dump(default_dict, f, sort_keys=True, indent=4)
 
     def _Load_User_Defaults(self):
         try:
             # with open(os.path.join(self.logging_folder, 'user_defaults.pkl'), 'rb') as f:
                 # self.default_dict = pickle.load(f)
-            with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'r') as f:
+            # with open(os.path.join(self.logging_folder, 'user_defaults.json'), 'r') as f:
+            with open(self.logging_folder / Path('user_defaults.json'), 'r') as f:
                 self.default_dict = json.load(f)
         except:
             self._Load_Old_Defaults()

@@ -54,6 +54,7 @@ class ScrollFrame(tk.Frame):
         # self.canvas.configure(height=height) 
 
     def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
+        # print('mosewheel movement')
         if platform.system() == 'Windows':
             self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
         elif platform.system() == 'Darwin':
@@ -65,6 +66,7 @@ class ScrollFrame(tk.Frame):
                 self.canvas.yview_scroll( 1, "units" )
     
     def onEnter(self, event):                                                       # bind wheel events when the cursor enters the control
+        # print('entering scrollzone')
         if platform.system() == 'Linux':
             self.canvas.bind_all("<Button-4>", self.onMouseWheel)
             self.canvas.bind_all("<Button-5>", self.onMouseWheel)
@@ -73,6 +75,7 @@ class ScrollFrame(tk.Frame):
                 self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
 
     def onLeave(self, event):                                                       # unbind wheel events when the cursorl leaves the control
+        # print('leaving scrollzone')
         if platform.system() == 'Linux':
             self.canvas.unbind_all("<Button-4>")
             self.canvas.unbind_all("<Button-5>")
@@ -86,10 +89,12 @@ class ScrollFrame(tk.Frame):
         # print('viewport height: ', self.viewPort.winfo_height())
         if height > self.viewPort.winfo_height():
             self.canvas.unbind_all("<MouseWheel>")
+            # print('unbinding mousewheel')
             self.vsb.pack_forget()    
             self.full_menu_visible = True
         elif height < self.viewPort.winfo_height():
             self.canvas.bind_all("<MouseWheel>")
+            # print('binding mousewheel')
             self.vsb.pack(side="right", fill="y")    
             self.full_menu_visible = False
 

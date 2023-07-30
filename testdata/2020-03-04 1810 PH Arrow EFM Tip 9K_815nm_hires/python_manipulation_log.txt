@@ -592,3 +592,109 @@ set_min_to_zero = True
 30/07/2023 14:07:09
 filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
 quadratic_pixels = True
+30/07/2023 14:49:04
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 14:49:27
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 14:51:14
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 14:52:42
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 14:53:11
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:01:59
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:02:31
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:02:44
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:03:10
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:09:50
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:12:38
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:13:36
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:14:12
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:15:19
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:15:52
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:16:06
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:18:44
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:19:00
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:19:28
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:20:26
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:22:09
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:22:30
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:23:33
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:23:45
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:26:41
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:28:07
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:28:47
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:29:37
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:31:32
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:31:50
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:32:15
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:32:36
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:51:37
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:53:05
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+30/07/2023 15:54:14
+filename = 2020-03-04 1810 PH Arrow EFM Tip 9K_815nm_hires
+quadratic_pixels = True
+set_min_to_zero = True

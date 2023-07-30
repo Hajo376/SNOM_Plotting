@@ -60,6 +60,8 @@ class MainGui():
 
         # start mainloop
         self.canvas_area.bind("<Configure>", self._Windowsize_changed)
+        self.root.bind("<<NotebookTabChanged>>", self._on_tab_changed)
+
         self.root.mainloop()
 
     def _Left_Menu(self):
@@ -213,7 +215,6 @@ class MainGui():
         self.menu_right_1 = ttkb.Frame(self.menu_right_1_scrollframe.viewPort)
         self.menu_right_1.grid(column=0, row=0)
 
-        # self.menu_right_upper = ttkb.LabelFrame(self.menu_right, text='Manipulate Data', width=200)
         self.menu_right_upper = ttkb.LabelFrame(self.menu_right_1, text='Manipulate Data') # , width=200
         self.menu_right_upper.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
 
@@ -286,11 +287,41 @@ class MainGui():
         self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='test')
         self.menu_right_2_test.grid(column=0, row=0)
 
+        # third tab: save channels to gsf or txt
+        self.menu_right_3 = ttkb.Frame(self.menu_right_notebook)
+        self.menu_right_3.pack()
+
+        # required:
+        '''
+        select channels, select filetype (gsf or txt), select appendix, change size of right menu on change of tab
+        '''
+        self.change_savefiletype_label = ttkb.Label(self.menu_right_3, text='Change Savefile Type:', padding=10).grid(column=0, row=1, sticky='e')
+        self.current_savefiletype = tk.StringVar()
+        self.cb_savefiletype = ttkb.Combobox(self.menu_right_3, textvariable=self.current_savefiletype, width=3, justify=CENTER)
+        self.cb_savefiletype['values'] = ['gsf', 'txt']#[Object_type.DEFAULT_PLOT, Object_type.CHRONOLOGICAL_PLOT]
+        self.cb_savefiletype.current(0)
+        self.cb_savefiletype.grid(column=1, row=1, padx=input_padx, pady=input_pady, sticky='nsew')
+        self.savefiletype = self.cb_savefiletype.get()
+        # prevent typing a value
+        self.cb_savefiletype['state'] = 'readonly'
+        self.cb_savefiletype.bind('<<ComboboxSelected>>', self._change_savefiletype)
+
+
+
+
+
+        # add tabs to notebook
         self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
         self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
+        self.menu_right_notebook.add(self.menu_right_3, text='Save')
+        # self.menu_right_notebook.config(width=self.menu_right_1_scrollframe.winfo_width())
         #reconfigure canvas size 
         self.menu_right_1.update()
         self.menu_right_1_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
+        # tab = event.widget.nametowidget(event.widget.select())
+        # tab = event.widget.nametowidget(event.widget.select())
+        # event.widget.configure(height=tab.winfo_reqheight())
+        # event.widget.configure(width=tab.winfo_reqwidth())
 
     def _Canvas_Area(self):
         # canvas area
@@ -593,6 +624,25 @@ class MainGui():
         self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda']),
         self.synccorrection_phasedir.delete(0, END)
         self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
+
+    def _change_savefiletype(self, event):
+        self.savefiletype = self.current_savefiletype.get()
+        if self.savefiletype == 'gsf':
+            pass
+            # self.cb_colormap.current(self.cb_colormap['values'].index('viridis'))
+            # Plotting_Variables._colormap_name_default = self.current_cmap.get()
+        elif self.savefiletype == 'txt':
+            pass
+            # self.cb_colormap.current(self.cb_colormap['values'].index('hsv'))
+            # Plotting_Variables._colormap_name_chronological = self.current_cmap.get()
+
+    def _on_tab_changed(self, event):
+        event.widget.update_idletasks()
+
+        tab = event.widget.nametowidget(event.widget.select())
+        # event.widget.configure(height=tab.winfo_reqheight())
+        event.widget.configure(width=tab.winfo_reqwidth())
+
 
 
 def main():

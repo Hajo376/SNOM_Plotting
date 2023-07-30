@@ -34,7 +34,7 @@ import json # json is a plain text file, so easy to read and manual changes poss
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
 
-class Example():
+class MainGui():
     def __init__(self):
         # self.root = tk.Tk()
         self.root = ttkb.Window(themename='darkly') # 'journal', 'darkly', 'superhero', 'solar', 'litera' (default) 
@@ -66,40 +66,19 @@ class Example():
     #     menu_width = root_width-canvas_width
 
     #     pass
-
-
-    def _Windowsize_changed(self, event):
-        # print('windowsize changed')
-        # print('window width =', self.root.winfo_width())
-        # print('window height =', self.root.winfo_height())
-        # print('canvas width =', self.canvas_area.winfo_width())
-        # print('canvas height =', self.canvas_area.winfo_height())
-        self.canvas_fig_height.delete(0, END)
-        self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
-        self.canvas_fig_width.delete(0, END)
-        self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
-
-        # update the size of the left menue scroll region
-        self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
-        # also for right menu
-        self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
-        # self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
-        # print('changed the scroll region height')
-        # self._Update_Canvas_Area()
-        # frame.update_idletasks()
-        # pass    
-
+ 
     def _Main_App(self):
         self._Left_Menu()
-        self.canvas_height = canvas_height
-        self.canvas_width = canvas_width
+        # self.canvas_height = canvas_height
+        # self.canvas_width = canvas_width
         self._Canvas_Area()
         self._Right_Menu()
         # new_main_window_width = canvas_width + self.menu_left.winfo_width() + self.menu_right.winfo_width()
         # self.root.geometry(f'{new_main_window_width}x{main_window_minheight}')
         # self.root.update()
         # self._Fill_Canvas()
-        # self._Change_Mainwindow_Size()
+        self._Change_Mainwindow_Size()
+        self._Update_Scrollframes()
         
         # configure canvas to scale with window
         self.root.grid_rowconfigure(0, weight=1)
@@ -405,12 +384,40 @@ class Example():
 
     def _Canvas_Area(self):
         # canvas area
-        self.canvas_area = ttkb.Frame(self.root) #, width=self.canvas_width, height=self.canvas_height, width=800, height=700
+        self.canvas_area = ttkb.Frame(self.root, width=self.default_dict['figure_width'], height=self.default_dict['figure_height']) #, width=self.canvas_width, height=self.canvas_height, width=800, height=700
         self.canvas_area.grid(column=1, row=0, sticky='nsew')
         # self.canvas = ttkb.Canvas(self.canvas_area) # , width=800, height=700, background="#ffffff"
         # self.canvas.pack(fill=tk.BOTH, expand=1)
         # self.canvas.grid(column=0, row=0, sticky='nsew')#.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1) 
         # self.canvas.pack(side=tk.RIGHT, fill=tk.BOTH, expand=1) 
+
+    def _Windowsize_changed(self, event):
+        # print('windowsize changed')
+        # print('window width =', self.root.winfo_width())
+        # print('window height =', self.root.winfo_height())
+        # print('canvas width =', self.canvas_area.winfo_width())
+        # print('canvas height =', self.canvas_area.winfo_height())
+        self.canvas_fig_height.delete(0, END)
+        self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
+        self.canvas_fig_width.delete(0, END)
+        self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
+
+        self._Update_Scrollframes()
+        # # update the size of the left menue scroll region
+        # self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # # also for right menu
+        # self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # print('changed the scroll region height')
+        # self._Update_Canvas_Area()
+        # frame.update_idletasks()
+        # pass   
+
+    def _Update_Scrollframes(self):
+        # update the size of the left menue scroll region
+        self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
+        # also for right menu
+        self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
 
     def _Update_Canvas_Area(self):
         # self.canvas_area.update_idletasks()
@@ -471,7 +478,7 @@ class Example():
         else:
             autoscale = False
         channels = self.select_channels.get().split(',')
-        print('folder path for measurement: ', self.folder_path)
+        # print('folder path for measurement: ', self.folder_path)
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
@@ -632,7 +639,11 @@ class Example():
 
     def _Change_Mainwindow_Size(self):
         # change size of main window to adjust size of plot
-        new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width())
+        self.root.update()
+        new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
+        # print('fig_width: ', self.canvas_fig_width.get())
+        # print('menu_left: ', self.menu_left.winfo_width())
+        # print('menu_right: ', int(self.menu_right.winfo_width()))
         new_main_window_height = self.canvas_fig_height.get()
         self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')
         # print()
@@ -806,7 +817,7 @@ class Example():
 
 
 def main():
-    Example()
+    MainGui()
 
 if __name__ == '__main__':
     main()

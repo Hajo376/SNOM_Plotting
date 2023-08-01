@@ -33,7 +33,7 @@ from scrollframe import ScrollFrame
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
-from function_popup import SavedataPopup
+from function_popup import SavedataPopup, HeightLevellingPopup
 
 class MainGui():
     def __init__(self):
@@ -101,24 +101,30 @@ class MainGui():
         self.figure_dpi.grid(column=1, row=4, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
         self.save_plot_button.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # save button, only enable if plot was generated previously
+        self.button_save_to_gsftxt = ttkb.Button(self.menu_left_upper, text='Save Channels', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
+        self.button_save_to_gsftxt.config(state=DISABLED)
+        self.button_save_to_gsftxt.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        # exit button, closes everything
         self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._Exit, bootstyle=DANGER)
-        self.exit_button.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.exit_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # plot all plot in memory:
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
-        self.generate_all_plot_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.generate_all_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         # todo: clear all plots in memory
 
         # save all defaults:
         self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
-        self.save_defaults_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.save_defaults_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # load all defaults:
         self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._Restore_User_Defaults)
-        self.load_defaults_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.load_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # restore all old defaults:
-        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=SUCCESS, command=self._Restore_Old_Defaults)
-        self.restore_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._Restore_Old_Defaults)
+        self.restore_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
+        '''
         self.menu_left_separator = ttkb.Separator(self.menu_left_scrollframe.viewPort, orient='horizontal')
         self.menu_left_separator.grid(column=0, row=1, columnspan=1, sticky='ew', padx=button_padx, pady=20)
 
@@ -175,10 +181,12 @@ class MainGui():
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
         self.add_scalebar.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
+        '''
         
         # reconfigure size of left menu
         self.menu_left.update()
-        width = max(self.menu_left_upper.winfo_width() + 3*button_padx, self.menu_left_lower.winfo_width() + 3*button_padx)
+        # width = max(self.menu_left_upper.winfo_width() + 3*button_padx, self.menu_left_lower.winfo_width() + 3*button_padx)
+        width = self.menu_left_upper.winfo_width() + 3*button_padx
         self.menu_left_scrollframe.canvas.config(width=width)
 
         
@@ -223,12 +231,14 @@ class MainGui():
         self._Right_Menu_Tab2()
 
         # third tab: save channels to gsf or txt
-        self._Right_Menu_Tab3()
+        # self._Right_Menu_Tab3()
 
         # add tabs to notebook
         self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
         self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
-        self.menu_right_notebook.add(self.menu_right_3, text='Save')
+        # self.menu_right_notebook.add(self.menu_right_3, text='ToDo')
+
+
         # self.menu_right_notebook.config(width=self.menu_right_1_scrollframe.winfo_width())
         #reconfigure canvas size 
         self.menu_right_1.update()
@@ -242,9 +252,68 @@ class MainGui():
         self.menu_right_1 = ttkb.Frame(self.menu_right_1_scrollframe.viewPort)
         self.menu_right_1.grid(column=0, row=0)
 
-        self.menu_right_upper = ttkb.LabelFrame(self.menu_right_1, text='Manipulate Data') # , width=200
-        self.menu_right_upper.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        ################## menu for plot controls #####################
+        # plot styles
+        self.menu_left_lower = ttkb.LabelFrame(self.menu_right_1, text='Plot controls')
+        self.menu_left_lower.grid(column=0, row=0, padx=button_padx, pady=button_pady)
 
+        # change width of colorbar:
+        self.label_colorbar_width = ttkb.Label(self.menu_left_lower, text='Colorbar width:')
+        self.label_colorbar_width.grid(column=0, row=0)
+        self.colorbar_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        # self.colorbar_width.insert(0, '5')
+        self.colorbar_width.insert(0, self.default_dict['colorbar_width'])
+        self.colorbar_width.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
+        # change figure width:
+
+        self.label_canvas_fig_width = ttkb.Label(self.menu_left_lower, text='Figure width:')
+        self.label_canvas_fig_width.grid(column=0, row=1)
+        self.canvas_fig_width = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        # self.canvas_fig_width.insert(0, f'{canvas_width}')
+        self.canvas_fig_width.insert(0, self.default_dict['figure_width'])
+        self.canvas_fig_width.grid(column=1, row=1, padx=button_padx, pady=button_pady, sticky='ew')
+
+        # change figure height:
+        self.label_canvas_fig_height = ttkb.Label(self.menu_left_lower, text='Figure height:')
+        self.label_canvas_fig_height.grid(column=0, row=2)
+        self.canvas_fig_height = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.canvas_fig_height.insert(0, self.default_dict['figure_height'])
+        self.canvas_fig_height.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # hide_ticks = True
+        self.checkbox_hide_ticks = ttkb.IntVar()
+        self.checkbox_hide_ticks.set(self.default_dict['hide_ticks'])
+        self.hide_ticks = ttkb.Checkbutton(self.menu_left_lower, text='Hide ticks', variable=self.checkbox_hide_ticks, onvalue=1, offvalue=0)
+        self.hide_ticks.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # show_titles = True
+        self.checkbox_show_titles = ttkb.IntVar()
+        self.checkbox_show_titles.set(self.default_dict['show_titles'])
+        self.show_titles = ttkb.Checkbutton(self.menu_left_lower, text='Show titles', variable=self.checkbox_show_titles, onvalue=1, offvalue=0)
+        self.show_titles.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # tight_layout = True
+        self.checkbox_tight_layout = ttkb.IntVar()
+        self.checkbox_tight_layout.set(self.default_dict['tight_layout'])
+        self.tight_layout = ttkb.Checkbutton(self.menu_left_lower, text='Tight layout', variable=self.checkbox_tight_layout, onvalue=1, offvalue=0)
+        self.tight_layout.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # hspace = 0.4 #standard is 0.4
+        self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
+        self.label_h_space.grid(column=0, row=6)
+        self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.h_space.insert(0, self.default_dict['h_space'])
+        self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
+        # add scalebar
+        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
+        self.label_add_scalebar.grid(column=0, row=7)
+        self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
+        self.add_scalebar.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
+
+        ################## separator #####################
+        self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
+        self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
+        
+        ################## menu for data controls #####################
+        self.menu_right_upper = ttkb.LabelFrame(self.menu_right_1, text='Manipulate Data') # , width=200
+        self.menu_right_upper.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # set min to zero
         self.checkbox_setmintozero_var = ttkb.IntVar()
         self.checkbox_setmintozero_var.set(self.default_dict['set_min_to_zero'])
@@ -282,12 +351,14 @@ class MainGui():
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
+        ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
-        self.menu_right_separator.grid(column=0, row=1, sticky='ew', padx=button_padx, pady=20)
+        self.menu_right_separator.grid(column=0, row=3, sticky='ew', padx=button_padx, pady=20)
 
+        ################## menu for synccorrection #####################
         # additional controls
         self.menu_right_synccorrection = ttkb.LabelFrame(self.menu_right_1, text='Synccorrection', width=200)
-        self.menu_right_synccorrection.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.menu_right_synccorrection.grid(column=0, row=4, padx=button_padx, pady=button_pady, sticky='nsew')
         # synccorrection
         self.label_synccorrection_wavelength = ttkb.Label(self.menu_right_synccorrection, text='Wavelength in µm:')
         self.label_synccorrection_wavelength.grid(column=0, row=0)
@@ -311,17 +382,23 @@ class MainGui():
         self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_2.pack()
 
-        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='test')
-        self.menu_right_2_test.grid(column=0, row=0)
+        # height leveling, phase drift compensation, overlay forward and backwards channels, create real and imaginary part, 
+        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='3 Point Height Leveling', bootstyle=PRIMARY, command=self._3_point_height_leveling)
+        self.menu_right_2_test.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
 
-    def _Right_Menu_Tab3(self):
+        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Overlay Both Directions', bootstyle=PRIMARY)
+        self.menu_right_2_test.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Create Real Part Data', bootstyle=PRIMARY)
+        self.menu_right_2_test.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Phase Drift Comp.', bootstyle=PRIMARY)
+        self.menu_right_2_test.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
+
+
+    def _Right_Menu_Tab3(self):# delete? todo
         self.menu_right_3 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_3.pack()
-        
-        # save button, only enable if plot was generated previously
-        self.button_save_to_gsftxt = ttkb.Button(self.menu_right_3, text='Save Channels', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
-        self.button_save_to_gsftxt.config(state=DISABLED)
-        self.button_save_to_gsftxt.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         # required:
         '''
@@ -427,6 +504,7 @@ class MainGui():
         else:
             autoscale = False
         channels = self.select_channels.get().split(',')
+        # todo for now check if measurement already exists, if so dont open new measurement, only if 
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
@@ -701,7 +779,7 @@ class MainGui():
         # filetype = self.cb_savefiletype.get()
         # channels = self.select_channels_tosave.get().split(',')
         # appendix = self.appendix_tosave.get()
-        popup = SavedataPopup(self.select_channels.get(), self.default_dict['appendix'])
+        popup = SavedataPopup(self.root, self.select_channels.get(), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
         appendix = popup.appendix
@@ -714,6 +792,11 @@ class MainGui():
         else:
             print('Wrong filetype selcted! Files cannot be saved!')
 
+    def _3_point_height_leveling(self):
+        # popup = HeightLevellingPopup(self.root, 'Z C', self.folder_path, True)
+        self.measurement.Level_Height_Channels(['Z C'])
+        self.measurement.Display_Channels(['Z C'])
+        print(self.measurement.channels)
         
 
 def main():

@@ -33,6 +33,7 @@ from scrollframe import ScrollFrame
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
+from function_popup import SavedataPopup
 
 class MainGui():
     def __init__(self):
@@ -105,6 +106,9 @@ class MainGui():
         # plot all plot in memory:
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
         self.generate_all_plot_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
+        # todo: clear all plots in memory
+
         # save all defaults:
         self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
         self.save_defaults_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -212,6 +216,29 @@ class MainGui():
         self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
         self.menu_right_1_scrollframe.pack()
 
+        # first tab:
+        self._Right_Menu_Tab1()
+
+        # second tab:
+        self._Right_Menu_Tab2()
+
+        # third tab: save channels to gsf or txt
+        self._Right_Menu_Tab3()
+
+        # add tabs to notebook
+        self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
+        self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
+        self.menu_right_notebook.add(self.menu_right_3, text='Save')
+        # self.menu_right_notebook.config(width=self.menu_right_1_scrollframe.winfo_width())
+        #reconfigure canvas size 
+        self.menu_right_1.update()
+        self.menu_right_1_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
+        # tab = event.widget.nametowidget(event.widget.select())
+        # tab = event.widget.nametowidget(event.widget.select())
+        # event.widget.configure(height=tab.winfo_reqheight())
+        # event.widget.configure(width=tab.winfo_reqwidth())
+
+    def _Right_Menu_Tab1(self):
         self.menu_right_1 = ttkb.Frame(self.menu_right_1_scrollframe.viewPort)
         self.menu_right_1.grid(column=0, row=0)
 
@@ -280,48 +307,57 @@ class MainGui():
         self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
         self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        # second tab:
+    def _Right_Menu_Tab2(self):
         self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_2.pack()
 
         self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='test')
         self.menu_right_2_test.grid(column=0, row=0)
 
-        # third tab: save channels to gsf or txt
+    def _Right_Menu_Tab3(self):
         self.menu_right_3 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_3.pack()
+        
+        # save button, only enable if plot was generated previously
+        self.button_save_to_gsftxt = ttkb.Button(self.menu_right_3, text='Save Channels', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
+        self.button_save_to_gsftxt.config(state=DISABLED)
+        self.button_save_to_gsftxt.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         # required:
         '''
         select channels, select filetype (gsf or txt), select appendix, change size of right menu on change of tab
         '''
-        self.change_savefiletype_label = ttkb.Label(self.menu_right_3, text='Change Savefile Type:', padding=10).grid(column=0, row=1, sticky='e')
+        '''
+        self.change_savefiletype_label = ttkb.Label(self.menu_right_3, text='Change Savefile Type:', padding=10)
+        self.change_savefiletype_label.grid(column=0, row=0, sticky='e')
         self.current_savefiletype = tk.StringVar()
         self.cb_savefiletype = ttkb.Combobox(self.menu_right_3, textvariable=self.current_savefiletype, width=3, justify=CENTER)
         self.cb_savefiletype['values'] = ['gsf', 'txt']#[Object_type.DEFAULT_PLOT, Object_type.CHRONOLOGICAL_PLOT]
         self.cb_savefiletype.current(0)
-        self.cb_savefiletype.grid(column=1, row=1, padx=input_padx, pady=input_pady, sticky='nsew')
-        self.savefiletype = self.cb_savefiletype.get()
+        self.cb_savefiletype.grid(column=1, row=0, padx=input_padx, pady=input_pady, sticky='nsew')
+        # self.savefiletype = self.cb_savefiletype.get()
         # prevent typing a value
         self.cb_savefiletype['state'] = 'readonly'
         self.cb_savefiletype.bind('<<ComboboxSelected>>', self._change_savefiletype)
+        # select channels to save
+        self.label_select_channels_tosave = ttkb.Label(self.menu_right_3, text='Select Channels:')
+        self.label_select_channels_tosave.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.select_channels_tosave = ttkb.Entry(self.menu_right_3, justify='center')
+        self.root.update_idletasks()
+        self.select_channels_tosave.insert(0, self.select_channels.get())
+        self.select_channels_tosave.grid(column=0, row=2, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        # select appendix
+        self.label_appendix_tosave = ttkb.Label(self.menu_right_3, text='Select Savefile Appendix:')
+        self.label_appendix_tosave.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.appendix_tosave = ttkb.Entry(self.menu_right_3, justify='center')
+        self.appendix_tosave.insert(0, self.default_dict['appendix'])
+        self.appendix_tosave.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        # save button, only enable if plot was generated previously
+        self.button_save_to_gsftxt = ttkb.Button(self.menu_right_3, text='Save Channels', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
+        self.button_save_to_gsftxt.config(state=DISABLED)
+        self.button_save_to_gsftxt.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        '''
 
-
-
-
-
-        # add tabs to notebook
-        self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
-        self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
-        self.menu_right_notebook.add(self.menu_right_3, text='Save')
-        # self.menu_right_notebook.config(width=self.menu_right_1_scrollframe.winfo_width())
-        #reconfigure canvas size 
-        self.menu_right_1.update()
-        self.menu_right_1_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
-        # tab = event.widget.nametowidget(event.widget.select())
-        # tab = event.widget.nametowidget(event.widget.select())
-        # event.widget.configure(height=tab.winfo_reqheight())
-        # event.widget.configure(width=tab.winfo_reqwidth())
 
     def _Canvas_Area(self):
         # canvas area
@@ -406,6 +442,11 @@ class MainGui():
         Plot_Definitions.show_plot = False
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
+        #enable savefile button
+        self.button_save_to_gsftxt.config(state=ON)
+        # self._update_entry_values()
+        # update right menu
+        # self._Right_Menu()
             
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
@@ -431,6 +472,8 @@ class MainGui():
             os.makedirs(self.logging_folder)
 
     def _Get_Folderpath_from_Input(self):
+        # get old default channels to find out if the channel names change for new folder
+        old_default_channels = self._Get_Default_Channels()
         # check if old default path exists to use as initialdir
         self._Get_Old_Folderpath()
         initialdir = self.initialdir.parent
@@ -440,9 +483,10 @@ class MainGui():
         if len(self.folder_path) > 5:
             with open(self.logging_folder / Path('default_path.txt'), 'w') as file:
                 file.write('#' + self.folder_path)
-        # reinitialize the default channels
+        # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
         default_channels = self._Get_Default_Channels()
-        self._Set_Default_Channels(default_channels)
+        if default_channels != old_default_channels:
+            self._Set_Default_Channels(default_channels)
 
     def _Exit(self):
         self.root.quit()
@@ -545,7 +589,8 @@ class MainGui():
             'shared_real'       : self.checkbox_real_cbar_range.get(),
             'shared_height'     : self.checkbox_height_cbar_range.get(),
             'synccorr_lambda'   : self.synccorrection_wavelength.get(),
-            'synccorr_phasedir' : self.synccorrection_phasedir.get()
+            'synccorr_phasedir' : self.synccorrection_phasedir.get(),
+            'appendix'          : self.appendix_tosave.get()
 
         }
         with open(self.logging_folder / Path('user_defaults.json'), 'w') as f:
@@ -584,7 +629,8 @@ class MainGui():
             'shared_real'       : 0,
             'shared_height'     : 0,
             'synccorr_lambda'   : '',
-            'synccorr_phasedir' : ''
+            'synccorr_phasedir' : '',
+            'appendix'          : '_manipulated'
 
         }
     
@@ -625,7 +671,7 @@ class MainGui():
         self.synccorrection_phasedir.delete(0, END)
         self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
 
-    def _change_savefiletype(self, event):
+    def _change_savefiletype(self, event):#remove? todo
         self.savefiletype = self.current_savefiletype.get()
         if self.savefiletype == 'gsf':
             pass
@@ -643,7 +689,32 @@ class MainGui():
         # event.widget.configure(height=tab.winfo_reqheight())
         event.widget.configure(width=tab.winfo_reqwidth())
 
+    def _update_entry_values(self):#remove? todo
+        # save to gsf channels:
+        self._update_entry_value(self.select_channels_tosave, self.select_channels.get())
+       
+    def _update_entry_value(self, field, value):
+        field.delete(0, END)
+        field.insert(0, value)
 
+    def _save_to_gsf_or_txt(self):
+        # filetype = self.cb_savefiletype.get()
+        # channels = self.select_channels_tosave.get().split(',')
+        # appendix = self.appendix_tosave.get()
+        popup = SavedataPopup(self.select_channels.get(), self.default_dict['appendix'])
+        filetype = popup.filetype
+        channels = popup.channels.split(',')
+        appendix = popup.appendix
+        if filetype == 'gsf':
+            self.measurement.Save_to_gsf(channels=channels, appendix=appendix)
+            print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
+        elif filetype == 'txt':
+            self.measurement.Save_to_txt(channels=channels, appendix=appendix)
+            print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
+        else:
+            print('Wrong filetype selcted! Files cannot be saved!')
+
+        
 
 def main():
     MainGui()

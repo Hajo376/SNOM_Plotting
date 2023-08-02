@@ -8,7 +8,7 @@ from gui_parameters import *
 
 # import matplotlib
 # matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 #import backends explicitly or they wont work in exe format
@@ -33,7 +33,7 @@ from scrollframe import ScrollFrame
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
-from function_popup import SavedataPopup, HeightLevellingPopup
+from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, OverlayChannels
 
 class MainGui():
     def __init__(self):
@@ -67,7 +67,7 @@ class MainGui():
 
     def _Left_Menu(self):
         self.menu_left = ttkb.Frame(self.root, padding=5)
-        self.menu_left.grid(column=0, row=0)
+        self.menu_left.grid(column=0, row=0, rowspan=2)
 
         self.menu_left_scrollframe = ScrollFrame(self.menu_left, main_window_minheight-2*button_pady) #, 160 make adaptable to fig height
         self.menu_left_scrollframe.pack(expand=True, fill='both')
@@ -92,37 +92,45 @@ class MainGui():
 
         self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Generate Plot", bootstyle=INFO, command=lambda:self._Generate_Plot())
         self.generate_plot_button.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # todo, update plot button
+        self.update_plot_button = ttkb.Button(self.menu_left_upper, text='Update Plot', command=self._Update_Plot)
+        self.update_plot_button.config(state=DISABLED)
+        self.update_plot_button.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # plot all plot in memory:
+        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
+        self.generate_all_plot_button.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # save button, only enable if plot was generated previously
+        self.button_save_to_gsftxt = ttkb.Button(self.menu_left_upper, text='Save Data', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
+        self.button_save_to_gsftxt.config(state=DISABLED)
+        self.button_save_to_gsftxt.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # set dpi for save method
         self.label_figure_dpi = ttkb.Label(self.menu_left_upper, text='DPI:')
-        self.label_figure_dpi.grid(column=0, row=4)
+        self.label_figure_dpi.grid(column=0, row=7)
         self.figure_dpi = ttkb.Entry(self.menu_left_upper, width=input_width, justify='center')
         # self.figure_dpi.insert(0, '100')
         self.figure_dpi.insert(0, self.default_dict['dpi'])
-        self.figure_dpi.grid(column=1, row=4, padx=button_padx, pady=button_pady, sticky='ew')
+        self.figure_dpi.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
-        self.save_plot_button.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        # save button, only enable if plot was generated previously
-        self.button_save_to_gsftxt = ttkb.Button(self.menu_left_upper, text='Save Channels', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
-        self.button_save_to_gsftxt.config(state=DISABLED)
-        self.button_save_to_gsftxt.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.save_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        
         # exit button, closes everything
         self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._Exit, bootstyle=DANGER)
-        self.exit_button.grid(column=0, row=8, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        # plot all plot in memory:
-        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
-        self.generate_all_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.exit_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        
 
         # todo: clear all plots in memory
 
         # save all defaults:
         self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
-        self.save_defaults_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.save_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # load all defaults:
         self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._Restore_User_Defaults)
-        self.load_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.load_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # restore all old defaults:
         self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._Restore_Old_Defaults)
-        self.restore_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.restore_defaults_button.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
+        
         
         '''
         self.menu_left_separator = ttkb.Separator(self.menu_left_scrollframe.viewPort, orient='horizontal')
@@ -215,7 +223,7 @@ class MainGui():
 
     def _Right_Menu(self):
         self.menu_right = ttkb.Frame(self.root) #, width=200
-        self.menu_right.grid(column=2, row=0, padx=button_padx, pady=button_pady)
+        self.menu_right.grid(column=2, row=0, rowspan=2, padx=button_padx, pady=button_pady)
 
         # organize multiple menues in notebooks -> tabs
         self.menu_right_notebook = ttkb.Notebook(self.menu_right)
@@ -296,10 +304,10 @@ class MainGui():
         self.tight_layout.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # hspace = 0.4 #standard is 0.4
         self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
-        self.label_h_space.grid(column=0, row=6)
+        # self.label_h_space.grid(column=0, row=6)
         self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.h_space.insert(0, self.default_dict['h_space'])
-        self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
+        # self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
         self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
         self.label_add_scalebar.grid(column=0, row=7)
@@ -383,17 +391,26 @@ class MainGui():
         self.menu_right_2.pack()
 
         # height leveling, phase drift compensation, overlay forward and backwards channels, create real and imaginary part, 
-        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='3 Point Height Leveling', bootstyle=PRIMARY, command=self._3_point_height_leveling)
-        self.menu_right_2_test.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.menu_right_2_height_leveling = ttkb.Button(self.menu_right_2, text='3 Point Height Leveling', bootstyle=PRIMARY, command=self._3_point_height_leveling)
+        self.menu_right_2_height_leveling.config(state=DISABLED)
+        self.menu_right_2_height_leveling.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Overlay Both Directions', bootstyle=PRIMARY)
-        self.menu_right_2_test.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.menu_right_2_phase_drift_comp = ttkb.Button(self.menu_right_2, text='Phase Drift Comp.', bootstyle=PRIMARY, command=self._phase_drift_compensation)
+        self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+        self.menu_right_2_phase_drift_comp.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Create Real Part Data', bootstyle=PRIMARY)
-        self.menu_right_2_test.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.menu_right_2_overlay = ttkb.Button(self.menu_right_2, text='Overlay Both Directions', bootstyle=PRIMARY, command=self._overlay_channels)
+        self.menu_right_2_overlay.config(state=DISABLED)
+        self.menu_right_2_overlay.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_test = ttkb.Button(self.menu_right_2, text='Phase Drift Comp.', bootstyle=PRIMARY)
-        self.menu_right_2_test.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.menu_right_2_create_realpart = ttkb.Button(self.menu_right_2, text='Create Real Part Data', bootstyle=PRIMARY)
+        self.menu_right_2_create_realpart.config(state=DISABLED)
+        self.menu_right_2_create_realpart.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_shift_phase = ttkb.Button(self.menu_right_2, text='Shift Phase', bootstyle=PRIMARY)
+        self.menu_right_2_shift_phase.config(state=DISABLED)
+        self.menu_right_2_shift_phase.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
+
 
 
     def _Right_Menu_Tab3(self):# delete? todo
@@ -522,10 +539,80 @@ class MainGui():
         self._Fill_Canvas()
         #enable savefile button
         self.button_save_to_gsftxt.config(state=ON)
+        self.update_plot_button.config(state=ON)
+        self.menu_right_2_height_leveling.config(state=ON)
+        self.menu_right_2_phase_drift_comp.config(state=ON)
+        self.menu_right_2_overlay.config(state=ON)
+        # self.menu_right_2_create_realpart.config(state=ON)
+        # self.menu_right_2_shift_phase.config(state=ON)
+
+
         # self._update_entry_values()
         # update right menu
         # self._Right_Menu()
             
+
+    def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
+        Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
+        Plot_Definitions.vmax_amp = -1
+        Plot_Definitions.vmin_real = 0
+        Plot_Definitions.vmax_real = 0
+        Plot_Definitions.colorbar_width = float(self.colorbar_width.get())
+        if self.checkbox_hide_ticks.get() == 1:
+            Plot_Definitions.hide_ticks = True
+        else:
+            Plot_Definitions.hide_ticks = False
+        if self.checkbox_show_titles.get() == 1:
+            Plot_Definitions.show_titles = True
+        else:
+            Plot_Definitions.show_titles = False
+        if self.checkbox_tight_layout.get() == 1:
+            Plot_Definitions.tight_layout = True
+        else:
+            Plot_Definitions.tight_layout = False
+        if self.checkbox_full_phase_range.get() == 1:
+            Plot_Definitions.full_phase_range = True
+        else:
+            Plot_Definitions.full_phase_range = False
+        if self.checkbox_amp_cbar_range.get() == 1:
+            Plot_Definitions.amp_cbar_range = True
+        else:
+            Plot_Definitions.amp_cbar_range = False
+        if self.checkbox_real_cbar_range.get() == 1:
+            Plot_Definitions.real_cbar_range = True
+        else:
+            Plot_Definitions.real_cbar_range = False
+        if self.checkbox_height_cbar_range.get() == 1:
+            Plot_Definitions.height_cbar_range = True
+        else:
+            Plot_Definitions.height_cbar_range = False
+      
+        Plot_Definitions.hspace = float(self.h_space.get())
+
+        if self.checkbox_autoscale.get() == 1:
+            self.measurement.Quadratic_Pixels()
+        
+        if self.checkbox_setmintozero_var.get() == 1:
+            self.measurement.Set_Min_to_Zero()
+        if self.checkbox_gaussian_blurr.get() == 1:
+            self.measurement.Scale_Channels()
+            self.measurement.Gauss_Filter_Channels_complex()
+        try:
+            scalebar_channel = self.add_scalebar.get().split(',')
+        except:
+            scalebar_channel = [self.add_scalebar.get()]
+        if scalebar_channel != '':
+            self.measurement.Scalebar(channels=scalebar_channel)
+            # todo, scalebar works with channel label not channel name?            
+
+        self.measurement.Display_Channels() #show_plot=False
+        self._Fill_Canvas()
+        #enable savefile button
+        # self.button_save_to_gsftxt.config(state=ON)
+        # self._update_entry_values()
+        # update right menu
+        # self._Right_Menu()
+
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
         try:
@@ -536,6 +623,10 @@ class MainGui():
         self.canvas_fig.draw()
         self._Change_Mainwindow_Size()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+        toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+        toolbar.update()
+        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+        toolbar.grid(column=1, row=1, columnspan=1)
 
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
@@ -779,9 +870,11 @@ class MainGui():
         # filetype = self.cb_savefiletype.get()
         # channels = self.select_channels_tosave.get().split(',')
         # appendix = self.appendix_tosave.get()
+        print('current channels: ', self.measurement.channels)
         popup = SavedataPopup(self.root, self.select_channels.get(), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
+        print('popup channels: ', channels)
         appendix = popup.appendix
         if filetype == 'gsf':
             self.measurement.Save_to_gsf(channels=channels, appendix=appendix)
@@ -793,11 +886,55 @@ class MainGui():
             print('Wrong filetype selcted! Files cannot be saved!')
 
     def _3_point_height_leveling(self):
-        # popup = HeightLevellingPopup(self.root, 'Z C', self.folder_path, True)
-        self.measurement.Level_Height_Channels(['Z C'])
-        self.measurement.Display_Channels(['Z C'])
-        print(self.measurement.channels)
+        height_channel = None
+        for channel in self.select_channels.get().split(','):
+            if self.measurement.height_indicator in channel:
+                height_channel = channel
+        if height_channel is None:
+            print('None of the selected channels was identified as a height channel! \nThe height leveling only works for height channels!')
+            return 1
+        popup = HeightLevellingPopup(self.root, self.measurement, height_channel, True)
+
+        self.measurement.all_data[self.measurement.channels.index(height_channel)] = popup.leveled_height_data
+        self.measurement.channels_label[self.measurement.channels.index(height_channel)] += '_leveled'
         
+    def _phase_drift_compensation(self):
+        phase_channels = []
+        for channel in self.select_channels.get().split(','):
+            if self.measurement.phase_indicator in channel:
+                phase_channels.append(channel)
+        if phase_channels == []:
+            print('None of the selected channels was identified as a phase channel! \nThe phase leveling only works for phase channels!')
+            return 1
+        preview_phasechannel = self.measurement.preview_phasechannel
+        popup = PhaseDriftCompensation(self.root, self.measurement, preview_phasechannel, True)
+
+        for channel in phase_channels: # use the phase slope to correct all channels in memory
+            leveled_phase_data = self.measurement._Level_Phase_Slope(self.measurement.all_data[self.measurement.channels.index(channel)], popup.phase_slope)
+            self.measurement.all_data[self.measurement.channels.index(channel)] = leveled_phase_data
+            self.measurement.channels_label[self.measurement.channels.index(channel)] += '_leveled'
+        
+        self.measurement._Write_to_Logfile('phase_driftcomp_slope', popup.phase_slope)
+
+    def _overlay_channels(self):
+        forward_height_channel = self.measurement.height_channels[0]
+        backward_height_channel = self.measurement.height_channels[1]
+        popup = OverlayChannels(self.root, forward_height_channel, backward_height_channel)
+        forward_channel = popup.forward_channel
+        backward_channel = popup.backward_channel
+        overlay_channels = popup.overlay_channels
+        # print('forward channel: ', forward_channel, type(forward_channel))
+        # print('backward channel: ', backward_channel)
+        if overlay_channels == 'all':
+            overlay_channels = None
+        else:
+            overlay_channels = [channel for channel in overlay_channels.split(',')]
+        self.measurement.Overlay_Forward_and_Backward_Channels_V2(forward_channel, backward_channel, overlay_channels)
+        # self.measurement.all_subplots=[]
+        # self.measurement.Initialize_Channels(self.select_channels.get().split(','))# plus save?
+        # self.measurement.channels = self.select_channels.get().split(',')
+        # self.measurement.Save_to_gsf()
+        print('channels have been overlaid')
 
 def main():
     MainGui()

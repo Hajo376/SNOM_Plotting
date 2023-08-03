@@ -33,7 +33,7 @@ from scrollframe import ScrollFrame
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
-from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, OverlayChannels
+from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, OverlayChannels, HelpPopup, SyncCorrectionPopup, GaussBlurrPopup
 
 class MainGui():
     def __init__(self):
@@ -84,8 +84,8 @@ class MainGui():
         self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
         self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
         self.select_channels.insert(0, self.default_dict['channels'])
-        default_channels = self._Get_Default_Channels()
-        self._Set_Default_Channels(default_channels)
+        # default_channels = self._Get_Default_Channels()
+        # self._Set_Default_Channels(default_channels)
         
         # self.select_channels.insert(0, default_channels) # 'O2A,O2P,Z C'
         self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -98,6 +98,7 @@ class MainGui():
         self.update_plot_button.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # plot all plot in memory:
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
+        self.generate_all_plot_button.config(state=DISABLED)
         self.generate_all_plot_button.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # save button, only enable if plot was generated previously
         self.button_save_to_gsftxt = ttkb.Button(self.menu_left_upper, text='Save Data', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
@@ -109,7 +110,7 @@ class MainGui():
         self.figure_dpi = ttkb.Entry(self.menu_left_upper, width=input_width, justify='center')
         # self.figure_dpi.insert(0, '100')
         self.figure_dpi.insert(0, self.default_dict['dpi'])
-        self.figure_dpi.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
+        self.figure_dpi.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
         self.save_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
@@ -129,6 +130,36 @@ class MainGui():
         # restore all old defaults:
         self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._Restore_Old_Defaults)
         self.restore_defaults_button.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
+        # help button popup
+        help_message = """The main functionality of this GUI is to load and display SNOM or AFM data.
+Of course, once the data is loaded it can also be manipulated by functions and then saved.
+
+First you have to load a measurement folder. This folder should contain all the different channels created by your SNOM or AFM.
+Then you select the channels you want to display or manipulate. Careful, some functions require specific channels to work! 
+E.g. if you want to level your height data this channel must be included in the overal channels entry field. 
+Or the gauss blurr requires amplitude and phase data of the same demodulation order, if not available it will only blurr amplitude and height data.
+
+When you have selected some channels press the \'Generate Plot\' button. This will load the data and generate a plot. 
+Careful, from now on you should use the \'Update Plot\' button, since the generate button will reload the channels.
+The update button will just display what is currently in memory. This also includes changes like height leveling or blurring.
+
+To create the plots that you want play around with the main window by draggin it. This will change the plot. Also use the matplotlib toolbar.
+You can then either use the matplotlib save dialog or the build in \'Save Plot\' function, where you can also set the dpi for your plot.
+
+If simple plotting is not enough for you, you can also play with manipulations like adding a gaussian blurr to your data or applying a simple height leveling.
+Most functions are found under the \'Advanced\' tab of the right menu. Most functions also supply some more information under the individual help buttons.
+
+Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a json file in your %appdata/roaming% directory.
+These settings will be loaded automatically when you reopen the GUI, together with the last opened measurement folder. So go ahead and just hit \'Generate Plot\' again.
+But data manipulation functions have to be applied manually.
+"""
+        self.menu_left_help_button = ttkb.Button(self.menu_left_upper, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'How does this GUI work?', help_message))
+        self.menu_left_help_button.grid(column=0, row=14, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
+        self.menu_left_clear_plots_button = ttkb.Button(self.menu_left_upper, text='Clear All Plots', bootstyle=DANGER, command=self._clear_all_plots)
+        self.menu_left_clear_plots_button.config(state=DISABLED)
+        self.menu_left_clear_plots_button.grid(column=0, row=15, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         
         
@@ -359,6 +390,7 @@ class MainGui():
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
+        ''' # synccorrection is now in the advanced tab
         ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
         self.menu_right_separator.grid(column=0, row=3, sticky='ew', padx=button_padx, pady=20)
@@ -384,7 +416,7 @@ class MainGui():
         self.synccorrection_phasedir.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
         # if phasedir and wavelength are known start synccorrection
         self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
-        self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)'''
 
     def _Right_Menu_Tab2(self):
         self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
@@ -410,6 +442,15 @@ class MainGui():
         self.menu_right_2_shift_phase = ttkb.Button(self.menu_right_2, text='Shift Phase', bootstyle=PRIMARY)
         self.menu_right_2_shift_phase.config(state=DISABLED)
         self.menu_right_2_shift_phase.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_synccorrection = ttkb.Button(self.menu_right_2, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
+        self.menu_right_2_synccorrection.grid(column=0, row=5, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_gaussblurr = ttkb.Button(self.menu_right_2, text='Gauss Blurr', bootstyle=PRIMARY, command=self._Gauss_Blurr)
+        self.menu_right_2_gaussblurr.config(state=DISABLED)
+        self.menu_right_2_gaussblurr.grid(column=0, row=6, sticky='nsew', padx=button_padx, pady=button_pady)
+
+
 
 
 
@@ -523,6 +564,7 @@ class MainGui():
         channels = self.select_channels.get().split(',')
         # todo for now check if measurement already exists, if so dont open new measurement, only if 
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
+        print(self.measurement.channel_tag_dict)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
         if self.checkbox_gaussian_blurr.get() == 1:
@@ -543,6 +585,10 @@ class MainGui():
         self.menu_right_2_height_leveling.config(state=ON)
         self.menu_right_2_phase_drift_comp.config(state=ON)
         self.menu_right_2_overlay.config(state=ON)
+        self.menu_right_2_gaussblurr.config(state=ON)
+        self.menu_left_clear_plots_button.config(state=ON)
+        self.generate_all_plot_button.config(state=ON)
+        
         # self.menu_right_2_create_realpart.config(state=ON)
         # self.menu_right_2_shift_phase.config(state=ON)
 
@@ -594,9 +640,9 @@ class MainGui():
         
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
-        if self.checkbox_gaussian_blurr.get() == 1:
-            self.measurement.Scale_Channels()
-            self.measurement.Gauss_Filter_Channels_complex()
+        # if self.checkbox_gaussian_blurr.get() == 1:
+        #     self.measurement.Scale_Channels()
+        #     self.measurement.Gauss_Filter_Channels_complex()
         try:
             scalebar_channel = self.add_scalebar.get().split(',')
         except:
@@ -607,6 +653,7 @@ class MainGui():
 
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
+        self.generate_all_plot_button.config(state=ON)
         #enable savefile button
         # self.button_save_to_gsftxt.config(state=ON)
         # self._update_entry_values()
@@ -621,12 +668,12 @@ class MainGui():
             pass
         self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
         self.canvas_fig.draw()
+        self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+        self.toolbar.update()
+        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.toolbar.grid(column=1, row=1, columnspan=1)
         self._Change_Mainwindow_Size()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
-        toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
-        toolbar.update()
-        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
-        toolbar.grid(column=1, row=1, columnspan=1)
 
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
@@ -706,37 +753,55 @@ class MainGui():
         # change size of main window to adjust size of plot
         self.root.update()
         new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
-        new_main_window_height = self.canvas_fig_height.get()
+        # new_main_window_height = self.canvas_fig_height.get() + self.toolbar.winfo_height()
+        new_main_window_height = self.root.winfo_height()
         self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')
 
-    def _Synccorrection_Preview(self):
+    def _Synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
             channels = self.select_channels.get().split(',')
             measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
             Plot_Definitions.show_plot = False
-            scanangle = measurement.measurement_tag_dict[Tag_Type.rotation]*np.pi/180
+            # scanangle = measurement.measurement_tag_dict[Tag_Type.rotation]*np.pi/180
             measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
             self._Fill_Canvas()
     
-    def _Synccorrection(self):
-        if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir != '':
-            wavelength = float(self.synccorrection_wavelength.get())
-            phasedir = str(self.synccorrection_phasedir.get())
-            if phasedir == 'n':
-                phasedir = -1
-            elif phasedir == 'p':
-                phasedir = 1
-            else:
-                print('Phasedir must be either \'n\' or \'p\'')
-            channels = self.select_channels.get().split(',')
-            measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
-            measurement.Synccorrection(wavelength, phasedir)
-            print('finished synccorrection')
+    def _Synccorrection(self): # delete?
+        popup = SyncCorrectionPopup(self.root, self.folder_path, self.select_channels.get().split(','), self.default_dict)
+        # self.synccorrection_wavelength = popup.wavelength
+        # if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir != '':
+        #     wavelength = float(self.synccorrection_wavelength.get())
+        #     phasedir = str(self.synccorrection_phasedir.get())
+        #     if phasedir == 'n':
+        #         phasedir = -1
+        #     elif phasedir == 'p':
+        #         phasedir = 1
+        #     else:
+        #         print('Phasedir must be either \'n\' or \'p\'')
+        #     channels = self.select_channels.get().split(',')
+        #     measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
+        #     measurement.Synccorrection(wavelength, phasedir)
+        #     print('finished synccorrection')
+
+    def _Gauss_Blurr(self):
+        # print('gauss blurring: ',self.select_channels.get())
+        popup = GaussBlurrPopup(self.root, self.measurement, self.folder_path, self.select_channels.get(), self.default_dict)
+        scaling = popup.scaling
+        sigma = popup.sigma
+        channels = popup.channels
+        # print('channels to blurr:', channels)
+        # Plot_Definitions.show_plot = False
+        self.measurement.Scale_Channels(channels, scaling)
+        self.measurement.Gauss_Filter_Channels_complex(channels, sigma)
 
     def _Generate_all_Plot(self):
         self.measurement.Display_All_Subplots()
         self._Fill_Canvas()
+
+    def _clear_all_plots(self):
+        self.measurement.all_subplots = []
+        self.generate_all_plot_button.config(state=DISABLED)
 
     def _Save_User_Defaults(self):
         default_dict = {
@@ -748,20 +813,22 @@ class MainGui():
             'hide_ticks'        : self.checkbox_hide_ticks.get(),
             'show_titles'       : self.checkbox_show_titles.get(),
             'tight_layout'      : self.checkbox_tight_layout.get(),
-            'h_space'           : self.h_space.get(),
+            'h_space'           : self.h_space.get(), # remove
             'scalebar_channel'  : self.add_scalebar.get(),
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
-            'gaussian_blurr'    : self.checkbox_gaussian_blurr.get(),
+            'gaussian_blurr'    : self.checkbox_gaussian_blurr.get(),# remove
             'full_phase'        : self.checkbox_full_phase_range.get(),
             'shared_amp'        : self.checkbox_amp_cbar_range.get(),
             'shared_real'       : self.checkbox_real_cbar_range.get(),
             'shared_height'     : self.checkbox_height_cbar_range.get(),
-            'synccorr_lambda'   : self.synccorrection_wavelength.get(),
-            'synccorr_phasedir' : self.synccorrection_phasedir.get(),
-            'appendix'          : self.appendix_tosave.get()
+            # 'synccorr_lambda'   : self.synccorrection_wavelength.get(),
+            # 'synccorr_phasedir' : self.synccorrection_phasedir.get(),
+            # 'appendix'          : '_manipulated'
+            'appendix'          : self.default_dict['appendix'] # gets only changed by the save data popup
 
         }
+        print(default_dict)
         with open(self.logging_folder / Path('user_defaults.json'), 'w') as f:
             json.dump(default_dict, f, sort_keys=True, indent=4)
 
@@ -772,6 +839,9 @@ class MainGui():
         except:
             self._Load_Old_Defaults()
             print('Could not find user defaults, continouing with old defaults!')
+        # else:
+        #     with open(self.logging_folder / Path('user_defaults.json'), 'r') as f:
+        #         self.default_dict = json.load(f)
 
     def _Restore_User_Defaults(self):
         self._Load_User_Defaults()
@@ -779,8 +849,9 @@ class MainGui():
         self._Update_Gui_Parameters()
 
     def _Load_Old_Defaults(self):
+        default_channels = ','.join(self._Get_Default_Channels())
         self.default_dict = {
-            'channels'          : 'O2A,O2P,Z C',
+            'channels'          : default_channels,
             'dpi'               : 100,
             'colorbar_width'    : 5,
             'figure_width'      : canvas_width,
@@ -870,18 +941,20 @@ class MainGui():
         # filetype = self.cb_savefiletype.get()
         # channels = self.select_channels_tosave.get().split(',')
         # appendix = self.appendix_tosave.get()
-        print('current channels: ', self.measurement.channels)
+        # print('current channels: ', self.measurement.channels)
+        # print('default dict: ', self.default_dict)
         popup = SavedataPopup(self.root, self.select_channels.get(), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
-        print('popup channels: ', channels)
+        # print('popup channels: ', channels)
         appendix = popup.appendix
+        self.default_dict['appendix'] = appendix
         if filetype == 'gsf':
             self.measurement.Save_to_gsf(channels=channels, appendix=appendix)
-            print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
+            # print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
         elif filetype == 'txt':
             self.measurement.Save_to_txt(channels=channels, appendix=appendix)
-            print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
+            # print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
         else:
             print('Wrong filetype selcted! Files cannot be saved!')
 
@@ -930,6 +1003,11 @@ class MainGui():
         else:
             overlay_channels = [channel for channel in overlay_channels.split(',')]
         self.measurement.Overlay_Forward_and_Backward_Channels_V2(forward_channel, backward_channel, overlay_channels)
+        channels = ','.join(self.measurement.channels)
+        print('channels: ', channels)
+        self.select_channels.delete(0, END)
+        self.select_channels.insert(0, channels)
+        # self.measurement.Initialize_Channels(self.select_channels.get().split(',')) # let user save data instead
         # self.measurement.all_subplots=[]
         # self.measurement.Initialize_Channels(self.select_channels.get().split(','))# plus save?
         # self.measurement.channels = self.select_channels.get().split(',')

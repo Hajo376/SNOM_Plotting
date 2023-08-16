@@ -11,6 +11,8 @@ from gui_parameters import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+# plt.rcParams['figure.dpi'] = 300
+# print(plt.rcParams)
 #import backends explicitly or they wont work in exe format
 import matplotlib.backends.backend_pdf
 import matplotlib.backends.backend_ps
@@ -33,7 +35,8 @@ from scrollframe import ScrollFrame
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
-from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, OverlayChannels, HelpPopup, SyncCorrectionPopup, GaussBlurrPopup
+from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup
+from function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup
 
 class MainGui():
     def __init__(self):
@@ -41,6 +44,13 @@ class MainGui():
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
         self.root.geometry(f"{1100}x{570}")
+
+        scaling = 1.33
+        # scaling = 1.25
+        # scaling = 1
+        self.root.tk.call('tk', 'scaling', scaling)# if the windows system scaling factor is not 100% FigureCanvasTkAgg will generate a plot also scaled by that factor...
+        # currently there is no way around it instead of setting the scaling manually, dont ask why 1.33 instead of 1.25, i have no idea
+
         # self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
         self.root.iconbitmap(this_files_path / Path('snom_plotting.ico'))
         self._Generate_Savefolder()
@@ -263,6 +273,9 @@ But data manipulation functions have to be applied manually.
         self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
         self.menu_right_1_scrollframe.pack()
 
+        # self.menu_right_2_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
+        # self.menu_right_2_scrollframe.pack()
+
         # first tab:
         self._Right_Menu_Tab1()
 
@@ -363,11 +376,13 @@ But data manipulation functions have to be applied manually.
         self.checkbox_autoscale.set(self.default_dict['autoscale'])
         self.autoscale = ttkb.Checkbutton(self.menu_right_upper, text='Autoscale data', variable=self.checkbox_autoscale, onvalue=1, offvalue=0)
         self.autoscale.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        '''
         # apply gaussian filter
         self.checkbox_gaussian_blurr = ttkb.IntVar()
         self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr'])
         self.gaussian_blurr = ttkb.Checkbutton(self.menu_right_upper, text='Blurr Data', variable=self.checkbox_gaussian_blurr, onvalue=1, offvalue=0)
         self.gaussian_blurr.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
+        '''
         # full_phase_range = True # this will overwrite the cbar
         self.checkbox_full_phase_range = ttkb.IntVar()
         self.checkbox_full_phase_range.set(self.default_dict['full_phase'])
@@ -435,11 +450,11 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_overlay.config(state=DISABLED)
         self.menu_right_2_overlay.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_create_realpart = ttkb.Button(self.menu_right_2, text='Create Real Part Data', bootstyle=PRIMARY)
+        self.menu_right_2_create_realpart = ttkb.Button(self.menu_right_2, text='Create Real Part Data', bootstyle=PRIMARY, command=self._create_realpart)
         self.menu_right_2_create_realpart.config(state=DISABLED)
         self.menu_right_2_create_realpart.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_shift_phase = ttkb.Button(self.menu_right_2, text='Shift Phase', bootstyle=PRIMARY)
+        self.menu_right_2_shift_phase = ttkb.Button(self.menu_right_2, text='Shift Phase', bootstyle=PRIMARY, command=self._change_phase_offset)
         self.menu_right_2_shift_phase.config(state=DISABLED)
         self.menu_right_2_shift_phase.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
 
@@ -449,6 +464,14 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_gaussblurr = ttkb.Button(self.menu_right_2, text='Gauss Blurr', bootstyle=PRIMARY, command=self._Gauss_Blurr)
         self.menu_right_2_gaussblurr.config(state=DISABLED)
         self.menu_right_2_gaussblurr.grid(column=0, row=6, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_height_masking = ttkb.Button(self.menu_right_2, text='Height Masking', bootstyle=PRIMARY, command=self._height_masking)
+        self.menu_right_2_height_masking.config(state=DISABLED)
+        self.menu_right_2_height_masking.grid(column=0, row=7, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_rotation = ttkb.Button(self.menu_right_2, text='Rotate', bootstyle=PRIMARY, command=self._rotation)
+        self.menu_right_2_rotation.config(state=DISABLED)
+        self.menu_right_2_rotation.grid(column=0, row=8, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 
@@ -493,10 +516,9 @@ But data manipulation functions have to be applied manually.
         self.button_save_to_gsftxt.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         '''
 
-
     def _Canvas_Area(self):
         # canvas area
-        self.canvas_area = ttkb.Frame(self.root, width=self.default_dict['figure_width'], height=self.default_dict['figure_height']) #, width=self.canvas_width, height=self.canvas_height, width=800, height=700
+        self.canvas_area = ttkb.Frame(self.root) #, width=self.default_dict['figure_width'], height=self.default_dict['figure_height']      , width=self.canvas_width, height=self.canvas_height, width=800, height=700
         self.canvas_area.grid(column=1, row=0, sticky='nsew')
 
     def _Windowsize_changed(self, event):
@@ -504,6 +526,9 @@ But data manipulation functions have to be applied manually.
         self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
         self.canvas_fig_width.delete(0, END)
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
+
+        #update the canvas
+        # self.canvas_frame.configure( width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
         # update the size of the left menue scroll region
         self._Update_Scrollframes()
 
@@ -564,12 +589,12 @@ But data manipulation functions have to be applied manually.
         channels = self.select_channels.get().split(',')
         # todo for now check if measurement already exists, if so dont open new measurement, only if 
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
-        print(self.measurement.channel_tag_dict)
+        # print(self.measurement.channel_tag_dict)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
-        if self.checkbox_gaussian_blurr.get() == 1:
-            self.measurement.Scale_Channels()
-            self.measurement.Gauss_Filter_Channels_complex()
+        # if self.checkbox_gaussian_blurr.get() == 1:
+        #     self.measurement.Scale_Channels()
+        #     self.measurement.Gauss_Filter_Channels_complex()
         try:
             scalebar_channel = self.add_scalebar.get().split(',')
         except:
@@ -588,6 +613,13 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_gaussblurr.config(state=ON)
         self.menu_left_clear_plots_button.config(state=ON)
         self.generate_all_plot_button.config(state=ON)
+        self.menu_right_2_shift_phase.config(state=ON)
+        self.menu_right_2_create_realpart.config(state=ON)
+        self.menu_right_2_height_masking.config(state=ON)
+        self.menu_right_2_rotation.config(state=ON)
+
+        # self.root.update()
+
         
         # self.menu_right_2_create_realpart.config(state=ON)
         # self.menu_right_2_shift_phase.config(state=ON)
@@ -597,7 +629,6 @@ But data manipulation functions have to be applied manually.
         # update right menu
         # self._Right_Menu()
             
-
     def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
         Plot_Definitions.vmax_amp = -1
@@ -662,10 +693,62 @@ But data manipulation functions have to be applied manually.
 
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
+        # fig_width, fig_height = self.fig.get_size_inches()
+        # print('figsize: ', fig_width, fig_height)
+        # self.fig.set_figwidth(fig_width/1.25)
+        # self.fig.set_figheight(fig_height/1.25)
+        # fig_width, fig_height = self.fig.get_size_inches()
+        # print('figsize: ', fig_width, fig_height)
         try:
             self.canvas_fig.get_tk_widget().destroy()
         except:
             pass
+        # else:self.canvas_fig.get_tk_widget().destroy()
+
+
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+        self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+        self.toolbar.update()
+        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.toolbar.grid(column=1, row=1, columnspan=1)
+        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+        self.canvas_fig.draw()
+        self._Change_Mainwindow_Size()
+        
+        
+        '''try: self.canvas_frame.winfo_exists()
+        except:
+            print('canvas frame does not exist')
+            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+            self.canvas_fig.draw()
+            self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+            self.toolbar.update()
+            # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+            self.toolbar.grid(column=1, row=1, columnspan=1)
+            self._Change_Mainwindow_Size()
+            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+
+            self.canvas_frame = ttkb.Frame(self.canvas_area, width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
+            self.canvas_frame.pack(expand=True, fill=BOTH)
+            self.canvas_fig.draw()
+
+        else:
+            print('canvas frame does exist')
+            # self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_frame)
+            self.canvas_fig.draw()
+            self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+            self.toolbar.update()
+            # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+            self.toolbar.grid(column=1, row=1, columnspan=1)
+            self._Change_Mainwindow_Size()
+            self.canvas_frame.config(width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
+            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+            # self.canvas_frame = ttkb.Frame(self.canvas_area, width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
+            # self.canvas_frame.pack(expand=True, fill=BOTH)
+            # self.canvas_fig.draw()'''
+
+        '''
         self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
         self.canvas_fig.draw()
         self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
@@ -673,7 +756,7 @@ But data manipulation functions have to be applied manually.
         # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
         self.toolbar.grid(column=1, row=1, columnspan=1)
         self._Change_Mainwindow_Size()
-        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) '''
 
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
@@ -757,6 +840,26 @@ But data manipulation functions have to be applied manually.
         new_main_window_height = self.root.winfo_height()
         self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')
 
+        window_width = self.root.winfo_width()
+        window_height = self.root.winfo_height()
+        print(f'windowgeometry: {window_width}x{window_height}')
+
+        menu_left_width = self.menu_left.winfo_width()
+        menu_left_height = self.menu_left.winfo_height()
+        print(f'right_menugeometry: {menu_left_width}x{menu_left_height}')
+
+        canvas_width = self.canvas_area.winfo_width()
+        canvas_height = self.canvas_area.winfo_height()
+        print(f'canvasgeometry: {canvas_width}x{canvas_height}')
+
+        # canvas_fig_width = self.canvas_fig.winfo_width()
+        # canvas_fig_height = self.canvas_fig.winfo_height()
+        # print(f'canvasgeometry: {canvas_fig_width}x{canvas_fig_height}')
+
+        right_menu_width = self.menu_right.winfo_width()
+        right_menu_height = self.menu_right.winfo_height()
+        print(f'right_menugeometry: {right_menu_width}x{right_menu_height}')
+
     def _Synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
@@ -768,7 +871,11 @@ But data manipulation functions have to be applied manually.
             self._Fill_Canvas()
     
     def _Synccorrection(self): # delete?
+        # print(self.default_dict['synccorr_lambda'])
+        # print(self.default_dict['synccorr_phasedir'])
         popup = SyncCorrectionPopup(self.root, self.folder_path, self.select_channels.get().split(','), self.default_dict)
+        # print(self.default_dict['synccorr_lambda'])
+        # print(self.default_dict['synccorr_phasedir'])
         # self.synccorrection_wavelength = popup.wavelength
         # if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir != '':
         #     wavelength = float(self.synccorrection_wavelength.get())
@@ -784,7 +891,8 @@ But data manipulation functions have to be applied manually.
         #     measurement.Synccorrection(wavelength, phasedir)
         #     print('finished synccorrection')
 
-    def _Gauss_Blurr(self):
+    def _Gauss_Blurr(self): #todo
+        # make it such that channels which are in memory are used instead of loading
         # print('gauss blurring: ',self.select_channels.get())
         popup = GaussBlurrPopup(self.root, self.measurement, self.folder_path, self.select_channels.get(), self.default_dict)
         scaling = popup.scaling
@@ -817,15 +925,17 @@ But data manipulation functions have to be applied manually.
             'scalebar_channel'  : self.add_scalebar.get(),
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
-            'gaussian_blurr'    : self.checkbox_gaussian_blurr.get(),# remove
             'full_phase'        : self.checkbox_full_phase_range.get(),
             'shared_amp'        : self.checkbox_amp_cbar_range.get(),
             'shared_real'       : self.checkbox_real_cbar_range.get(),
             'shared_height'     : self.checkbox_height_cbar_range.get(),
-            # 'synccorr_lambda'   : self.synccorrection_wavelength.get(),
-            # 'synccorr_phasedir' : self.synccorrection_phasedir.get(),
+            'appendix'          : self.default_dict['appendix'], # gets only changed by the save data popup
+            'synccorr_lambda'   : self.default_dict['synccorr_lambda'],
+            'synccorr_phasedir' : self.default_dict['synccorr_phasedir'],
+            'pixel_integration_width': self.default_dict['pixel_integration_width'],
+            'height_threshold': self.default_dict['height_threshold']
+
             # 'appendix'          : '_manipulated'
-            'appendix'          : self.default_dict['appendix'] # gets only changed by the save data popup
 
         }
         print(default_dict)
@@ -863,14 +973,15 @@ But data manipulation functions have to be applied manually.
             'scalebar_channel'  : '',
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
-            'gaussian_blurr'    : 0,
             'full_phase'        : 0,
             'shared_amp'        : 0,
             'shared_real'       : 0,
             'shared_height'     : 0,
             'synccorr_lambda'   : '',
             'synccorr_phasedir' : '',
-            'appendix'          : '_manipulated'
+            'appendix'          : '_manipulated',
+            'pixel_integration_width': 1,
+            'height_threshold'    : 0.5
 
         }
     
@@ -901,15 +1012,15 @@ But data manipulation functions have to be applied manually.
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel']),
         self.checkbox_setmintozero_var.set(self.default_dict['set_min_to_zero']),
         self.checkbox_autoscale.set(self.default_dict['autoscale']),
-        self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr']),
+        # self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr']),
         self.checkbox_full_phase_range.set(self.default_dict['full_phase']),
         self.checkbox_amp_cbar_range.set(self.default_dict['shared_amp']),
         self.checkbox_real_cbar_range.set(self.default_dict['shared_real']),
         self.checkbox_height_cbar_range.set(self.default_dict['shared_height']),
-        self.synccorrection_wavelength.delete(0, END)
-        self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda']),
-        self.synccorrection_phasedir.delete(0, END)
-        self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
+        # self.synccorrection_wavelength.delete(0, END)
+        # self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda']),
+        # self.synccorrection_phasedir.delete(0, END)
+        # self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
 
     def _change_savefiletype(self, event):#remove? todo
         self.savefiletype = self.current_savefiletype.get()
@@ -942,7 +1053,7 @@ But data manipulation functions have to be applied manually.
         # channels = self.select_channels_tosave.get().split(',')
         # appendix = self.appendix_tosave.get()
         # print('current channels: ', self.measurement.channels)
-        # print('default dict: ', self.default_dict)
+        print('default dict: ', self.default_dict)
         popup = SavedataPopup(self.root, self.select_channels.get(), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
@@ -966,7 +1077,7 @@ But data manipulation functions have to be applied manually.
         if height_channel is None:
             print('None of the selected channels was identified as a height channel! \nThe height leveling only works for height channels!')
             return 1
-        popup = HeightLevellingPopup(self.root, self.measurement, height_channel, True)
+        popup = HeightLevellingPopup(self.root, self.measurement, height_channel, self.default_dict)
 
         self.measurement.all_data[self.measurement.channels.index(height_channel)] = popup.leveled_height_data
         self.measurement.channels_label[self.measurement.channels.index(height_channel)] += '_leveled'
@@ -1004,7 +1115,7 @@ But data manipulation functions have to be applied manually.
             overlay_channels = [channel for channel in overlay_channels.split(',')]
         self.measurement.Overlay_Forward_and_Backward_Channels_V2(forward_channel, backward_channel, overlay_channels)
         channels = ','.join(self.measurement.channels)
-        print('channels: ', channels)
+        # print('channels: ', channels)
         self.select_channels.delete(0, END)
         self.select_channels.insert(0, channels)
         # self.measurement.Initialize_Channels(self.select_channels.get().split(',')) # let user save data instead
@@ -1013,6 +1124,52 @@ But data manipulation functions have to be applied manually.
         # self.measurement.channels = self.select_channels.get().split(',')
         # self.measurement.Save_to_gsf()
         print('channels have been overlaid')
+
+    def _change_phase_offset(self):
+        popup = PhaseOffsetPopup(self.root, self.measurement, 'O2P', True)
+        phase_offset = popup.phase_offset
+        phase_channels = []
+        for channel in self.select_channels.get().split(','):
+            if self.measurement.phase_indicator in channel:
+                phase_channels.append(channel)
+        # print('phase channels: ', phase_channels)
+        self.measurement._Write_to_Logfile('phase_shift', phase_offset)
+        for channel in phase_channels:
+            data = self.measurement.all_data[self.measurement.channels.index(channel)]
+            shifted_data = self.measurement._Shift_Phase_Data(data, phase_offset)
+            self.measurement.all_data[self.measurement.channels.index(channel)] = shifted_data
+        # self.measurement.Shift_Phase(phase_offset, phase_channels)
+        # self.measurement.
+
+    def _create_realpart(self):
+        # pass
+        amp_channel = None
+        phase_channel = None
+        for channel in self.select_channels.get().split(','):
+            if self.measurement.amp_indicator in channel :
+                amp_channel = channel
+            elif self.measurement.phase_indicator in channel:
+                phase_channel = channel
+        if amp_channel is None or phase_channel is None:
+            amp_channel = self.measurement.preview_ampchannel
+            phase_channel = self.measurement.preview_phasechannel
+
+        popup = CreateRealpartPopup(self.root, amp_channel, phase_channel)
+        amp_channel = popup.amp_channel
+        phase_channel = popup.phase_channel
+        complex_type = popup.complex_type
+        # print('complex type: ', complex_type)
+        self.measurement.Manually_Create_Complex_Channel(amp_channel, phase_channel, complex_type)
+        # print(self.measurement.channels)
+        self.select_channels.delete(0, END)
+        self.select_channels.insert(0,','.join(self.measurement.channels))
+
+    def _height_masking(self):
+        popup = HeightMaskingPopup(self.root,self.select_channels.get(), self.measurement, self.default_dict)
+
+    def _rotation(self):
+        popup = RotationPopup(self.root, self.select_channels.get(), self.measurement, self.default_dict)
+
 
 def main():
     MainGui()

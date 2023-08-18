@@ -2891,3 +2891,23 @@ set_min_to_zero = True
 17/08/2023 17:12:24
 filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
 quadratic_pixels = True
+18/08/2023 08:38:24
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+18/08/2023 09:12:19
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+18/08/2023 09:12:31
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[10, 38], [11, 13], [41, 10]]
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.5
+quadratic_pixels = True
+set_min_to_zero = True

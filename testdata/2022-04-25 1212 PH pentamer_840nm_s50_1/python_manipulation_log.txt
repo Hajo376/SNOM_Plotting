@@ -2697,3 +2697,197 @@ set_min_to_zero = True
 rotation = 90.0
 quadratic_pixels = True
 set_min_to_zero = True
+16/08/2023 11:13:18
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:13:26
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+16/08/2023 11:13:28
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 37], [10, 11], [39, 13]]
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.4
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:15:09
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:15:21
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 41], [13, 7], [42, 10]]
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.5
+rotation = 90.0
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:16:40
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:16:48
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:22:00
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+16/08/2023 11:22:06
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 36], [15, 8], [42, 9]]
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.5
+rotation = 90.0
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:22:49
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:30:34
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:31:42
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 11:31:58
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 12:59:49
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_masking_threshold = 0.5
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:00:08
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:00:27
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:01:31
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:01:52
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:01:59
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:02:04
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+16/08/2023 13:02:15
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+17/08/2023 11:02:13
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+17/08/2023 12:47:40
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+17/08/2023 12:47:44
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+17/08/2023 12:47:44
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[10, 39], [13, 12], [42, 12]]
+scaling = 4
+gaussian_filter_complex_sigma = 2
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.5
+quadratic_pixels = True
+set_min_to_zero = True
+17/08/2023 16:33:08
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+17/08/2023 16:34:05
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+17/08/2023 16:34:08
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+17/08/2023 16:34:09
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[13, 40], [13, 11], [42, 13]]
+scaling = 4
+gaussian_filter_complex_sigma = 2
+scaling = 4
+gaussian_filter_complex_sigma = 2
+height_masking_threshold = 0.4
+rotation = 180.0
+quadratic_pixels = True
+set_min_to_zero = True
+quadratic_pixels = True
+set_min_to_zero = True
+17/08/2023 17:12:24
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True

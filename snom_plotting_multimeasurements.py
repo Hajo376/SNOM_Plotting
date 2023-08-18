@@ -52,7 +52,7 @@ class MainGui():
         # currently there is no way around it instead of setting the scaling manually, dont ask why 1.33 instead of 1.25, i have no idea
 
         # self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
-        self.root.iconbitmap(this_files_path / Path('snom_plotting.ico'))
+        self.root.iconbitmap(this_files_path / Path('snom_plotting_v2.ico'))
         self._Generate_Savefolder()
         self._Get_Old_Folderpath()
         self._Load_User_Defaults()
@@ -72,6 +72,7 @@ class MainGui():
         # start mainloop
         self.canvas_area.bind("<Configure>", self._Windowsize_changed)
         self.root.bind("<<NotebookTabChanged>>", self._on_tab_changed)
+        self.root.protocol("WM_DELETE_WINDOW", self._Exit)# make shure all processes are closed when closing main window
 
         self.root.mainloop()
 
@@ -405,6 +406,7 @@ But data manipulation functions have to be applied manually.
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
+        
         ''' # synccorrection is now in the advanced tab
         ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
@@ -472,6 +474,10 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_rotation = ttkb.Button(self.menu_right_2, text='Rotate', bootstyle=PRIMARY, command=self._rotation)
         self.menu_right_2_rotation.config(state=DISABLED)
         self.menu_right_2_rotation.grid(column=0, row=8, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_transform_log = ttkb.Button(self.menu_right_2, text='Log(data)', bootstyle=PRIMARY, command=self._transform_log)
+        self.menu_right_2_transform_log.config(state=DISABLED)
+        self.menu_right_2_transform_log.grid(column=0, row=8, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 
@@ -589,6 +595,8 @@ But data manipulation functions have to be applied manually.
         channels = self.select_channels.get().split(',')
         # todo for now check if measurement already exists, if so dont open new measurement, only if 
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
+        # reset height mask:
+
         # print(self.measurement.channel_tag_dict)
         if self.checkbox_setmintozero_var.get() == 1:
             self.measurement.Set_Min_to_Zero()
@@ -617,6 +625,7 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_create_realpart.config(state=ON)
         self.menu_right_2_height_masking.config(state=ON)
         self.menu_right_2_rotation.config(state=ON)
+        self.menu_right_2_transform_log.config(state=ON)
 
         # self.root.update()
 
@@ -836,9 +845,9 @@ But data manipulation functions have to be applied manually.
         # change size of main window to adjust size of plot
         self.root.update()
         new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
-        # new_main_window_height = self.canvas_fig_height.get() + self.toolbar.winfo_height()
-        new_main_window_height = self.root.winfo_height()
-        self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')
+        new_main_window_height = int(self.canvas_fig_height.get()) +42 #+ self.toolbar.winfo_height() # just for now
+        # new_main_window_height = self.root.winfo_height()
+        self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')# todo, resize of y axis does not work?!
 
         window_width = self.root.winfo_width()
         window_height = self.root.winfo_height()
@@ -1169,6 +1178,11 @@ But data manipulation functions have to be applied manually.
 
     def _rotation(self):
         popup = RotationPopup(self.root, self.select_channels.get(), self.measurement, self.default_dict)
+
+    def _transform_log(self):
+        channels = self.select_channels.get().split(',')
+        for channel in channels:
+            self.measurement.all_data[self.measurement.channels.index(channel)] = np.log(self.measurement.all_data[self.measurement.channels.index(channel)])
 
 
 def main():

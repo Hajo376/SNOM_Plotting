@@ -23,6 +23,9 @@ import os
 # import pathlib
 # this_files_path = pathlib.Path(__file__).parent.absolute()
 
+#testing:
+import gc # garbage collector to delete unecessary memory 
+
 
 # from SNOM_AFM_analysis.python_classes_snom import *
 from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type
@@ -44,6 +47,9 @@ class MainGui():
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
         self.root.geometry(f"{1100}x{570}")
+
+        # testing:
+        self.measurement = None
 
         scaling = 1.33
         # scaling = 1.25
@@ -568,6 +574,10 @@ But data manipulation functions have to be applied manually.
             autoscale = False
         channels = self.select_channels.get().split(',')
         # title = 'testtitle'
+
+        # if self.measurement != None:
+        #     del self.measurement
+        #     gc.collect()
         
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
 
@@ -833,8 +843,8 @@ But data manipulation functions have to be applied manually.
                 file.write('#' + self.folder_path)
         # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
         default_channels = self._Get_Default_Channels()
-        if default_channels != old_default_channels:
-            self._Set_Default_Channels(default_channels)
+        # if default_channels != old_default_channels:
+        self._Set_Default_Channels(default_channels)
 
     def _Exit(self):
         self.root.quit()
@@ -857,6 +867,7 @@ But data manipulation functions have to be applied manually.
         if self.folder_path != this_files_path:
             Measurement = Open_Measurement(self.folder_path)
             default_channels = Measurement.channels
+            # print('default_channels: ', default_channels)
             return default_channels
         else:
             return ['O2A','O2P','Z C']
@@ -957,7 +968,9 @@ But data manipulation functions have to be applied manually.
         self._Fill_Canvas()
 
     def _clear_all_plots(self):
-        self.measurement.all_subplots = []
+        # self.measurement.all_subplots = [] # doesn't work because the variable is a class variable so this would only delete it for the specific instance
+        Open_Measurement.all_subplots = []
+
         self.generate_all_plot_button.config(state=DISABLED)
 
     def _Save_User_Defaults(self):

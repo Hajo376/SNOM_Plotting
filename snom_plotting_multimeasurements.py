@@ -64,6 +64,8 @@ class MainGui():
         self._Right_Menu()
         self._Change_Mainwindow_Size()
         self._Update_Scrollframes()
+
+        # self.root.eval('tk::PlaceWindow . center') # does not work...
         
         # configure canvas to scale with window
         self.root.grid_rowconfigure(0, weight=1)
@@ -88,7 +90,7 @@ class MainGui():
         self.menu_left_upper.grid(column=0, row=0, padx=button_padx, pady=button_pady)
 
         # top level controls for plot
-        self.load_data = ttkb.Button(self.menu_left_upper, text="Load Data", bootstyle=PRIMARY, command=lambda:self._Get_Folderpath_from_Input())
+        self.load_data = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._Get_Folderpath_from_Input())
         self.load_data.grid(column=0, row=0, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
@@ -101,14 +103,16 @@ class MainGui():
         # self.select_channels.insert(0, default_channels) # 'O2A,O2P,Z C'
         self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
-        self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Generate Plot", bootstyle=INFO, command=lambda:self._Generate_Plot())
-        self.generate_plot_button.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.open_measurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Open_Measurement)
+        self.open_measurement_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Plot Channels", bootstyle=INFO, command=lambda:self._Generate_Plot())
+        self.generate_plot_button.grid(column=1, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
         # todo, update plot button
         self.update_plot_button = ttkb.Button(self.menu_left_upper, text='Update Plot', command=self._Update_Plot)
         self.update_plot_button.config(state=DISABLED)
         self.update_plot_button.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # plot all plot in memory:
-        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Generate all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
+        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Show all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
         self.generate_all_plot_button.config(state=DISABLED)
         self.generate_all_plot_button.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # save button, only enable if plot was generated previously
@@ -342,11 +346,18 @@ But data manipulation functions have to be applied manually.
         self.checkbox_show_titles.set(self.default_dict['show_titles'])
         self.show_titles = ttkb.Checkbutton(self.menu_left_lower, text='Show titles', variable=self.checkbox_show_titles, onvalue=1, offvalue=0)
         self.show_titles.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # title prefix like: '{Prefix: }{auto generated title}'
+        self.label_measurement_title = ttkb.Label(self.menu_left_lower, text='Prefix Title:')
+        self.label_measurement_title.grid(column=0, row=5)
+        self.measurement_title = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        self.measurement_title.insert(0, '')
+        self.measurement_title.grid(column=1, row=5, padx=button_padx, pady=button_pady, sticky='ew')
+
         # tight_layout = True
         self.checkbox_tight_layout = ttkb.IntVar()
         self.checkbox_tight_layout.set(self.default_dict['tight_layout'])
         self.tight_layout = ttkb.Checkbutton(self.menu_left_lower, text='Tight layout', variable=self.checkbox_tight_layout, onvalue=1, offvalue=0)
-        self.tight_layout.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.tight_layout.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # hspace = 0.4 #standard is 0.4
         self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
         # self.label_h_space.grid(column=0, row=6)
@@ -550,6 +561,31 @@ But data manipulation functions have to be applied manually.
         self.canvas_fig_width.delete(0, END)
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
 
+    def _Open_Measurement(self):
+        if self.checkbox_autoscale.get() == 1:
+            autoscale = True
+        else:
+            autoscale = False
+        channels = self.select_channels.get().split(',')
+        # title = 'testtitle'
+        
+        self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
+
+        self.button_save_to_gsftxt.config(state=ON)
+        self.update_plot_button.config(state=ON)
+        self.menu_right_2_height_leveling.config(state=ON)
+        self.menu_right_2_phase_drift_comp.config(state=ON)
+        self.menu_right_2_overlay.config(state=ON)
+        self.menu_right_2_gaussblurr.config(state=ON)
+        self.menu_left_clear_plots_button.config(state=ON)
+        self.generate_all_plot_button.config(state=ON)
+        self.menu_right_2_shift_phase.config(state=ON)
+        self.menu_right_2_create_realpart.config(state=ON)
+        self.menu_right_2_height_masking.config(state=ON)
+        self.menu_right_2_rotation.config(state=ON)
+        self.menu_right_2_transform_log.config(state=ON)
+
+
     def _Generate_Plot(self):
         
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
@@ -588,13 +624,14 @@ But data manipulation functions have to be applied manually.
       
         Plot_Definitions.hspace = float(self.h_space.get())
 
+        '''
         if self.checkbox_autoscale.get() == 1:
             autoscale = True
         else:
             autoscale = False
         channels = self.select_channels.get().split(',')
         # todo for now check if measurement already exists, if so dont open new measurement, only if 
-        self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
+        self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)'''
         # reset height mask:
 
         # print(self.measurement.channel_tag_dict)
@@ -610,8 +647,10 @@ But data manipulation functions have to be applied manually.
         if scalebar_channel != '':
             self.measurement.Scalebar(channels=scalebar_channel)
         Plot_Definitions.show_plot = False
+        self.measurement.measurement_title = self.measurement_title.get()
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
+        '''
         #enable savefile button
         self.button_save_to_gsftxt.config(state=ON)
         self.update_plot_button.config(state=ON)
@@ -626,7 +665,7 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_height_masking.config(state=ON)
         self.menu_right_2_rotation.config(state=ON)
         self.menu_right_2_transform_log.config(state=ON)
-
+        '''
         # self.root.update()
 
         
@@ -691,6 +730,7 @@ But data manipulation functions have to be applied manually.
             self.measurement.Scalebar(channels=scalebar_channel)
             # todo, scalebar works with channel label not channel name?            
 
+        self.measurement.measurement_title = self.measurement_title.get()
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
         self.generate_all_plot_button.config(state=ON)

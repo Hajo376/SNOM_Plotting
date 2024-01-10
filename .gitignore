@@ -1,6 +1,6 @@
-/dist
-/build
-/.venv
+dist/
+build/
+.venv/
 /default_path.txt
 test_appdata_folder.py
-/__pycache__
+__pycache__/

@@ -28,6 +28,7 @@ class HelpPopup():
         self.window.grab_set()
         self.window.title('Savefile Dialog')
         self.window.geometry('500x400')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_help_message()
         
@@ -56,6 +57,7 @@ class SavedataPopup():
         self.window.grab_set()
         self.window.title('Savefile Dialog')
         self.window.geometry('500x400')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
         # self.window.title('Scrolling')
         
         self._create_input()
@@ -127,6 +129,7 @@ class HeightLevellingPopup():
         self.window.grab_set()
         self.window.title('3 Point Height Leveling')
         # self.window.geometry(f'800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_menu()
         self._create_canvas()
@@ -312,6 +315,7 @@ class PhaseDriftCompensation():
         self.window.grab_set()
         self.window.title('Phase Drift Compensation')
         self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_canvas()
         self._create_menu()
@@ -472,6 +476,7 @@ class OverlayChannels():
         self.window.grab_set()
         self.window.title('Overlay Channels')
         self.window.geometry('500x400')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
         # self.window.title('Scrolling')
         
         self._create_input()
@@ -536,6 +541,7 @@ class SyncCorrectionPopup():
         self.window.grab_set()
         self.window.title('Synccorrection')
         self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_canvas()
         self._create_menu()
@@ -647,6 +653,7 @@ class GaussBlurrPopup():
         self.window.grab_set()
         self.window.title('Gauss Blurr')
         self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_canvas()
         self._create_menu()
@@ -773,6 +780,7 @@ class PhaseOffsetPopup():
         self.window.grab_set()
         self.window.title('Shift Phase')
         # self.window.geometry(f'800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_menu()
         self._create_canvas()
@@ -957,6 +965,7 @@ class CreateRealpartPopup():
         self.preview_ampchannel = preview_ampchannel
         self.preview_phasechannel = preview_phasechannel
         # self.window.title('Scrolling')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
         
         self._create_input()
 
@@ -1031,6 +1040,7 @@ class HeightMaskingPopup():
         self.window.grab_set()
         self.window.title('Height Masking')
         self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_canvas()
         self._create_menu()
@@ -1168,6 +1178,7 @@ class RotationPopup():
         self.window.grab_set()
         self.window.title('Rotation')
         self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
 
         self._create_canvas()
         self._create_menu()

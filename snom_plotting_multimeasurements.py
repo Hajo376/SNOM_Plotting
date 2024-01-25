@@ -39,7 +39,7 @@ import json # json is a plain text file, so easy to read and manual changes poss
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
 from function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup
-from function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup
+from function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup, LogarithmPopup
 
 class MainGui():
     def __init__(self):
@@ -538,7 +538,7 @@ If you select the Shared ... range checkboxes all created plots will use the sam
 
         self.menu_right_2_transform_log = ttkb.Button(self.menu_right_2, text='Log(data)', bootstyle=PRIMARY, command=self._transform_log)
         self.menu_right_2_transform_log.config(state=DISABLED)
-        self.menu_right_2_transform_log.grid(column=0, row=8, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.menu_right_2_transform_log.grid(column=0, row=9, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 
@@ -559,9 +559,13 @@ And depending on your tip and resolution your pixels do not represent the true d
 
 You can do some height masking to get rid of background or cut excess to better compare similar measurements.
 
+The log will let you apply a logarithm to your data.
+
 Most functions are better used with the script version of this programm but here you go.^^
+Once you understood how everything works it relatively easy to add new functions and since we can use amplitude an phase we can also do operations with complex data
+for example fourier filtering.
 """
-        self.menu_left_help_button = ttkb.Button(self.menu_right_1, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Advanced Operations', help_message))
+        self.menu_left_help_button = ttkb.Button(self.menu_right_2, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Advanced Operations', help_message))
         self.menu_left_help_button.grid(column=0, row=99, columnspan=1, padx=button_padx, pady=button_pady, sticky='ew')
 
 
@@ -1306,9 +1310,7 @@ Most functions are better used with the script version of this programm but here
         popup = RotationPopup(self.root, self.select_channels.get(), self.measurement, self.default_dict)
 
     def _transform_log(self):
-        channels = self.select_channels.get().split(',')
-        for channel in channels:
-            self.measurement.all_data[self.measurement.channels.index(channel)] = np.log(self.measurement.all_data[self.measurement.channels.index(channel)])
+        popup = LogarithmPopup(self.root, self.select_channels.get(), self.measurement, self.default_dict)
 
 
 def main():

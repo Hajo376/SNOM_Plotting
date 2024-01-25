@@ -117,6 +117,7 @@ You also have to select the channels of which the data should be saved. Select n
         
 class HeightLevellingPopup():
     def __init__(self, parent, measurement, height_channel, default_dict) -> None:
+        self.parent = parent
         self.height_channel = height_channel
         self.measurement = measurement
         self.autoscale = default_dict['autoscale']
@@ -302,11 +303,12 @@ The leveling will then automatically be applied to all height channels, which ar
 The pixel integration width is a parameter for the width of the area around the clicked pixel that will be used to calculate a mean height value for that coordinate.
 Default is 1, so only the pixel you clicked on. Increase for noisy data, but not so much that features are included!"""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the 3 Point Heigth Leveling Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class PhaseDriftCompensation():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
+        self.parent = parent
         self.phase_channel = phase_channel
         self.measurement = measurement
         self.autoscale = autoscale
@@ -461,11 +463,12 @@ The leveling will then automatically be applied to all phase channels, which are
 The pixel integration width is a parameter for the width of the area around the clicked pixel that will be used to calculate a mean phase value for that coordinate.
 Default is 1, so only the pixel you clicked on. Increase for noisy data, but not so much that features are included!"""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Phase Drift Compensation Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Phase Drift Compensation Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class OverlayChannels():
     def __init__(self, parent, default_height_channel_forward, default_height_channel_backward) -> None:
+        self.parent = parent
         self.default_height_channel_forward = default_height_channel_forward
         self.default_height_channel_backward = default_height_channel_backward
 
@@ -518,7 +521,7 @@ This works by shifting the x-coordinates relative to each other. For optimal res
 The overlay itself is then applied to the specified channels. So far it usually only makes sense for amplitude and height data.
 The overlaying will then automatically be applied, but currently the channels in memory will be overwritten!"""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Overlay Method Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Overlay Method Work?', help_message))
         self.button_help.grid(column=0, row=8, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         
         self.window.update()
@@ -533,6 +536,7 @@ The overlaying will then automatically be applied, but currently the channels in
 class SyncCorrectionPopup():
     def __init__(self, parent, folder_path, channels, default_dict) -> None:
         # self.measurement = measurement
+        self.parent = parent
         self.channels = channels
         self.default_dict = default_dict
         self.folder_path = folder_path
@@ -639,11 +643,12 @@ Plug the direction into the \'Phasedir\' entry field (only \'n\' for negative an
 When you are done you will be able to press the \'Synccorrection\' button and start the correction. The correction will automatically be applied to all phase channels.
 The channels will get the appendix\'_corrected\' and are exported as \'.gsf\' files."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Synccorrection Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Synccorrection Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class GaussBlurrPopup():
     def __init__(self, parent, measurement,  folder_path, channels, default_dict) -> None:
+        self.parent = parent
         self.measurement = measurement
         self.channels = channels
         self.default_dict = default_dict
@@ -760,11 +765,12 @@ Plug the direction into the \'Phasedir\' entry field (only \'n\' for negative an
 When you are done you will be able to press the \'Synccorrection\' button and start the correction. The correction will automatically be applied to all phase channels.
 The channels will get the appendix\'_corrected\' and are exported as \'.gsf\' files."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Synccorrection Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Synccorrection Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class PhaseOffsetPopup():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
+        self.parent = parent
         self.phase_channel = phase_channel
         self.measurement = measurement
         self.autoscale = autoscale
@@ -949,11 +955,12 @@ class PhaseOffsetPopup():
 Currently the first phase channel is used as a preview channel.
 To change the phase offset simply change the slider or type the value in the entry field and hit enter."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the 3 Point Heigth Leveling Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class CreateRealpartPopup():
     def __init__(self, parent, preview_ampchannel, preview_phasechannel) -> None:
+        self.parent = parent
 
         # self.window = tk.Tk()
         # self.window = ttkb.Window(alpha=0.9, position=[600,300]) #themename='darkly', 
@@ -1013,7 +1020,7 @@ Select the complex type you want to create and also the amplitude and phase chan
 The channels do not have to be in memory, if they aren't only the new real or imag channel will be added.
 """
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How Does This Method Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How Does This Method Work?', help_message))
         self.button_help.grid(column=0, row=8, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         
         self.window.update()
@@ -1027,6 +1034,7 @@ The channels do not have to be in memory, if they aren't only the new real or im
 
 class HeightMaskingPopup():
     def __init__(self, parent, channels, measurement, default_dict) -> None:
+        self.parent = parent
         self.channels = channels
         self.measurement = measurement
         self.default_dict = default_dict
@@ -1152,12 +1160,13 @@ Please make shure to use leveled data or make use of the 3 point height leveling
 The mask can then be applied to all channels in memory or just specific ones.
 If you want to get rid of zero value pixels on the autside check the autocut checkbox."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Height Masking Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Height Masking Work?', help_message))
         self.button_help.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 class RotationPopup():
     def __init__(self, parent, channels, measurement, default_dict) -> None:
+        self.parent = parent
         self.channels = channels
         self.measurement = measurement
         self.default_dict = default_dict
@@ -1165,6 +1174,9 @@ class RotationPopup():
         self.rotation_orientation = (0,1)# oder anders herum? wie rum definieren? geg. Uhrzeigersinn?
 
         
+        
+
+
         self.preview_channel = self.channels.split(',')[0] # just use the first channel in memory for now
         #find out colormap
         if self.measurement.height_indicator in self.preview_channel:
@@ -1291,9 +1303,126 @@ class RotationPopup():
         # self.button_heightmask.config(state=DISABLED)
 
         #todo
-        help_message = """T"""
+        help_message = """
+In order to rotate you data, select one of the predefined rotation values, for now only steps of 90 deg are possible. 
+You can simply preview the rotation and repeat as often as necessary.
+Then make shure all the channels you want to rotate are selected and start the rotation.
+"""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
-        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How does the Rotation Work?', help_message))
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Rotation Work?', help_message))
+        self.button_help.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+class LogarithmPopup():
+    def __init__(self, parent, channels, measurement, default_dict) -> None:
+        self.parent = parent
+        self.channels = channels
+        self.measurement = measurement
+        self.default_dict = default_dict
+
+        # only select the amp channels as default
+        self.amp_channels = []
+        for channel in self.channels.split(','):
+            if self.measurement.amp_indicator in channel:
+                self.amp_channels.append(channel)
+
+        # try to select an amp channel for preview, this will take the last found
+        self.preview_channel = None
+        for i in range(len(self.channels.split(','))):
+            if self.measurement.amp_indicator in self.channels.split(',')[i]:
+                self.preview_channel = self.channels.split(',')[i]
+        if self.preview_channel is None:
+            self.preview_channel = self.channels.split(',')[0] # just use the first channel in memory for now
+
+        #find out colormap
+        if self.measurement.height_indicator in self.preview_channel:
+            self.preview_cmap = SNOM_height
+        elif self.measurement.phase_indicator in self.preview_channel:
+            self.preview_cmap = SNOM_phase
+        elif self.measurement.amp_indicator in self.preview_channel:
+            self.preview_cmap = SNOM_amplitude
+
+        self.window = ttkb.Toplevel(parent)
+        self.window.grab_set()
+        self.window.title('Logarithm')
+        self.window.geometry('800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
+
+        self._create_canvas()
+        self._create_menu()
+
+        # all the space for canvas
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_rowconfigure(0, weight=1)
+
+        self.window.mainloop()
+
+    def _create_canvas(self):
+        # canvas area
+        self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
+        self.canvas_area.grid(column=0, row=0, sticky='nsew')
+
+    def _Fill_Canvas(self):
+        self.fig = plt.gcf()
+        try:
+            self.canvas_fig.get_tk_widget().destroy()
+        except:
+            pass
+        
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+        self.canvas_fig.draw()
+        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+
+    def _Logarithm_Preview(self):#todo
+        preview_data = self.measurement.all_data[self.measurement.channels.index(self.preview_channel)]
+        preview_data = np.log(preview_data)
+
+        self.fig, ax = plt.subplots()
+        ax.pcolormesh(preview_data, cmap=self.preview_cmap)
+        # ax.legend()
+        ax.axis('scaled')
+        ax.invert_yaxis()
+
+        plt.title('Logarithm Preview')
+
+        self._Fill_Canvas()
+
+    def _Apply_Log(self):
+        self.logarithm_channels = self.select_logarithm_channel.get().split(',')
+        
+        for channel in self.measurement.channels:
+            if channel in self.logarithm_channels:
+                channel_index = self.measurement.channels.index(channel)
+                
+                self.measurement.all_data[channel_index] = np.log(self.measurement.all_data[channel_index])
+                self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_log' # eigentlich ueberfluessig
+
+        self.measurement._Write_to_Logfile('logarithm', self.logarithm_channels)
+        
+        self.window.quit()
+        self.window.destroy()
+
+    def _create_menu(self):
+        self.frame = ttkb.Labelframe(self.window, text='Logarithm', padding=10)
+        self.frame.grid(column=1, row=0, padx=button_padx, pady=button_pady)
+        self.label_select_logarithm_channel = ttkb.Label(self.frame, text='Select Channels to apply the log to:')
+        self.label_select_logarithm_channel.grid(column=0, row=2, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.select_logarithm_channel = ttkb.Entry(self.frame, justify='center')
+        self.select_logarithm_channel.insert(0, self.amp_channels)
+        self.select_logarithm_channel.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        # first generate preview
+        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._Logarithm_Preview)
+        self.button_heightmask_preview.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # start Masking
+        self.button_heightmask = ttkb.Button(self.frame, text='Apply log to Channels', bootstyle=PRIMARY, command=self._Apply_Log)
+        self.button_heightmask.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        #todo
+        help_message = """
+This function simply applies a log to the data, should usually only be used for amplitude data.
+"""
+        # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Logarithm Work?', help_message))
         self.button_help.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 def main():

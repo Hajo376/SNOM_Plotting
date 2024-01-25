@@ -1163,7 +1163,6 @@ If you want to get rid of zero value pixels on the autside check the autocut che
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Height Masking Work?', help_message))
         self.button_help.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
-
 class RotationPopup():
     def __init__(self, parent, channels, measurement, default_dict) -> None:
         self.parent = parent

@@ -160,19 +160,33 @@ class MainGui():
         help_message = """The main functionality of this GUI is to load and display SNOM or AFM data.
 Of course, once the data is loaded it can also be manipulated by functions and then saved.
 
-First you have to load a measurement folder. This folder should contain all the different channels created by your SNOM or AFM.
+First you have to select a measurement folder. This folder should contain all the different channels created by your SNOM or AFM.
 Then you select the channels you want to display or manipulate. Careful, some functions require specific channels to work! 
 E.g. if you want to level your height data this channel must be included in the overal channels entry field. 
 Or the gauss blurr requires amplitude and phase data of the same demodulation order, if not available it will only blurr amplitude and height data.
 
-When you have selected some channels press the \'Generate Plot\' button. This will load the data and generate a plot. 
-Careful, from now on you should use the \'Update Plot\' button, since the generate button will reload the channels.
+The channels entry might also change depending on which functions you apply. The idea being: each data list has a corresponding channel name. 
+If you perform an operation which creates new datalists, like the Overlay function these datalists will be given a new channel name, e.g. if you manipulate
+your data the specific channel will get the '_manipulated' appendix to make shure you don't overwrite your original data when you hit \'Save Data\'.
+All created channels together with the old ones are then displayed in the Channels entry. However you can also delete them from the entry if you don't want to display them.
+They will stay in memory until you hit \'Load Channels\' again.
+Everytime you select a new measurement the programm will try to find the standard channels for that filetype. You can save your default channels by typing them in the Channels entry
+and pressing 'Save User Defaults'.
+
+When you have selected some channels press the \'Load Channels\' button. This will load the data of the specified channels into the memory.
+Now you can use the \'Plot Channels\' button. This will generate a plot of the specified channels. 
+Careful, from now on you should use the \'Update Plot\' button. The reason is, that whenever you press the \'Plot Channels\' button
+the generated plots will automatically appended to the all_subplots memory. This is a file in the %appdata/roaming% directory. 
+These will be displayed when you click on \'Show all Plots\'. If you don't want to add the plots to this memory, e.g. you want to compare two different
+measurements and have to visualize steps in between, use the \'Update Plot\' button. This does the same but it does not add the new plots to the memory.
 The update button will just display what is currently in memory. This also includes changes like height leveling or blurring.
 
-To create the plots that you want play around with the main window by draggin it. This will change the plot. Also use the matplotlib toolbar.
-You can then either use the matplotlib save dialog or the build in \'Save Plot\' function, where you can also set the dpi for your plot.
+The Plot memory will be deleted once you restart the application or if you hit 'Clear All Plots'.
 
-If simple plotting is not enough for you, you can also play with manipulations like adding a gaussian blurr to your data or applying a simple height leveling.
+To create the plots that you want play around with the main window by draggin it. This will change the plot dimensions. Also use the matplotlib toolbar.
+You can then eigther use the matplotlibs save dialog or the build in \'Save Plot\' function, where you can also set the dpi for your plot.
+
+If simple plotting is not enough for you, you can also play with manipulations in the right menu like adding a gaussian blurr to your data or applying a simple height leveling.
 Most functions are found under the \'Advanced\' tab of the right menu. Most functions also supply some more information under the individual help buttons.
 
 Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a json file in your %appdata/roaming% directory.
@@ -426,7 +440,33 @@ But data manipulation functions have to be applied manually.
         self.checkbox_height_cbar_range.set(self.default_dict['shared_height'])
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        
+
+        help_message = """Under the 'Basic' tab you will find simple changes to the plotting behaviour.
+You can change things like the width of the colorbars. This setting is in % and corresponds to the width of the corresponding image.
+The figure width and height can be set in pixels to enshure that multiple images have the same dimensions. This setting will change automatically if you change the window size.
+You can hide and unhide the ticks which show the pixelnumbers.
+So far the titles of the images are generated automatically, this can also be disabled with the 'Show Titles' checkbox.
+You can add your own prefix for the automatic titles.
+Thight layout is typically used for the matplotlib plots.
+You can also add a scalebar to your images. Just insert the channel names of the images which should have a scalebar. Typically i would use the height channel for that.
+
+Next are some simple data manipulations. 
+You can set the minimum value of the height channels to zero.
+Autoscale data will try to stretch your data to have the correct physical dimensions. This works however only if you have chosen clever values for the resolutions.
+E.g. you take a scan 1µm x 1µm and you chose a resolution of 100 on the x-axis. Then you should use 100 or 50 or 25 or 20... for the y-axis.
+The programm will simply copy each pixel on the shorter axis by an integer mutliple of the resolution on the finer axis.
+This means: 
+    If xres=100 and yres=100 nothing happens.
+    If xres=100 and yres=50 the pixels on the y-axis are duplicated.
+    If xres=100 and yres=80 there is no integer to scale the y-axis accordingly.
+
+You can change the phase range of your data to always span 0 to 2pi.
+If you select the Shared ... range checkboxes all created plots will use the same datarange. Good for comparisons of multiple measurements (same channel).
+
+
+"""
+        self.menu_left_help_button = ttkb.Button(self.menu_right_1, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Basic Operations', help_message))
+        self.menu_left_help_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='ew')
         
         ''' # synccorrection is now in the advanced tab
         ################## separator #####################
@@ -499,6 +539,30 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_transform_log = ttkb.Button(self.menu_right_2, text='Log(data)', bootstyle=PRIMARY, command=self._transform_log)
         self.menu_right_2_transform_log.config(state=DISABLED)
         self.menu_right_2_transform_log.grid(column=0, row=8, sticky='nsew', padx=button_padx, pady=button_pady)
+
+
+
+        help_message = """Under the 'Advanced' tab you will find funtions to manipulate the data.
+You can do some simple height leveling by selecting 3 points which should be on the same level.
+
+You can reduce slow phase dirfts by selecting two points along the y-axis to substract a linear phase slope.
+
+You can overlay both the trace and retrace of you channels. This is experimental and only works for amplitude and height data. Useful to reduce noise.
+
+You can create the realpart of your data by multiplying the amplitdue values with the cosine of the phase values.
+
+You can shift you phasedata by an arbitrary amount, e.g. to get an interesting phase transition to a better spot in the colorrange.
+The overall phaseshift is arbitrary anyways in SNOM measurements.
+
+You can add some blurr to your data to make them prettier. But don't overdo it since you will lose resolution. But square pixels aren't physical anyways...
+And depending on your tip and resolution your pixels do not represent the true distribution anyways.
+
+You can do some height masking to get rid of background or cut excess to better compare similar measurements.
+
+Most functions are better used with the script version of this programm but here you go.^^
+"""
+        self.menu_left_help_button = ttkb.Button(self.menu_right_1, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Advanced Operations', help_message))
+        self.menu_left_help_button.grid(column=0, row=99, columnspan=1, padx=button_padx, pady=button_pady, sticky='ew')
 
 
 
@@ -763,11 +827,11 @@ But data manipulation functions have to be applied manually.
             # todo, scalebar works with channel label not channel name?            
 
         self.measurement.measurement_title = self.measurement_title.get()
+        # plt.clf()
+        self.measurement.Display_Channels() #show_plot=False
         try: 
             self.measurement.Remove_Last_Subplots(len(self.select_channels.get().split(',')))
         except: print('could not remove the last subplots! (Update Plot)')
-        # plt.clf()
-        self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
         self.generate_all_plot_button.config(state=ON)
         #enable savefile button

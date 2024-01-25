@@ -28,7 +28,7 @@ import gc # garbage collector to delete unecessary memory
 
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type
+from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type, File_Definitions
 import numpy as np
 # import scipy
 #for scrollframe
@@ -50,6 +50,8 @@ class MainGui():
 
         # testing:
         self.measurement = None
+        # on startup make shure the all_subplots memory gets cleaned
+        File_Definitions.autodelete_all_subplots = True # set to false once the first measurement is loaded
 
         scaling = 1.33
         # scaling = 1.25
@@ -112,6 +114,7 @@ class MainGui():
         self.open_measurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Open_Measurement)
         self.open_measurement_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
         self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Plot Channels", bootstyle=INFO, command=lambda:self._Generate_Plot())
+        self.generate_plot_button.config(state=DISABLED)
         self.generate_plot_button.grid(column=1, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
         # todo, update plot button
         self.update_plot_button = ttkb.Button(self.menu_left_upper, text='Update Plot', command=self._Update_Plot)
@@ -133,6 +136,7 @@ class MainGui():
         self.figure_dpi.insert(0, self.default_dict['dpi'])
         self.figure_dpi.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
+        self.save_plot_button.config(state=DISABLED)
         self.save_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
         # exit button, closes everything
@@ -543,6 +547,14 @@ But data manipulation functions have to be applied manually.
         # canvas area
         self.canvas_area = ttkb.Frame(self.root) #, width=self.default_dict['figure_width'], height=self.default_dict['figure_height']      , width=self.canvas_width, height=self.canvas_height, width=800, height=700
         self.canvas_area.grid(column=1, row=0, sticky='nsew')
+        
+        self.fig = plt.figure()
+        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+        self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+        self.toolbar.update()
+        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.toolbar.grid(column=1, row=1, columnspan=1)
+        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
     def _Windowsize_changed(self, event):
         self.canvas_fig_height.delete(0, END)
@@ -581,23 +593,27 @@ But data manipulation functions have to be applied manually.
         
         self.measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=autoscale)
 
+        self.generate_plot_button.config(state=ON)
         self.button_save_to_gsftxt.config(state=ON)
-        self.update_plot_button.config(state=ON)
         self.menu_right_2_height_leveling.config(state=ON)
         self.menu_right_2_phase_drift_comp.config(state=ON)
         self.menu_right_2_overlay.config(state=ON)
         self.menu_right_2_gaussblurr.config(state=ON)
         self.menu_left_clear_plots_button.config(state=ON)
-        self.generate_all_plot_button.config(state=ON)
         self.menu_right_2_shift_phase.config(state=ON)
         self.menu_right_2_create_realpart.config(state=ON)
         self.menu_right_2_height_masking.config(state=ON)
         self.menu_right_2_rotation.config(state=ON)
         self.menu_right_2_transform_log.config(state=ON)
 
+        self.save_plot_button.config(state=DISABLED)
+        # self.update_plot_button.config(state=DISABLED)
+
+        File_Definitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
+
 
     def _Generate_Plot(self):
-        
+        plt.close(self.fig)
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
         Plot_Definitions.vmax_amp = -1
         Plot_Definitions.vmin_real = 0
@@ -631,7 +647,10 @@ But data manipulation functions have to be applied manually.
             Plot_Definitions.height_cbar_range = True
         else:
             Plot_Definitions.height_cbar_range = False
-      
+        self.generate_all_plot_button.config(state=ON)
+        self.save_plot_button.config(state=ON)
+        self.update_plot_button.config(state=ON)
+
         Plot_Definitions.hspace = float(self.h_space.get())
 
         '''
@@ -658,6 +677,8 @@ But data manipulation functions have to be applied manually.
             self.measurement.Scalebar(channels=scalebar_channel)
         Plot_Definitions.show_plot = False
         self.measurement.measurement_title = self.measurement_title.get()
+        # plt.clf()
+        # plt.cla()
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
         '''
@@ -688,6 +709,7 @@ But data manipulation functions have to be applied manually.
         # self._Right_Menu()
             
     def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
+        plt.close(self.fig)
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
         Plot_Definitions.vmax_amp = -1
         Plot_Definitions.vmin_real = 0
@@ -741,6 +763,10 @@ But data manipulation functions have to be applied manually.
             # todo, scalebar works with channel label not channel name?            
 
         self.measurement.measurement_title = self.measurement_title.get()
+        try: 
+            self.measurement.Remove_Last_Subplots(len(self.select_channels.get().split(',')))
+        except: print('could not remove the last subplots! (Update Plot)')
+        # plt.clf()
         self.measurement.Display_Channels() #show_plot=False
         self._Fill_Canvas()
         self.generate_all_plot_button.config(state=ON)
@@ -752,70 +778,47 @@ But data manipulation functions have to be applied manually.
 
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
-        # fig_width, fig_height = self.fig.get_size_inches()
-        # print('figsize: ', fig_width, fig_height)
-        # self.fig.set_figwidth(fig_width/1.25)
-        # self.fig.set_figheight(fig_height/1.25)
-        # fig_width, fig_height = self.fig.get_size_inches()
-        # print('figsize: ', fig_width, fig_height)
+        
+        # works but memory increases with each call!
         try:
-            self.canvas_fig.get_tk_widget().destroy()
+            self.canvas_fig.get_tk_widget().destroy() # does not work!
         except:
-            pass
-        # else:self.canvas_fig.get_tk_widget().destroy()
-
-
-        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
-        self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
-        self.toolbar.update()
-        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
-        self.toolbar.grid(column=1, row=1, columnspan=1)
-        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
-        self.canvas_fig.draw()
-        self._Change_Mainwindow_Size()
-        
-        
-        '''try: self.canvas_frame.winfo_exists()
-        except:
-            print('canvas frame does not exist')
             self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
-            self.canvas_fig.draw()
             self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
             self.toolbar.update()
             # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
             self.toolbar.grid(column=1, row=1, columnspan=1)
-            self._Change_Mainwindow_Size()
-            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
-
-            self.canvas_frame = ttkb.Frame(self.canvas_area, width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
-            self.canvas_frame.pack(expand=True, fill=BOTH)
-            self.canvas_fig.draw()
-
+            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
         else:
-            print('canvas frame does exist')
-            # self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
-            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_frame)
-            self.canvas_fig.draw()
+            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+            self.toolbar.update()
+            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
+
+        
+        self.canvas_fig.draw()
+        
+        '''
+        # does not work properly: 
+        try:
+            # self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+            self.toolbar.update()
+        except:
+            print('exception in fill canvas!')
+            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
             self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
             self.toolbar.update()
             # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
             self.toolbar.grid(column=1, row=1, columnspan=1)
-            self._Change_Mainwindow_Size()
-            self.canvas_frame.config(width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
             self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
-            # self.canvas_frame = ttkb.Frame(self.canvas_area, width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
-            # self.canvas_frame.pack(expand=True, fill=BOTH)
-            # self.canvas_fig.draw()'''
-
-        '''
-        self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
         self.canvas_fig.draw()
-        self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
-        self.toolbar.update()
-        # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
-        self.toolbar.grid(column=1, row=1, columnspan=1)
+        '''
+
+        # self.canvas_fig.draw()
+        
         self._Change_Mainwindow_Size()
-        self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) '''
+        # self.fig = None
+        gc.collect()
+        
 
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
@@ -845,6 +848,9 @@ But data manipulation functions have to be applied manually.
         default_channels = self._Get_Default_Channels()
         # if default_channels != old_default_channels:
         self._Set_Default_Channels(default_channels)
+
+        self.generate_plot_button.config(state=DISABLED)
+
 
     def _Exit(self):
         self.root.quit()
@@ -902,15 +908,15 @@ But data manipulation functions have to be applied manually.
 
         window_width = self.root.winfo_width()
         window_height = self.root.winfo_height()
-        print(f'windowgeometry: {window_width}x{window_height}')
+        # print(f'windowgeometry: {window_width}x{window_height}')
 
         menu_left_width = self.menu_left.winfo_width()
         menu_left_height = self.menu_left.winfo_height()
-        print(f'right_menugeometry: {menu_left_width}x{menu_left_height}')
+        # print(f'right_menugeometry: {menu_left_width}x{menu_left_height}')
 
         canvas_width = self.canvas_area.winfo_width()
         canvas_height = self.canvas_area.winfo_height()
-        print(f'canvasgeometry: {canvas_width}x{canvas_height}')
+        # print(f'canvasgeometry: {canvas_width}x{canvas_height}')
 
         # canvas_fig_width = self.canvas_fig.winfo_width()
         # canvas_fig_height = self.canvas_fig.winfo_height()
@@ -918,7 +924,7 @@ But data manipulation functions have to be applied manually.
 
         right_menu_width = self.menu_right.winfo_width()
         right_menu_height = self.menu_right.winfo_height()
-        print(f'right_menugeometry: {right_menu_width}x{right_menu_height}')
+        # print(f'right_menugeometry: {right_menu_width}x{right_menu_height}')
 
     def _Synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
@@ -964,12 +970,15 @@ But data manipulation functions have to be applied manually.
         self.measurement.Gauss_Filter_Channels_complex(channels, sigma)
 
     def _Generate_all_Plot(self):
+        plt.close(self.fig)
+        # Plot_Definitions.show_plot = True
         self.measurement.Display_All_Subplots()
         self._Fill_Canvas()
 
     def _clear_all_plots(self):
         # self.measurement.all_subplots = [] # doesn't work because the variable is a class variable so this would only delete it for the specific instance
-        Open_Measurement.all_subplots = []
+        # Open_Measurement.all_subplots = []
+        self.measurement._Delete_All_Subplots()
 
         self.generate_all_plot_button.config(state=DISABLED)
 

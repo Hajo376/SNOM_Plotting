@@ -52,6 +52,9 @@ class MainGui():
         self.measurement = None
         # on startup make shure the all_subplots memory gets cleaned
         File_Definitions.autodelete_all_subplots = True # set to false once the first measurement is loaded
+        # variable to check if user has changed the channels, if so do not change on relod of new measurements
+        self.relod_default_channels = True # set initialy to true
+        self.file_type = None # make shure to overwrite the channels with corresponding default channels if filetype changes
 
         scaling = 1.33
         # scaling = 1.25
@@ -568,10 +571,6 @@ for example fourier filtering.
         self.menu_left_help_button = ttkb.Button(self.menu_right_2, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Advanced Operations', help_message))
         self.menu_left_help_button.grid(column=0, row=99, columnspan=1, padx=button_padx, pady=button_pady, sticky='ew')
 
-
-
-
-
     def _Right_Menu_Tab3(self):# delete? todo
         self.menu_right_3 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_3.pack()
@@ -679,7 +678,6 @@ for example fourier filtering.
 
         File_Definitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
 
-
     def _Generate_Plot(self):
         plt.close(self.fig)
         Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
@@ -747,7 +745,8 @@ for example fourier filtering.
         self.measurement.measurement_title = self.measurement_title.get()
         # plt.clf()
         # plt.cla()
-        self.measurement.Display_Channels() #show_plot=False
+        channels = self.select_channels.get().split(',')
+        self.measurement.Display_Channels(channels) #show_plot=False
         self._Fill_Canvas()
         '''
         #enable savefile button
@@ -832,7 +831,8 @@ for example fourier filtering.
 
         self.measurement.measurement_title = self.measurement_title.get()
         # plt.clf()
-        self.measurement.Display_Channels() #show_plot=False
+        channels = self.select_channels.get().split(',')
+        self.measurement.Display_Channels(channels) #show_plot=False
         try: 
             self.measurement.Remove_Last_Subplots(len(self.select_channels.get().split(',')))
         except: print('could not remove the last subplots! (Update Plot)')
@@ -887,7 +887,6 @@ for example fourier filtering.
         # self.fig = None
         gc.collect()
         
-
     def _Save_Plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
         file = filedialog.asksaveasfile(mode='wb', defaultextension=".png", filetypes=allowed_filetypes) #(("PNG file", "*.png"),("All Files", "*.*") )
@@ -902,7 +901,7 @@ for example fourier filtering.
 
     def _Get_Folderpath_from_Input(self):
         # get old default channels to find out if the channel names change for new folder
-        old_default_channels = self._Get_Default_Channels()
+        # old_default_channels = self._Get_Default_Channels()
         # check if old default path exists to use as initialdir
         self._Get_Old_Folderpath()
         initialdir = self.initialdir.parent
@@ -912,13 +911,21 @@ for example fourier filtering.
         if len(self.folder_path) > 5:
             with open(self.logging_folder / Path('default_path.txt'), 'w') as file:
                 file.write('#' + self.folder_path)
-        # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
-        default_channels = self._Get_Default_Channels()
-        # if default_channels != old_default_channels:
-        self._Set_Default_Channels(default_channels)
+        # check if filetype has changed
+        new_file_type = self._Get_Measurement_Filetype()
+        if new_file_type != self.file_type and self.file_type != None:
+            # reload default channels as most probably different channels are needed
+            self.relod_default_channels = True
+        
+        # reload default channels if channels entry field was not changed
+        if self.relod_default_channels:
+            # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
+            default_channels = self._Get_Default_Channels()
+            # if default_channels != old_default_channels:
+            self._Set_Default_Channels(default_channels)
+            self.relod_default_channels = False # use same channels on next loading, this might lead to problems if a user wants to switch between measurements with different channel names.
 
         self.generate_plot_button.config(state=DISABLED)
-
 
     def _Exit(self):
         self.root.quit()

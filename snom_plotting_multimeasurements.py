@@ -895,7 +895,10 @@ for example fourier filtering.
         self.fig.savefig(file, format=extension, dpi=dpi)
 
     def _Generate_Savefolder(self):
-        self.logging_folder = Path(os.environ['APPDATA']) / Path('SNOM_Plotter')
+        # try alternative in users documents folder, since when installed the admin appdata will be used...
+        self.logging_folder = Path(os.path.expanduser('~')) / Path('SNOM_Plotter')
+        # print(self.logging_folder)
+        # self.logging_folder = Path(os.environ['APPDATA']) / Path('SNOM_Plotter')
         if not Path.exists(self.logging_folder):
             os.makedirs(self.logging_folder)
 

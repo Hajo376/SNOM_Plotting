@@ -36,14 +36,14 @@ class ChannelTextfield:
         corrected_input = ','.join(corrected_input)
         return corrected_input
 
-    def Encode_Input(self, input):
+    def Encode_Input(self, list_input):
         # reverse to decode, add '\n' after ',' if line would be longer than text widget width
         # todo, for now arbitrary:
         text_width = 3 # in units of channels, so 3 channels per line are allowed, later adapt to actual width of widget
         # remove '\n' characters
-        input = input.replace('\n', '')
+        # input = input.replace('\n', '')
         # convert input to list
-        list_input = input.split(',')
+        # list_input = input.split(',')
         encoded_input = ''
         '''if len(input) > text_width:
             for i in range(len(list_input)):

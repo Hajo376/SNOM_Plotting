@@ -2911,3 +2911,20 @@ gaussian_filter_complex_sigma = 2
 height_masking_threshold = 0.5
 quadratic_pixels = True
 set_min_to_zero = True
+26/02/2024 15:31:54
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+26/02/2024 15:31:55
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+26/02/2024 15:32:01
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+26/02/2024 15:32:04
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+26/02/2024 15:32:04
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+26/02/2024 15:32:04
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True

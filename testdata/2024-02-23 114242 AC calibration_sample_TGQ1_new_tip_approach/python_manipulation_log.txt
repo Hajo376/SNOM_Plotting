@@ -1,0 +1,144 @@
+26/02/2024 14:48:31
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:31
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:34
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:34
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:35
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:39
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:48:39
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:51:35
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:51:35
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:52:29
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:52:29
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:52:30
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:53:05
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:53:05
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:56:26
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:56:26
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:57:18
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 14:57:18
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:20
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:20
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:43
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:43
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:43
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:44
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:44
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:00:45
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:09
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:09
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:09
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:10
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:10
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:12
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:02:20
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:10:22
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:10:25
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:10:59
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:13:49
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:13:54
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:13:54
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:13:55
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:22
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:22
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:22
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:27
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:28
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:28
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:14:29
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:41
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:41
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:41
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:42
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:42
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:43
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:56
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:58
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:58
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:32:58
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:23
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:23
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:23
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:24
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:24
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:25
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:55
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:55
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:33:56
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:34:09
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:34:12
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:34:12
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:34:12
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:43:31
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach
+26/02/2024 15:48:17
+filename = 2024-02-23 114242 AC calibration_sample_TGQ1_new_tip_approach

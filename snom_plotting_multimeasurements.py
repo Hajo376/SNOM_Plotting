@@ -49,6 +49,7 @@ class Plotting_Modes(Enum):
     SNOM = auto()
     APPROACHCURVES = auto()
     SPECTRA = auto()
+    NONE = auto() # if no plotting type is defined
 
 
 class MainGui():
@@ -80,7 +81,8 @@ class MainGui():
         self.measurement_channels = {Plotting_Modes.SNOM: 'channels_snom',
                                 Plotting_Modes.AFM: 'channels_afm',
                                 Plotting_Modes.APPROACHCURVES: 'channels_approach_curve',
-                                Plotting_Modes.SPECTRA: 'channels_spectrum'
+                                Plotting_Modes.SPECTRA: 'channels_spectrum',
+                                Plotting_Modes.NONE: 'channels_none'
                                 }
         self._Load_User_Defaults()
         self._init_plotting_mode()
@@ -125,23 +127,16 @@ class MainGui():
         self.plotting_mode_switch_frame = ttkb.Frame(self.menu_left_upper)
         self.plotting_mode_switch_frame.grid(column=0, columnspan=2, row=16)
         self.plotting_mode_switch_1 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="SNOM", command=lambda: self._change_plotting_mode(1))
-        # self.plotting_mode_switch_1.config(state=ON)
-        # set as default plotting mode:
-        # self.plotting_mode = self.plotting_mode_dict[1]
-        self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for AFM users, disable certain functions which only work for snom, maybe adjust colormaps or something like that
         self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(2))
-        self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
-        # self.plotting_mode_switch_2.config(state=DISABLED)
+        # self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for Approach curves
         self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(3))
-        # self.plotting_mode_switch_3.config(state=DISABLED)
-        self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for NANO FTIR spectra or so
         self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(4))
-        # self.plotting_mode_switch_4.config(state=DISABLED)
-        self.plotting_mode_switch_4.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
-        # initialize the standard mode:
+        # self.plotting_mode_switch_4.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         
 
         # top level controls for plot
@@ -149,21 +144,21 @@ class MainGui():
         self.get_folder_path_button.grid(column=0, row=0, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
+        '''
+        # old version based on one line entry field
         self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
         self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
-        self.select_channels.insert(0, self.default_dict[self.measurement_channels[self.plotting_mode]])
-        # default_channels = self._Get_Default_Channels()
-        # self._Set_Default_Channels(default_channels)
-        
-        # self.select_channels.insert(0, default_channels) # 'O2A,O2P,Z C'
+        self.select_channels.insert(0, ','.join(self.default_dict[self.measurement_channels[self.plotting_mode]]))
         self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-
-        # test for select channels using a text widget instead of the entry field
-        self.select_channels_text = ttkb.Text(self.menu_left_upper, width=20, height=2)
+        '''
+        # new version based on text field, can extend over multiple lines if many channels are in memory
+        self.select_channels_text = ttkb.Text(self.menu_left_upper, width=20, height=1)
         self.select_channels_text.tag_config('center', justify=CENTER) # only works on first line
         self.select_channels_text.tag_add('center', '1.0', END)
-        self.select_channels_text.grid(column=0, row=17, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.select_channels_text.insert(END, self.default_dict[self.measurement_channels[self.plotting_mode]], 'center')
+        self.select_channels_text.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.select_channels_text.insert(END, ','.join(self.default_dict[self.measurement_channels[self.plotting_mode]]), 'center')
+        # self._Set_Channels(self.default_dict[self.measurement_channels[self.plotting_mode]]) # risky since this will require a folder path, if the old path is shit this will cause issues
+
 
 
         self.SnomMeasurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Create_Measurement)
@@ -220,6 +215,8 @@ Then you select the channels you want to display or manipulate. Careful, some fu
 E.g. if you want to level your height data this channel must be included in the overal channels entry field. 
 Or the gauss blurr requires amplitude and phase data of the same demodulation order, if not available it will only blurr amplitude and height data.
 
+Did you know that the newest version of this program also supports approach curves?! If you want you can also add functionality for Nano-FTIR spectra!
+
 The channels entry might also change depending on which functions you apply. The idea being: each data list has a corresponding channel name. 
 If you perform an operation which creates new datalists, like the Overlay function these datalists will be given a new channel name, e.g. if you manipulate
 your data the specific channel will get the '_manipulated' appendix to make shure you don't overwrite your original data when you hit \'Save Data\'.
@@ -229,12 +226,14 @@ Everytime you select a new measurement the programm will try to find the standar
 and pressing 'Save User Defaults'.
 
 When you have selected some channels press the \'Load Channels\' button. This will load the data of the specified channels into the memory.
+By the way if you change the channels in the entry you should reload the channels, otherwise they will not be accessible to the program.
 Now you can use the \'Plot Channels\' button. This will generate a plot of the specified channels. 
 Careful, from now on you should use the \'Update Plot\' button. The reason is, that whenever you press the \'Plot Channels\' button
-the generated plots will automatically appended to the all_subplots memory. This is a file in the %appdata/roaming% directory. 
+the generated plots will automatically be appended to the all_subplots memory. This is a file in your home directory. 
 These will be displayed when you click on \'Show all Plots\'. If you don't want to add the plots to this memory, e.g. you want to compare two different
-measurements and have to visualize steps in between, use the \'Update Plot\' button. This does the same but it does not add the new plots to the memory.
-The update button will just display what is currently in memory. This also includes changes like height leveling or blurring.
+measurements and have to visualize steps in between, use the \'Update Plot\' button. This does the same but it deletes the version you are updating in the plot memory before adding the updated version.
+The update button will just display the current state of your data. This also includes changes like height leveling or blurring.
+To reset the changes you will need to reload the channels, but until you hit save nothing is changed permanently.
 
 The Plot memory will be deleted once you restart the application or if you hit 'Clear All Plots'.
 
@@ -244,8 +243,8 @@ You can then eigther use the matplotlibs save dialog or the build in \'Save Plot
 If simple plotting is not enough for you, you can also play with manipulations in the right menu like adding a gaussian blurr to your data or applying a simple height leveling.
 Most functions are found under the \'Advanced\' tab of the right menu. Most functions also supply some more information under the individual help buttons.
 
-Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a json file in your %appdata/roaming% directory.
-These settings will be loaded automatically when you reopen the GUI, together with the last opened measurement folder. So go ahead and just hit \'Generate Plot\' again.
+Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a json file in your home directory.
+These settings will be loaded automatically when you reopen the GUI, together with the last opened measurement folder. So go ahead and just hit 'Load Channels' and 'Plot Channels' again.
 But data manipulation functions have to be applied manually.
 """
         self.menu_left_help_button = ttkb.Button(self.menu_left_upper, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'How does this GUI work?', help_message))
@@ -604,10 +603,16 @@ You can reduce slow phase dirfts by selecting two points along the y-axis to sub
 
 You can overlay both the trace and retrace of you channels. This is experimental and only works for amplitude and height data. Useful to reduce noise.
 
-You can create the realpart of your data by multiplying the amplitdue values with the cosine of the phase values.
+You can create the realpart of your data by multiplying the amplitdue values with the cosine of the phase values. However, this will not automatically load the newly created channels.
+The new channels are added to the channels input text field, but if you want to plot them you have to load them first. Similar for the synccorrection.
 
 You can shift you phasedata by an arbitrary amount, e.g. to get an interesting phase transition to a better spot in the colorrange.
 The overall phaseshift is arbitrary anyways in SNOM measurements.
+
+You can do a Synccorrection. This is only needed when using transmission mode with synchronized enabled.
+When this is used the phase accumulates an additional gradient due to the movement of the lower parabola (only on the x-axis).
+This function will autoapply to all channels and creates corrected versions. These will not be loaded automatically.
+Typically these channels will get the appendix '_corrected'. Since all channels will be corrected in parallel you don't have to load any data, just select the measurement folder.
 
 You can add some blurr to your data to make them prettier. But don't overdo it since you will lose resolution. But square pixels aren't physical anyways...
 And depending on your tip and resolution your pixels do not represent the true distribution anyways.
@@ -691,10 +696,7 @@ for example fourier filtering.
         self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
         # also for right menu
         self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
-        # does not work properly because width in px for font is unknown...
-        self.select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
-        # self.select_channels_text_width = 30 # this is the allowed width for text inside the text field
-
+        
     def _Update_Canvas_Area(self):
         self.canvas_fig_height.delete(0, END)
         self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
@@ -775,7 +777,10 @@ for example fourier filtering.
         """Read out the current channels in the entry/text fiel for the channels and return as list."""
         # self.channels = self.select_channels.get()
         self.channels = self.select_channels_text.get('1.0', 'end-1c')
-        text_field_handler = ChannelTextfield(self.select_channels_text_width, self._Get_Allowed_Channels())
+        # does not work properly because width in px for font is unknown...
+        select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
+        # select_channels_text_width = 30 # this is the allowed width for text inside the text field
+        text_field_handler = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels())
         self.channels = text_field_handler.Decode_Input(self.channels) # convert string to list and auto ignore linebreaks
         self.channels = text_field_handler.Correct_Channels_Input(self.channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
         # als long as the speciefied channel are in the allowed list
@@ -786,17 +791,25 @@ for example fourier filtering.
     
     def _Set_Channels(self, channels:list) -> None:
         """Set the specified channels as the new selection and write to input field."""
+        '''
+        # old version based on one line entry
         self.select_channels.delete(0,END)
         self.select_channels.insert(0, channels)
+        '''
+        # print('in set channels: ', channels)
         # alternative with text widget:
         self.select_channels_text.delete('0.0', END)
-        encoded_text = ChannelTextfield(self.select_channels_text_width, self._Get_Allowed_Channels()).Encode_Input(channels)
+        # does not work properly because width in px for font is unknown...
+        select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
+        # select_channels_text_width = 30 # this is the allowed width for text inside the text field
+        encoded_text = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels()).Encode_Input(channels)
         text_height = encoded_text.count('\n')
         # change height of text widget
         self.select_channels_text.config(height=text_height+1)
         self.select_channels_text.insert(END, encoded_text, 'center')
-        print('the channels text field is ', self.select_channels_text.winfo_width(), 'wide')
-        print('The content is ', len(encoded_text), 'long')
+        # print('the channels text field is ', self.select_channels_text.winfo_width(), 'wide')
+        # print('The content is ', len(encoded_text), 'long')
+        # print('inserting: ', encoded_text)
 
     def _Generate_Plot(self):
         plt.close(self.fig)
@@ -1055,7 +1068,8 @@ for example fourier filtering.
             # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
             default_channels = self._Get_Default_Channels()
             # if default_channels != old_default_channels:
-            self._Set_Default_Channels(default_channels)
+            # self._Set_Default_Channels(default_channels)
+            self._Set_Channels(default_channels)
             self.relod_default_channels = False # use same channels on next loading, this might lead to problems if a user wants to switch between measurements with different channel names.
         # disable plot button since new measurement has to be loaded first
         self.generate_plot_button.config(state=DISABLED)
@@ -1070,9 +1084,11 @@ for example fourier filtering.
                 content = file.read()
             if content[0:1] == '#' and len(content) > 5:
                 self.initialdir = Path(content[1:]) # to do change to one level higher
-                print('initialdir: ', self.initialdir)
+                # print('initialdir: ', self.initialdir)
+            else: raise Exception
         except:
             self.initialdir = this_files_path
+            # print('no old folder path found!', this_files_path)
         
         #set old path to folder as default
         self.folder_path = Path(self.initialdir)
@@ -1107,6 +1123,7 @@ for example fourier filtering.
             print('Default channels not found! Proceeding with standard channels...')
             return default_channels
 
+    # not used anymore!
     def _Set_Default_Channels(self, default_channels):# todo adjust once set_channels is implemented
         default_channels = ','.join(default_channels)
         self._Set_Channels(default_channels)
@@ -1278,11 +1295,13 @@ for example fourier filtering.
         default_channels_afm = ['Z C']
         default_channels_approach_curve = ['M1A']
         default_channels_spectrum = ['-unknown-']
+        default_channels_none = ['no measurement found']
         self.default_dict = {
             'channels_snom'     : default_channels_snom,
             'channels_afm'     : default_channels_afm,
             'channels_approach_curve'     : default_channels_approach_curve,
             'channels_spectrum'     : default_channels_spectrum,
+            'channels_none'     : default_channels_none,
             'dpi'               : 100,
             'colorbar_width'    : 5,
             'figure_width'      : canvas_width,
@@ -1484,6 +1503,7 @@ for example fourier filtering.
         complex_type = popup.complex_type
         # print('complex type: ', complex_type)
         self.measurement.Manually_Create_Complex_Channel(amp_channel, phase_channel, complex_type)
+        # the names of the newly created channels are added to the channels text field but not automatically loaded
         # print(self.measurement.channels)
         self._Set_Channels(','.join(self.measurement.channels))
         # self.select_channels.delete(0, END)
@@ -1502,8 +1522,25 @@ for example fourier filtering.
         self.plotting_mode_dict = {1: Plotting_Modes.SNOM,
                             2: Plotting_Modes.AFM,
                             3: Plotting_Modes.APPROACHCURVES,
-                            4: Plotting_Modes.SPECTRA}
-        self.plotting_mode_id = self.default_dict['plotting_mode_id']
+                            4: Plotting_Modes.SPECTRA,
+                            5: Plotting_Modes.NONE}
+        # self.plotting_mode_id = self.default_dict['plotting_mode_id'] # that does not work since the old path might not be standard plotting mode
+        # better:
+        new_file_type = self._Get_Measurement_Filetype()
+        # print('old filetype: ', self.file_type)
+        # print('detected filetype: ', new_file_type)
+        if new_file_type != self.file_type and new_file_type != None:
+            self.file_type = new_file_type
+            if self.file_type == File_Type.approach_curve:
+                self.plotting_mode_id = 3
+                # print('approach curve detected!')
+            else:
+                self.plotting_mode_id = 1
+                # print('standard mode detected')
+        else:
+            # if no type can be found
+            self.plotting_mode_id = 5
+
         self.plotting_mode = self.plotting_mode_dict[self.plotting_mode_id]
         # self.plotting_mode_id = 1
 
@@ -1517,6 +1554,8 @@ for example fourier filtering.
             # self.select_channels.delete(0, END)
             # self.select_channels.insert(0, 'M1A')
             # self.select_channels.insert(0, self.default_dict[self.measurement_channels[self.plotting_mode]])
+        elif self.plotting_mode is self.plotting_mode_dict[5]:
+            self._Set_Channels(['No measurement found'])
 
     def _change_plotting_mode_button_color(self, button_id, button_state):
         if button_id == 1:
@@ -1539,6 +1578,9 @@ for example fourier filtering.
                 self.plotting_mode_switch_4.config(bootstyle=DANGER)
             elif button_state == 1:
                 self.plotting_mode_switch_4.config(bootstyle=SUCCESS)
+        elif button_id == 5:
+            # disable all buttons in that case
+            pass
         else:
             print('Error occured in change button color for plotting mode selection!')
             

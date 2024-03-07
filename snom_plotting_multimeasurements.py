@@ -783,6 +783,8 @@ for example fourier filtering.
         text_field_handler = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels())
         self.channels = text_field_handler.Decode_Input(self.channels) # convert string to list and auto ignore linebreaks
         self.channels = text_field_handler.Correct_Channels_Input(self.channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
+        # update the channels in the text field so autocorrect the user input
+        self._Set_Channels(self.channels.split(','))
         # als long as the speciefied channel are in the allowed list
         if as_list:
             return self.channels.split(',')

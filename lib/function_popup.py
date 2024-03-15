@@ -467,10 +467,11 @@ Default is 1, so only the pixel you clicked on. Increase for noisy data, but not
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class OverlayChannels():
-    def __init__(self, parent, default_height_channel_forward, default_height_channel_backward) -> None:
+    def __init__(self, parent, default_height_channel_forward, default_height_channel_backward, measurement) -> None:
         self.parent = parent
         self.default_height_channel_forward = default_height_channel_forward
         self.default_height_channel_backward = default_height_channel_backward
+        self.measurement = measurement
 
         # self.window = tk.Tk()
         # self.window = ttkb.Window(alpha=0.9, position=[600,300]) #themename='darkly', 
@@ -530,6 +531,13 @@ The overlaying will then automatically be applied, but currently the channels in
         self.forward_channel = str(self.select_forward_channel.get())
         self.backward_channel = str(self.select_backward_channel.get())
         self.overlay_channels = self.select_overlay_channel.get()
+
+        if self.overlay_channels == 'all':
+            self.overlay_channels = None
+        else:
+            self.overlay_channels = [channel for channel in self.overlay_channels.split(',')]
+        self.measurement.Overlay_Forward_and_Backward_Channels_V2(self.forward_channel, self.backward_channel, self.overlay_channels)
+
         self.window.quit()
         self.window.destroy()
 

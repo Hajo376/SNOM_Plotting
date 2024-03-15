@@ -86,6 +86,7 @@ class MainGui():
                                 }
         self._Load_User_Defaults()
         self._init_plotting_mode()
+        self.allowed_channels = self._Get_Allowed_Channels() # set once after old folder path is know and plotting mode is set, repeat every time a new folder is loaded
         self._Main_App()
         
     def _Main_App(self):
@@ -709,7 +710,9 @@ for example fourier filtering.
         """
         # print('plotting_mode: ', self.plotting_mode)
         # if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
+        if self.folder_path == None:
+            print('No measurement found!')
+        elif self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             channels = self._Get_Channels()
             self.measurement = ApproachCurve(self.folder_path, channels=channels)
 
@@ -774,13 +777,14 @@ for example fourier filtering.
         return self.allowed_channels
 
     def _Get_Channels(self, as_list:bool=True):
-        """Read out the current channels in the entry/text fiel for the channels and return as list."""
+        """Read out the current channels in the entry/text field for the channels and return as list."""
         # self.channels = self.select_channels.get()
         self.channels = self.select_channels_text.get('1.0', 'end-1c')
         # does not work properly because width in px for font is unknown...
         select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
         # select_channels_text_width = 30 # this is the allowed width for text inside the text field
-        text_field_handler = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels())
+        # text_field_handler = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels())
+        text_field_handler = ChannelTextfield(select_channels_text_width, self.allowed_channels)
         self.channels = text_field_handler.Decode_Input(self.channels) # convert string to list and auto ignore linebreaks
         self.channels = text_field_handler.Correct_Channels_Input(self.channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
         # update the channels in the text field so autocorrect the user input
@@ -805,6 +809,7 @@ for example fourier filtering.
         select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
         # select_channels_text_width = 30 # this is the allowed width for text inside the text field
         encoded_text = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels()).Encode_Input(channels)
+        # print('allowed channels: ', self._Get_Allowed_Channels())
         text_height = encoded_text.count('\n')
         # change height of text widget
         self.select_channels_text.config(height=text_height+1)
@@ -885,7 +890,7 @@ for example fourier filtering.
         self._Fill_Canvas()
                
     def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
-        plt.close(self.fig)
+        # plt.close(self.fig)
         
         if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             self._Generate_Plot()
@@ -968,7 +973,7 @@ for example fourier filtering.
             # self._update_entry_values()
             # update right menu
             # self._Right_Menu()'''
-        self._Fill_Canvas()
+        # self._Fill_Canvas()
 
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
@@ -1032,7 +1037,7 @@ for example fourier filtering.
         # get old default channels to find out if the channel names change for new folder
         # old_default_channels = self._Get_Default_Channels()
         # check if old default path exists to use as initialdir
-        self._Get_Old_Folderpath()
+        self._Get_Old_Folderpath() # alread done in init
         initialdir = self.initialdir.parent
         self.folder_path = filedialog.askdirectory(initialdir=initialdir)
         # save filepath to txt and use as next initialdir
@@ -1064,6 +1069,7 @@ for example fourier filtering.
             # print('set new filetype to: ', new_file_type)
             # reload default channels as most probably different channels are needed
             self.relod_default_channels = True
+            self.allowed_channels = self._Get_Allowed_Channels()
         
         # reload default channels if channels entry field was not changed
         if self.relod_default_channels:
@@ -1081,19 +1087,25 @@ for example fourier filtering.
         sys.exit()
 
     def _Get_Old_Folderpath(self):
+        # print('trying to find old folder path')
         try:
             with open(self.logging_folder / Path('default_path.txt'), 'r') as file:
                 content = file.read()
             if content[0:1] == '#' and len(content) > 5:
                 self.initialdir = Path(content[1:]) # to do change to one level higher
+                # print('content: ', content)
                 # print('initialdir: ', self.initialdir)
+                self.folder_path = Path(self.initialdir)
+
             else: raise Exception
         except:
             self.initialdir = this_files_path
+            # self.folder_path = Path(self.initialdir)
+            self.folder_path = None
             # print('no old folder path found!', this_files_path)
         
         #set old path to folder as default
-        self.folder_path = Path(self.initialdir)
+        # self.folder_path = Path(self.initialdir)
 
     def _Get_Default_Channels(self, plotting_mode=None) -> list:
         """Tries to find the default channels for the given file type by opening a measurement instance and returning the defaults saved there.
@@ -1447,20 +1459,23 @@ for example fourier filtering.
     def _overlay_channels(self):
         forward_height_channel = self.measurement.height_channels[0]
         backward_height_channel = self.measurement.height_channels[1]
-        popup = OverlayChannels(self.root, forward_height_channel, backward_height_channel)
+        popup = OverlayChannels(self.root, forward_height_channel, backward_height_channel, self.measurement)
         forward_channel = popup.forward_channel
         backward_channel = popup.backward_channel
         overlay_channels = popup.overlay_channels
         # print('forward channel: ', forward_channel, type(forward_channel))
         # print('backward channel: ', backward_channel)
+        '''
         if overlay_channels == 'all':
             overlay_channels = None
         else:
             overlay_channels = [channel for channel in overlay_channels.split(',')]
         self.measurement.Overlay_Forward_and_Backward_Channels_V2(forward_channel, backward_channel, overlay_channels)
-        channels = ','.join(self.measurement.channels)
+        '''
+        # print('overlain channels: ', self.measurement.channels)
+        # channels = ','.join(self.measurement.channels)
         # print('channels: ', channels)
-        self._Set_Channels(channels)
+        self._Set_Channels(self.measurement.channels)
         # self.select_channels.delete(0, END)
         # self.select_channels.insert(0, channels)
         # self.measurement.Initialize_Channels(self._Get_Channels()) # let user save data instead
@@ -1507,7 +1522,8 @@ for example fourier filtering.
         self.measurement.Manually_Create_Complex_Channel(amp_channel, phase_channel, complex_type)
         # the names of the newly created channels are added to the channels text field but not automatically loaded
         # print(self.measurement.channels)
-        self._Set_Channels(','.join(self.measurement.channels))
+        # self._Set_Channels(','.join(self.measurement.channels))
+        self._Set_Channels(self.measurement.channels)
         # self.select_channels.delete(0, END)
         # self.select_channels.insert(0,','.join(self.measurement.channels))
 

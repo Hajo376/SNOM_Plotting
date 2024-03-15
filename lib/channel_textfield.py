@@ -33,6 +33,11 @@ class ChannelTextfield:
                 if channel.lower() in lower_allowed_channels:
                     index = lower_allowed_channels.index(channel.lower())
                     corrected_input.append(self.allowed_channels[index])
+                else:
+                    print(f'The channel [{channel}] is not recognized! Proceeding anyways.')
+                    # if the channel is not in the allowed channels list it is either misspelled or some user specific name
+                    # this is allowed but the user should be notified
+                    corrected_input.append(channel)
         corrected_input = ','.join(corrected_input)
         return corrected_input
 

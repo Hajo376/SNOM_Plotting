@@ -1178,11 +1178,7 @@ class RotationPopup():
         self.measurement = measurement
         self.default_dict = default_dict
 
-        self.rotation_orientation = (0,1)# oder anders herum? wie rum definieren? geg. Uhrzeigersinn?
-
-        
-        
-
+        self.rotation_orientation = (1,0)# oder anders herum? wie rum definieren? geg. Uhrzeigersinn?
 
         self.preview_channel = self.channels.split(',')[0] # just use the first channel in memory for now
         #find out colormap
@@ -1228,6 +1224,8 @@ class RotationPopup():
     def _Rotation_Preview(self):#todo
         self.rotation = float(self.cb_rotation.get())
         preview_data = self.measurement.all_data[self.measurement.channels.index(self.preview_channel)]
+        # preview_measurement = self.measurement.copy().all_data[self.measurement.channels.index(self.preview_channel)]
+        
         #start the rotation:
         rotations = int(self.rotation / 90)
         for i in range(rotations):
@@ -1250,12 +1248,12 @@ class RotationPopup():
         self.rotation_channels = self.select_heightmask_channel.get().split(',')
         rotations = int(self.rotation / 90)        
         
-        for channel in self.measurement.channels:
+        '''for channel in self.measurement.channels:
             if channel in self.rotation_channels:
                 channel_index = self.measurement.channels.index(channel)
                 
                 for i in range(rotations):
-                    self.measurement.all_data[channel_index] = np.rot90(self.measurement.all_data[channel_index], axes=self.rotation_orientation)
+                    self.measurement.all_data[channel_index] = np.rot90(self.measurement.all_data[channel_index], axes=self.rotation_orientation) # todo, rotations larger than 90 lead to issues with gif
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_rotated' # eigentlich ueberfluessig
 
                 XReal, YReal = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.scan_area]
@@ -1268,7 +1266,10 @@ class RotationPopup():
         # self.measurement._Write_to_Logfile('height_masking_threshold', self.threshold)
         self.measurement._Write_to_Logfile('rotation', self.rotation)
         # also make shure to transferr the mask array to the measurement, 
-        # because it needs to know it for autocut and to plot a white border around masked areas
+        # because it needs to know it for autocut and to plot a white border around masked areas'''
+        for i in range(rotations):
+            self.measurement.Rotate_90_deg()
+
         
         self.window.quit()
         self.window.destroy()
@@ -1431,6 +1432,117 @@ This function simply applies a log to the data, should usually only be used for 
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Logarithm Work?', help_message))
         self.button_help.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+class GifCreationPopup():
+    def __init__(self, parent, measurement) -> None:
+        self.parent = parent
+        self.measurement = measurement
+
+        self.window = ttkb.Toplevel(parent)
+        self.window.grab_set()
+        self.window.title('Overlay Channels')
+        self.window.geometry('500x400')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
+        
+        self._create_input()
+
+        self.window.mainloop()
+
+    def _create_input(self):
+        self.frame = ttkb.Labelframe(self.window, text='Create Realpart Gif', padding=10)
+        self.frame.pack(pady=20)
+
+        # which channels to overlay?
+        self.label_select_gif_channels = ttkb.Label(self.frame, text='Select Channels to make the gif out of:')
+        self.label_select_gif_channels.grid(column=0, row=0, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.select_gif_channels = ttkb.Entry(self.frame, justify='center')
+        # try to find out which channels should be used for gif:
+        channels = self.measurement.channels
+        initial_channels = []
+        for channel in channels:
+            demodulation_order = self.measurement._Get_Demodulation_Order(channel)
+            if self.measurement.amp_indicator in channel:
+                # check if phase channel of same demodulation is present, either normal or e.g. corrected 
+                phase_channel = channel.replace(self.measurement.amp_indicator, self.measurement.phase_indicator)
+                for chan in channels:
+                    if phase_channel in chan:
+                        initial_channels.append(channel)
+                        initial_channels.append(chan)
+                        break
+                if len(initial_channels) == 0: break
+        if len(initial_channels) == 0:
+            print('No suitable channels found for gif creation!')
+            initial_channels = ['O2A','O2P']
+        self.select_gif_channels.insert(0, ','.join(initial_channels))
+        self.select_gif_channels.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # add label plus entry for number of frames
+        self.label_frames = ttkb.Label(self.frame, text='Number of Frames:')
+        self.label_frames.grid(column=0, row=2, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.frames = ttkb.Entry(self.frame, justify='center')
+        self.frames.insert(0, '20')
+        self.frames.grid(column=1, row=2, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # add label plus entry for fps value
+        self.label_fps = ttkb.Label(self.frame, text='Frames per second:')
+        self.label_fps.grid(column=0, row=4, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.fps = ttkb.Entry(self.frame, justify='center')
+        self.fps.insert(0, '10')
+        self.fps.grid(column=1, row=4, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # add label plus entry for dpi of the saved gif
+        self.label_dpi = ttkb.Label(self.frame, text='DPI of the GIF:')
+        self.label_dpi.grid(column=0, row=6, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.dpi = ttkb.Entry(self.frame, justify='center')
+        self.dpi.insert(0, '100')
+        self.dpi.grid(column=1, row=6, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+
+
+        self.button_start_overlay = ttkb.Button(self.frame, text='Start Gif Creation', bootstyle=SUCCESS, command=self._return_inputs)
+        self.button_start_overlay.grid(column=0, row=8, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        
+        help_message = """The Gif creation method is ment to animate the realpart of an interferometric snom measurement.
+You need to select an amplitude channel and a phase channel to create the gif. They do not need to be of the same demodulation order. 
+Also make shure to select the corrected phase channel if you are working with the synchronized mode."""
+        # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Gif Creation Method Work?', help_message))
+        self.button_help.grid(column=0, row=9, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        
+        self.window.update()
+        
+    def _return_inputs(self):
+        # destroy previous plot
+        # plt.close()
+        
+        self.gif_channels = self.select_gif_channels.get()
+
+        
+        self.gif_channels = [channel for channel in self.gif_channels.split(',')]
+        # check if amp and phase channel have been provided and separeted by correct order
+        if len(self.gif_channels) != 2:
+            print('You need to provide exactly 2 channels!')
+            return
+        phase_indicator = self.measurement.phase_indicator
+        amp_indicator = self.measurement.amp_indicator
+        if phase_indicator not in self.gif_channels[0] and phase_indicator not in self.gif_channels[1]:
+            print('You need to provide at least one phase channel!')
+            return
+        if amp_indicator not in self.gif_channels[0] and amp_indicator not in self.gif_channels[1]:
+            print('You need to provide at least one amplitude channel!')
+            return
+        if phase_indicator in self.gif_channels[0] and amp_indicator in self.gif_channels[1]:
+            self.gif_channels = [self.gif_channels[1], self.gif_channels[0]]
+        else:
+            self.gif_channels = [self.gif_channels[0], self.gif_channels[1]]
+        # get all the other values from the entry fields
+        self.frames = int(self.frames.get())
+        self.fps = int(self.fps.get())
+        self.dpi = int(self.dpi.get())
+        self.gif_path = self.measurement.Create_Gif(self.gif_channels[0], self.gif_channels[1], self.frames, self.fps, self.dpi)
+
+        self.window.quit()
+        self.window.destroy()        
+
 
 def main():
     root = ttkb.Window(themename='darkly')

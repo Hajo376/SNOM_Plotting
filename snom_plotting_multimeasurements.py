@@ -30,12 +30,17 @@ from enum import Enum, auto
 from SNOM_AFM_analysis.python_classes_snom import Plot_Definitions, Tag_Type, File_Type, File_Definitions
 from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, FileHandler, ApproachCurve 
 import numpy as np
+
+# for animations like gif
+import imageio
+from matplotlib.animation import FuncAnimation
+
 # import scipy
 # import pickle # for saving of defaults in a binary dictionary
 import json # json is a plain text file, so easy to read and manual changes possible
 from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
-from lib.function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup
+from lib.function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup, GifCreationPopup
 from lib.function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup, LogarithmPopup
 #for scrollframe
 import platform
@@ -496,6 +501,8 @@ But data manipulation functions have to be applied manually.
         self.height_cbar_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared height range', variable=self.checkbox_height_cbar_range, onvalue=1, offvalue=0)
         self.height_cbar_range.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
+
+
         help_message = """Under the 'Basic' tab you will find simple changes to the plotting behaviour.
 You can change things like the width of the colorbars. This setting is in % and corresponds to the width of the corresponding image.
 The figure width and height can be set in pixels to enshure that multiple images have the same dimensions. This setting will change automatically if you change the window size.
@@ -594,6 +601,10 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.menu_right_2_transform_log = ttkb.Button(self.menu_right_2, text='Log(data)', bootstyle=PRIMARY, command=self._transform_log)
         self.menu_right_2_transform_log.config(state=DISABLED)
         self.menu_right_2_transform_log.grid(column=0, row=9, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_create_gif = ttkb.Button(self.menu_right_2, text='Gif Creation', bootstyle=PRIMARY, command=self._create_gif)
+        self.menu_right_2_create_gif.config(state=DISABLED)
+        self.menu_right_2_create_gif.grid(column=0, row=9, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 
@@ -712,6 +723,9 @@ for example fourier filtering.
         # if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
         if self.folder_path == None:
             print('No measurement found!')
+            
+
+
         elif self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             channels = self._Get_Channels()
             self.measurement = ApproachCurve(self.folder_path, channels=channels)
@@ -759,6 +773,7 @@ for example fourier filtering.
             self.menu_right_2_height_masking.config(state=ON)
             self.menu_right_2_rotation.config(state=ON)
             self.menu_right_2_transform_log.config(state=ON)
+            self.menu_right_2_create_gif.config(state=ON)
 
             self.save_plot_button.config(state=DISABLED)
             # self.update_plot_button.config(state=DISABLED)
@@ -773,6 +788,9 @@ for example fourier filtering.
             measurement = ApproachCurve(self.folder_path)
         elif self.plotting_mode == Plotting_Modes.SNOM:
             measurement = SnomMeasurement(self.folder_path)
+        elif self.plotting_mode == Plotting_Modes.NONE:
+            print('No plotting mode selected!')
+            return None
         self.allowed_channels = measurement.all_channels
         return self.allowed_channels
 
@@ -1040,6 +1058,8 @@ for example fourier filtering.
         self._Get_Old_Folderpath() # alread done in init
         initialdir = self.initialdir.parent
         self.folder_path = filedialog.askdirectory(initialdir=initialdir)
+        # print('folder path: ', self.folder_path)
+        # print('type of folder path: ', type(self.folder_path))
         # save filepath to txt and use as next initialdir
         # first check if folder_path is correct, user might abort filedialog
         if len(self.folder_path) > 5:
@@ -1055,12 +1075,15 @@ for example fourier filtering.
             # print('Approach curve detected, switched to approach curve plotting mode automatically!')
         # else:
         # check if filetype has changed
+        old_file_type = self.file_type
         new_file_type = self._Get_Measurement_Filetype()
-        # print('old filetype: ', self.file_type)
-        # print('detected filetype: ', new_file_type)
-        if new_file_type != self.file_type and new_file_type != None:
-            self.file_type = new_file_type
-            if self.file_type == File_Type.approach_curve:
+        self.file_type = new_file_type
+        print('old filetype: ', old_file_type)
+        print('detected filetype: ', new_file_type)
+        # do stuff if the filetype has changed
+        if new_file_type != old_file_type and new_file_type != None:
+            
+            if new_file_type == File_Type.approach_curve:
                 # self.plotting_mode = Plotting_Modes.APPROACHCURVES
                 self._change_plotting_mode(3)
             else: 
@@ -1070,6 +1093,49 @@ for example fourier filtering.
             # reload default channels as most probably different channels are needed
             self.relod_default_channels = True
             self.allowed_channels = self._Get_Allowed_Channels()
+        if new_file_type != None and old_file_type == None:
+            print('enabeling all buttons')
+            # enable all buttons
+            self.SnomMeasurement_button.config(state=ON)
+            self.generate_plot_button.config(state=ON)
+            # self.button_save_to_gsftxt.config(state=ON)
+            self.menu_right_2_height_leveling.config(state=ON)
+            self.menu_right_2_phase_drift_comp.config(state=ON)
+            self.menu_right_2_overlay.config(state=ON)
+            self.menu_right_2_gaussblurr.config(state=ON)
+            # self.menu_left_clear_plots_button.config(state=ON)
+            self.menu_right_2_shift_phase.config(state=ON)
+            self.menu_right_2_synccorrection.config(state=ON)
+            self.menu_right_2_create_realpart.config(state=ON)
+            self.menu_right_2_height_masking.config(state=ON)
+            self.menu_right_2_rotation.config(state=ON)
+            self.menu_right_2_transform_log.config(state=ON)
+            self.menu_right_2_create_gif.config(state=ON)
+            # self.save_plot_button.config(state=ON)
+            # self.update_plot_button.config(state=ON)
+        elif new_file_type == None:
+            # make shure to update the channel field
+            self._change_plotting_mode(5)
+            # disable all buttons
+            self.SnomMeasurement_button.config(state=DISABLED)
+            self.generate_plot_button.config(state=DISABLED)
+            self.generate_all_plot_button.config(state=DISABLED)
+            self.button_save_to_gsftxt.config(state=DISABLED)
+            self.menu_right_2_height_leveling.config(state=DISABLED)
+            self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+            self.menu_right_2_overlay.config(state=DISABLED)
+            self.menu_right_2_gaussblurr.config(state=DISABLED)
+            # self.menu_left_clear_plots_button.config(state=DISABLED)
+            self.menu_right_2_shift_phase.config(state=DISABLED)
+            self.menu_right_2_synccorrection.config(state=DISABLED)
+            self.menu_right_2_create_realpart.config(state=DISABLED)
+            self.menu_right_2_height_masking.config(state=DISABLED)
+            self.menu_right_2_rotation.config(state=DISABLED)
+            self.menu_right_2_transform_log.config(state=DISABLED)
+            self.menu_right_2_create_gif.config(state=DISABLED)
+            self.save_plot_button.config(state=DISABLED)
+            self.update_plot_button.config(state=DISABLED)
+        
         
         # reload default channels if channels entry field was not changed
         if self.relod_default_channels:
@@ -1133,6 +1199,10 @@ for example fourier filtering.
                 print('the default channels for this plotting mode are not implemented!')
             print('default_channels: ', default_channels)
             return default_channels
+        elif self.file_type is None:
+            print('No measurement found!')
+            default_channels = ['No measurement found!']
+            return default_channels
         else:
             print('Default channels not found! Proceeding with standard channels...')
             return default_channels
@@ -1152,7 +1222,8 @@ for example fourier filtering.
             self.checkbox_full_phase_range.set(1)
 
     def _Get_Measurement_Filetype(self) -> File_Type:
-        if self.folder_path != this_files_path:
+        if self.folder_path != this_files_path and self.folder_path != '':
+            # print('trying to find filetype')
             # Measurement = SnomMeasurement(self.folder_path)
             Measurement = FileHandler(self.folder_path)
             filetype = Measurement.file_type
@@ -1536,6 +1607,47 @@ for example fourier filtering.
     def _transform_log(self):
         popup = LogarithmPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)
 
+    def _create_gif(self):
+        """This function creates a popup and lets the user create a gif of channels in the current measurement.
+        The main use is to display realpart data, therefore idealy an amplitude and phase channel should be selected.
+        The do however not have to be of same demodulation order.
+        """
+        popup = GifCreationPopup(self.root, self.measurement)
+        gif_path = popup.gif_path
+        fps = popup.fps
+        self._Display_Gif(gif_path, fps)
+        
+    def _Display_Gif(self, gif_path, fps:int=10):
+        """This function displays a gif in the canvas.
+
+        Args:
+            gif_path (Path): Path to the gif file.
+            fps (int, optional): The fps to display the gif in. Defaults to 10.
+        """
+        # delete the previous plot
+        plt.close(self.fig)
+        # Load the gif
+        frames = imageio.mimread(gif_path)
+
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Create a function to update the frame
+        def update_image(frame):
+            ax.clear()
+            ax.imshow(frames[frame])
+            # dont show frame around the image
+            ax.axis('off')
+
+        # Hide the axes
+        ax.axis('off')
+
+        # Create the animation
+        ani = FuncAnimation(fig, update_image, frames=len(frames), interval=1000/fps, repeat=True)
+
+        # display the gif in the canvas
+        self._Fill_Canvas()
+
     def _init_plotting_mode(self):
         self.plotting_mode_dict = {1: Plotting_Modes.SNOM,
                             2: Plotting_Modes.AFM,
@@ -1573,7 +1685,10 @@ for example fourier filtering.
             # self.select_channels.insert(0, 'M1A')
             # self.select_channels.insert(0, self.default_dict[self.measurement_channels[self.plotting_mode]])
         elif self.plotting_mode is self.plotting_mode_dict[5]:
-            self._Set_Channels(['No measurement found'])
+            # self._Set_Channels(['No measurement found'])
+            self.select_channels_text.delete('0.0', END)
+            self.select_channels_text.config(height=1)
+            self.select_channels_text.insert(END, 'No measurement found', 'center')
 
     def _change_plotting_mode_button_color(self, button_id, button_state):
         if button_id == 1:

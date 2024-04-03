@@ -169,6 +169,8 @@ class MainGui():
 
         self.SnomMeasurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Create_Measurement)
         self.SnomMeasurement_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
+        if self.file_type == None:
+            self.SnomMeasurement_button.config(state=DISABLED)
         self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Plot Channels", bootstyle=INFO, command=lambda:self._Generate_Plot())
         self.generate_plot_button.config(state=DISABLED)
         self.generate_plot_button.grid(column=1, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -906,6 +908,10 @@ for example fourier filtering.
             channels = self._Get_Channels()
             self.measurement.Display_Channels(channels) #show_plot=False
         self._Fill_Canvas()
+        # enable buttons
+        # self.button_save_to_gsftxt.config(state=ON)
+        # self.button_update_plot.config(state=ON)
+        # self.button_generate_all_plot.config(state=ON)
                
     def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
         # plt.close(self.fig)
@@ -1093,6 +1099,7 @@ for example fourier filtering.
             # reload default channels as most probably different channels are needed
             self.relod_default_channels = True
             self.allowed_channels = self._Get_Allowed_Channels()
+        '''
         if new_file_type != None and old_file_type == None:
             print('enabeling all buttons')
             # enable all buttons
@@ -1135,7 +1142,9 @@ for example fourier filtering.
             self.menu_right_2_create_gif.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             self.update_plot_button.config(state=DISABLED)
-        
+        '''
+        # update buttons, if filetype has changed to none disable most buttons
+        self._Update_Buttons()
         
         # reload default channels if channels entry field was not changed
         if self.relod_default_channels:
@@ -1147,6 +1156,51 @@ for example fourier filtering.
             self.relod_default_channels = False # use same channels on next loading, this might lead to problems if a user wants to switch between measurements with different channel names.
         # disable plot button since new measurement has to be loaded first
         self.generate_plot_button.config(state=DISABLED)
+
+    def _Update_Buttons(self):
+        if self.file_type != None:
+            # print('enabeling all buttons')
+            # enable all buttons
+            self.SnomMeasurement_button.config(state=ON)
+            self.generate_plot_button.config(state=ON)
+            # self.button_save_to_gsftxt.config(state=ON)
+            self.menu_right_2_height_leveling.config(state=ON)
+            self.menu_right_2_phase_drift_comp.config(state=ON)
+            self.menu_right_2_overlay.config(state=ON)
+            self.menu_right_2_gaussblurr.config(state=ON)
+            # self.menu_left_clear_plots_button.config(state=ON)
+            self.menu_right_2_shift_phase.config(state=ON)
+            self.menu_right_2_synccorrection.config(state=ON)
+            self.menu_right_2_create_realpart.config(state=ON)
+            self.menu_right_2_height_masking.config(state=ON)
+            self.menu_right_2_rotation.config(state=ON)
+            self.menu_right_2_transform_log.config(state=ON)
+            self.menu_right_2_create_gif.config(state=ON)
+            # self.save_plot_button.config(state=ON)
+            # self.update_plot_button.config(state=ON)
+        elif self.file_type == None:
+            # make shure to update the channel field
+            self._change_plotting_mode(5)
+            # disable all buttons
+            self.SnomMeasurement_button.config(state=DISABLED)
+            self.generate_plot_button.config(state=DISABLED)
+            self.generate_all_plot_button.config(state=DISABLED)
+            self.button_save_to_gsftxt.config(state=DISABLED)
+            self.menu_right_2_height_leveling.config(state=DISABLED)
+            self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+            self.menu_right_2_overlay.config(state=DISABLED)
+            self.menu_right_2_gaussblurr.config(state=DISABLED)
+            # self.menu_left_clear_plots_button.config(state=DISABLED)
+            self.menu_right_2_shift_phase.config(state=DISABLED)
+            self.menu_right_2_synccorrection.config(state=DISABLED)
+            self.menu_right_2_create_realpart.config(state=DISABLED)
+            self.menu_right_2_height_masking.config(state=DISABLED)
+            self.menu_right_2_rotation.config(state=DISABLED)
+            self.menu_right_2_transform_log.config(state=DISABLED)
+            self.menu_right_2_create_gif.config(state=DISABLED)
+            self.save_plot_button.config(state=DISABLED)
+            self.update_plot_button.config(state=DISABLED)
+
 
     def _Exit(self):
         self.root.quit()
@@ -1222,7 +1276,7 @@ for example fourier filtering.
             self.checkbox_full_phase_range.set(1)
 
     def _Get_Measurement_Filetype(self) -> File_Type:
-        if self.folder_path != this_files_path and self.folder_path != '':
+        if self.folder_path != this_files_path and self.folder_path != '' and self.folder_path != None:
             # print('trying to find filetype')
             # Measurement = SnomMeasurement(self.folder_path)
             Measurement = FileHandler(self.folder_path)
@@ -1672,6 +1726,7 @@ for example fourier filtering.
             self.plotting_mode_id = 5
 
         self.plotting_mode = self.plotting_mode_dict[self.plotting_mode_id]
+        # self._Update_Buttons()
         # self.plotting_mode_id = 1
 
     def _plotting_mode_changed(self):

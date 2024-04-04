@@ -62,7 +62,12 @@ class MainGui():
         self.root = ttkb.Window(themename='darkly') # 'journal', 'darkly', 'superhero', 'solar', 'litera' (default) 
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
         self.root.title("SNOM Plotter")
-        self.root.geometry(f"{1100}x{570}")
+        
+        
+        # self.root.geometry(f"{1100}x{570}+200+200")
+        # self.root.update_idletasks()
+        # self.root.eval(f'tk::PlaceWindow . center')
+        
 
         # testing:
         self.measurement = None
@@ -108,6 +113,9 @@ class MainGui():
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
 
+        
+
+        
         # start mainloop
         self.canvas_area.bind("<Configure>", self._Windowsize_changed)
         self.root.bind("<<NotebookTabChanged>>", self._on_tab_changed)
@@ -364,8 +372,8 @@ But data manipulation functions have to be applied manually.
         self.menu_right_1_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
         self.menu_right_1_scrollframe.pack()
 
-        # self.menu_right_2_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
-        # self.menu_right_2_scrollframe.pack()
+        self.menu_right_2_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
+        self.menu_right_2_scrollframe.pack()
 
         # first tab:
         self._Right_Menu_Tab1()
@@ -378,7 +386,8 @@ But data manipulation functions have to be applied manually.
 
         # add tabs to notebook
         self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
-        self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
+        # self.menu_right_notebook.add(self.menu_right_2, text='Advanced')
+        self.menu_right_notebook.add(self.menu_right_2_scrollframe, text='Advanced')
         # self.menu_right_notebook.add(self.menu_right_3, text='ToDo')
 
 
@@ -386,6 +395,7 @@ But data manipulation functions have to be applied manually.
         #reconfigure canvas size 
         self.menu_right_1.update()
         self.menu_right_1_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
+        self.menu_right_2_scrollframe.canvas.config(width=self.menu_right_1.winfo_width())
         # tab = event.widget.nametowidget(event.widget.select())
         # tab = event.widget.nametowidget(event.widget.select())
         # event.widget.configure(height=tab.winfo_reqheight())
@@ -561,8 +571,12 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)'''
 
     def _Right_Menu_Tab2(self):
-        self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
-        self.menu_right_2.pack()
+        # self.menu_right_2_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
+        # self.menu_right_2_scrollframe.pack()
+        self.menu_right_2 = ttkb.Frame(self.menu_right_2_scrollframe.viewPort)
+        self.menu_right_2.grid(column=0, row=0)
+        # self.menu_right_2 = ttkb.Frame(self.menu_right_notebook)
+        # self.menu_right_2.pack()
 
         # height leveling, phase drift compensation, overlay forward and backwards channels, create real and imaginary part, 
         self.menu_right_2_height_leveling = ttkb.Button(self.menu_right_2, text='3 Point Height Leveling', bootstyle=PRIMARY, command=self._3_point_height_leveling)
@@ -1293,25 +1307,12 @@ for example fourier filtering.
         # new_main_window_height = self.root.winfo_height()
         self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')# todo, resize of y axis does not work?!
 
-        window_width = self.root.winfo_width()
-        window_height = self.root.winfo_height()
-        # print(f'windowgeometry: {window_width}x{window_height}')
-
-        menu_left_width = self.menu_left.winfo_width()
-        menu_left_height = self.menu_left.winfo_height()
-        # print(f'right_menugeometry: {menu_left_width}x{menu_left_height}')
-
-        canvas_width = self.canvas_area.winfo_width()
-        canvas_height = self.canvas_area.winfo_height()
-        # print(f'canvasgeometry: {canvas_width}x{canvas_height}')
-
-        # canvas_fig_width = self.canvas_fig.winfo_width()
-        # canvas_fig_height = self.canvas_fig.winfo_height()
-        # print(f'canvasgeometry: {canvas_fig_width}x{canvas_fig_height}')
-
-        right_menu_width = self.menu_right.winfo_width()
-        right_menu_height = self.menu_right.winfo_height()
-        # print(f'right_menugeometry: {right_menu_width}x{right_menu_height}')
+        # get the screen width and height of the display used
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        center_x = int(screen_width/2 - new_main_window_width/2)
+        center_y = int(screen_height/2 - new_main_window_height/2)
+        self.root.geometry(f"{new_main_window_width}x{new_main_window_height}+{center_x}+{center_y}")
 
     def _Synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
@@ -1441,7 +1442,7 @@ for example fourier filtering.
             'channels_approach_curve'     : default_channels_approach_curve,
             'channels_spectrum'     : default_channels_spectrum,
             'channels_none'     : default_channels_none,
-            'dpi'               : 100,
+            'dpi'               : 300,
             'colorbar_width'    : 5,
             'figure_width'      : canvas_width,
             'figure_height'     : canvas_height,

@@ -491,10 +491,14 @@ But data manipulation functions have to be applied manually.
         self.gaussian_blurr = ttkb.Checkbutton(self.menu_right_upper, text='Blurr Data', variable=self.checkbox_gaussian_blurr, onvalue=1, offvalue=0)
         self.gaussian_blurr.grid(column=0, row=3, padx=button_padx, pady=button_pady, sticky='nsew')
         '''
+        self.checkbox_shared_phase_range = ttkb.IntVar()
+        self.checkbox_shared_phase_range.set(self.default_dict['shared_phase'])
+        self.shared_phase_range = ttkb.Checkbutton(self.menu_right_upper, text='Shared phase range', variable=self.checkbox_shared_phase_range, onvalue=1, offvalue=0)
+        self.shared_phase_range.grid(column=0, row=3, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
         # full_phase_range = True # this will overwrite the cbar
         self.checkbox_full_phase_range = ttkb.IntVar()
         self.checkbox_full_phase_range.set(self.default_dict['full_phase'])
-        
         self.full_phase_range = ttkb.Checkbutton(self.menu_right_upper, text='Full phase range', variable=self.checkbox_full_phase_range, onvalue=1, offvalue=0)
         self.full_phase_range.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # amp_cbar_range = True
@@ -890,6 +894,10 @@ for example fourier filtering.
                 Plot_Definitions.full_phase_range = True
             else:
                 Plot_Definitions.full_phase_range = False
+            if self.checkbox_shared_phase_range.get() == 1:
+                Plot_Definitions.shared_phase_range = True
+            else:
+                Plot_Definitions.shared_phase_range = False
             if self.checkbox_amp_cbar_range.get() == 1:
                 Plot_Definitions.amp_cbar_range = True
             else:
@@ -1392,6 +1400,7 @@ for example fourier filtering.
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
             'full_phase'        : self.checkbox_full_phase_range.get(),
+            'shared_phase'        : self.checkbox_shared_phase_range.get(),
             'shared_amp'        : self.checkbox_amp_cbar_range.get(),
             'shared_real'       : self.checkbox_real_cbar_range.get(),
             'shared_height'     : self.checkbox_height_cbar_range.get(),
@@ -1454,6 +1463,7 @@ for example fourier filtering.
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
             'full_phase'        : 0,
+            'shared_phase'      : 0,
             'shared_amp'        : 0,
             'shared_real'       : 0,
             'shared_height'     : 0,
@@ -1496,6 +1506,7 @@ for example fourier filtering.
         self.checkbox_autoscale.set(self.default_dict['autoscale']),
         # self.checkbox_gaussian_blurr.set(self.default_dict['gaussian_blurr']),
         self.checkbox_full_phase_range.set(self.default_dict['full_phase']),
+        self.checkbox_shared_phase_range.set(self.default_dict['shared_phase']),
         self.checkbox_amp_cbar_range.set(self.default_dict['shared_amp']),
         self.checkbox_real_cbar_range.set(self.default_dict['shared_real']),
         self.checkbox_height_cbar_range.set(self.default_dict['shared_height']),
@@ -1612,7 +1623,14 @@ for example fourier filtering.
         print('channels have been overlaid')
 
     def _change_phase_offset(self):
-        popup = PhaseOffsetPopup(self.root, self.measurement, 'O2P', True)
+        # find appropriate phase channel for preview
+        phase_channel = None
+        for channel in self._Get_Channels():
+            if self.measurement.phase_indicator in channel:
+                phase_channel = channel # just take the first one
+                break
+
+        popup = PhaseOffsetPopup(self.root, self.measurement, phase_channel, True)
         phase_offset = popup.phase_offset
         phase_channels = []
         for channel in self._Get_Channels():
@@ -1622,8 +1640,14 @@ for example fourier filtering.
         self.measurement._Write_to_Logfile('phase_shift', phase_offset)
         for channel in phase_channels:
             data = self.measurement.all_data[self.measurement.channels.index(channel)]
+            # print min and max values of the phase data
+            # print('min phase value: ', np.min(data))
+            # print('max phase value: ', np.max(data))
             shifted_data = self.measurement._Shift_Phase_Data(data, phase_offset)
             self.measurement.all_data[self.measurement.channels.index(channel)] = shifted_data
+            # print min and max values of the phase data
+            # print('min phase value: ', np.min(shifted_data))
+            # print('max phase value: ', np.max(shifted_data))
         # self.measurement.Shift_Phase(phase_offset, phase_channels)
         # self.measurement.
 

@@ -811,7 +811,7 @@ for example fourier filtering.
         elif self.plotting_mode == Plotting_Modes.NONE:
             print('No plotting mode selected!')
             return None
-        self.allowed_channels = measurement.all_channels
+        self.allowed_channels = measurement.all_channels_default + measurement.all_channels_custom
         return self.allowed_channels
 
     def _Get_Channels(self, as_list:bool=True):
@@ -1073,7 +1073,8 @@ for example fourier filtering.
 
     def _Generate_Savefolder(self):
         # try alternative in users documents folder, since when installed the admin appdata will be used...
-        self.logging_folder = Path(os.path.expanduser('~')) / Path('SNOM_Plotter')
+        # self.logging_folder = Path(os.path.expanduser('~')) / Path('SNOM_Plotter')
+        self.logging_folder = Path(os.path.expanduser('~')) / Path('SNOM_Analysis')
         # print(self.logging_folder)
         # self.logging_folder = Path(os.environ['APPDATA']) / Path('SNOM_Plotter')
         if not Path.exists(self.logging_folder):
@@ -1266,11 +1267,19 @@ for example fourier filtering.
                 # this will return the default channels defined in the measurement class
                 # different filetypes might have different channel definitions
             elif plotting_mode == Plotting_Modes.SNOM:
-                try:
-                    default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.SNOM]]
-                except:
-                    Measurement = SnomMeasurement(self.folder_path)
-                    default_channels = Measurement.channels
+                # there might be different default channels for different filetypes
+                if self.file_type == File_Type.standard or self.file_type == File_Type.standard_new or self.file_type == File_Type.neaspec_version_1_6_3359_1:
+                    try:
+                        default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.SNOM]] # so far default channels dict is only available for standard filetype
+                    except:
+                        Measurement = SnomMeasurement(self.folder_path)
+                        default_channels = Measurement.channels
+                elif self.file_type == File_Type.aachen_ascii:
+                    default_channels = ['O2-F-abs','O2-F-arg','MT-F-abs']
+                elif self.file_type == File_Type.comsol_gsf:
+                    default_channels = ['abs','arg']
+                else:
+                    print('the default channels for this plotting mode and filetype are not implemented!')
             else:
                 print('the default channels for this plotting mode are not implemented!')
             print('default_channels: ', default_channels)
@@ -1445,6 +1454,7 @@ for example fourier filtering.
         default_channels_approach_curve = ['M1A']
         default_channels_spectrum = ['-unknown-']
         default_channels_none = ['no measurement found']
+        # also save filetype and save default channels for each filetype
         self.default_dict = {
             'channels_snom'     : default_channels_snom,
             'channels_afm'     : default_channels_afm,

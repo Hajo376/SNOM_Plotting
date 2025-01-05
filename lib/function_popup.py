@@ -6,7 +6,7 @@ from gui_parameters import*
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from SNOM_AFM_analysis.python_classes_snom import Open_Measurement, Plot_Definitions, Tag_Type, File_Type
+from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, Plot_Definitions, Measurement_Tags, File_Type
 Plot_Definitions.show_plot = False # mandatory for gui usage
 from SNOM_AFM_analysis.lib.snom_colormaps import *
 from mpl_point_clicker import clicker# used for getting coordinates from images
@@ -591,9 +591,9 @@ class SyncCorrectionPopup():
     def _Synccorrection_Preview(self):
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
-            measurement = Open_Measurement(self.folder_path, channels=self.channels, autoscale=False)
+            measurement = SnomMeasurement(self.folder_path, channels=self.channels, autoscale=False)
             Plot_Definitions.show_plot = False
-            # scanangle = measurement.measurement_tag_dict[Tag_Type.rotation]*np.pi/180
+            # scanangle = measurement.measurement_tag_dict[Measurement_Tags.rotation]*np.pi/180
             measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
             self._Fill_Canvas()
 
@@ -608,7 +608,7 @@ class SyncCorrectionPopup():
             else:
                 print('self.phasedir must be either \'n\' or \'p\'')
             channels = self.channels
-            measurement = Open_Measurement(self.folder_path, channels=channels, autoscale=False)
+            measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=False)
             measurement.Synccorrection(self.wavelength, self.phasedir)
             print('finished synccorrection')
             self.default_dict['synccorr_lambda'] = float(self.synccorrection_wavelength.get())
@@ -711,7 +711,7 @@ class GaussBlurrPopup():
             number_of_plots = len(self.channels.split(','))
         else:
             number_of_plots = len(channels)
-        # preview_measurement = Open_Measurement(self.folder_path, channels, autoscale=self.default_dict['autoscale'])
+        # preview_measurement = SnomMeasurement(self.folder_path, channels, autoscale=self.default_dict['autoscale'])
         # preview_measurement = self.measurement
         preview_measurement = deepcopy(self.measurement)
         # Plot_Definitions.show_plot = False
@@ -1256,11 +1256,11 @@ class RotationPopup():
                     self.measurement.all_data[channel_index] = np.rot90(self.measurement.all_data[channel_index], axes=self.rotation_orientation) # todo, rotations larger than 90 lead to issues with gif
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_rotated' # eigentlich ueberfluessig
 
-                XReal, YReal = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.scan_area]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.scan_area] = [YReal, XReal]
-                XRes, YRes = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.pixel_area]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.pixel_area] = [YRes, XRes]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Tag_Type.rotation] += rotations*90 # careful, i dont know the definition from the snom
+                XReal, YReal = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.scan_area]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.scan_area] = [YReal, XReal]
+                XRes, YRes = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.pixel_area]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.pixel_area] = [YRes, XRes]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.rotation] += rotations*90 # careful, i dont know the definition from the snom
 
         # print('The following channels have been masked!\n', self.rotation_channels)
         # self.measurement._Write_to_Logfile('height_masking_threshold', self.threshold)

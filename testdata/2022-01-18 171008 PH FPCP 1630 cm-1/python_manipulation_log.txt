@@ -42,3 +42,7 @@ quadratic_pixels = True
 18/07/2023 16:16:24
 filename = 2022-01-18 171008 PH FPCP 1630 cm-1
 quadratic_pixels = True
+05/01/2025 11:43:24
+filename = 2022-01-18 171008 PH FPCP 1630 cm-1
+05/01/2025 11:43:25
+filename = 2022-01-18 171008 PH FPCP 1630 cm-1

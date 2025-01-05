@@ -12,6 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 # from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 # plt.rcParams['figure.dpi'] = 300
+# print(plt.rcParams)
 #import backends explicitly or they wont work in exe format
 import matplotlib.backends.backend_pdf
 import matplotlib.backends.backend_ps
@@ -24,13 +25,10 @@ import os
 
 import gc # garbage collector to delete unecessary memory 
 from enum import Enum, auto
-# to work with config files
-from configparser import ConfigParser
-import ast # for string to list, dict ... conversion
 
 # from SNOM_AFM_analysis.python_classes_snom import *
 from SNOM_AFM_analysis.python_classes_snom import Plot_Definitions, Measurement_Tags, File_Type
-from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
+from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, FileHandler, ApproachCurve 
 import numpy as np
 
 # for animations like gif
@@ -53,11 +51,10 @@ snom_analysis_config_path = Path(os.path.expanduser('~')) / Path('SNOM_Config') 
 
 
 class Plotting_Modes(Enum):
+    AFM = auto()
     SNOM = auto()
-    AFM = auto() # not used yet but could be implemented to simplify the gui for afm users like a mode switch
-    APPROACHCURVE = auto()
-    APPROACH3D = auto()
-    SPECTRUM = auto()
+    APPROACHCURVES = auto()
+    SPECTRA = auto()
     NONE = auto() # if no plotting type is defined
 
 
@@ -73,9 +70,8 @@ class MainGui():
         # self.root.eval(f'tk::PlaceWindow . center')
         
 
-        
-        self.measurement = None # to keep track of the measurement object
-        self.initialdir = os.path.expanduser('~') # will be used if no old measurement is found
+        # testing:
+        self.measurement = None
         # on startup make shure the all_subplots memory gets cleaned
         Plot_Definitions.autodelete_all_subplots = True # set to false once the first measurement is loaded
         # variable to check if user has changed the channels, if so do not change on relod of new measurements
@@ -91,9 +87,17 @@ class MainGui():
         # self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
         self.root.iconbitmap(this_files_path / Path('snom_plotting_v2.ico'))
         self._Generate_Savefolder()
-        self._Load_User_Defaults_config()
-        # try to load the old defaults from the last measurement
-        self._init_old_measurement()
+        self._Get_Old_Folderpath()
+        # define key of default dict for different measurement types
+        self.measurement_channels = {Plotting_Modes.SNOM: 'channels_snom',
+                                Plotting_Modes.AFM: 'channels_afm',
+                                Plotting_Modes.APPROACHCURVES: 'channels_approach_curve',
+                                Plotting_Modes.SPECTRA: 'channels_spectrum',
+                                Plotting_Modes.NONE: 'channels_none'
+                                }
+        self._Load_User_Defaults()
+        self._init_plotting_mode()
+        self.allowed_channels = self._Get_Allowed_Channels() # set once after old folder path is know and plotting mode is set, repeat every time a new folder is loaded
         self._Main_App()
         
     def _Main_App(self):
@@ -102,6 +106,8 @@ class MainGui():
         self._Right_Menu()
         self._Change_Mainwindow_Size()
         self._Update_Scrollframes()
+        # self._change_plotting_mode(self.plotting_mode_id) # the id should be known from the initialize and will eighter use the user default or the old default
+        self._change_plotting_mode_button_color(self.plotting_mode_id, 1)
         # self.root.eval('tk::PlaceWindow . center') # does not work...
         
         # configure canvas to scale with window
@@ -135,35 +141,40 @@ class MainGui():
         # for now just use different buttons from which only one can be selected
         self.plotting_mode_switch_frame = ttkb.Frame(self.menu_left_upper)
         self.plotting_mode_switch_frame.grid(column=0, columnspan=2, row=16)
-        self.plotting_mode_switch_1 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="SNOM", command=lambda: self._change_plotting_mode(Plotting_Modes.SNOM.value))
-        self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.plotting_mode_switch_1 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="SNOM", command=lambda: self._change_plotting_mode(1))
+        # self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for AFM users, disable certain functions which only work for snom, maybe adjust colormaps or something like that
-        self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(Plotting_Modes.AFM.value))
-        self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(2))
+        # self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for Approach curves
-        self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACHCURVE.value))
-        self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
-        # for 3D Measurements (multiple Approach curves)
-        self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="3D Scan", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACH3D.value))
-        self.plotting_mode_switch_4.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(3))
+        # self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for NANO FTIR spectra or so
-        self.plotting_mode_switch_5 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(Plotting_Modes.SPECTRUM.value))
-        self.plotting_mode_switch_5.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
-        # turn on the mode which is currently active if it was found in user defaults for the old measurement
-        self._change_plotting_mode_button_color(self.plotting_mode.value, 1)
+        self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(4))
+        # self.plotting_mode_switch_4.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        
 
         # top level controls for plot
-        self.get_folder_path_button = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._Get_New_Folderpath())
+        self.get_folder_path_button = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._Get_Folderpath_from_Input())
         self.get_folder_path_button.grid(column=0, row=0, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
-        
+        '''
+        # old version based on one line entry field
+        self.label_select_channels.grid(column=0, row=1, columnspan=2, sticky='nsew')
+        self.select_channels = ttkb.Entry(self.menu_left_upper, justify='center')
+        self.select_channels.insert(0, ','.join(self.default_dict[self.measurement_channels[self.plotting_mode]]))
+        self.select_channels.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        '''
         # new version based on text field, can extend over multiple lines if many channels are in memory
         self.select_channels_text = ttkb.Text(self.menu_left_upper, width=20, height=1)
         self.select_channels_text.tag_config('center', justify=CENTER) # only works on first line
         self.select_channels_text.tag_add('center', '1.0', END)
         self.select_channels_text.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.select_channels_text.insert(END, ','.join(self._Get_Default_Channels()), 'center')
+        self.select_channels_text.insert(END, ','.join(self.default_dict[self.measurement_channels[self.plotting_mode]]), 'center')
+        # self._Set_Channels(self.default_dict[self.measurement_channels[self.plotting_mode]]) # risky since this will require a folder path, if the old path is shit this will cause issues
+
+
 
         self.SnomMeasurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Create_Measurement)
         self.SnomMeasurement_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -199,6 +210,9 @@ class MainGui():
         self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._Exit, bootstyle=DANGER)
         self.exit_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
+
+        # todo: clear all plots in memory
+
         # save all defaults:
         self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
         self.save_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
@@ -431,28 +445,28 @@ But data manipulation functions have to be applied manually.
         self.show_titles.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # title prefix like: '{Prefix: }{auto generated title}'
         self.label_measurement_title = ttkb.Label(self.menu_left_lower, text='Prefix Title:')
-        self.label_measurement_title.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.label_measurement_title.grid(column=0, row=5)
         self.measurement_title = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.measurement_title.insert(0, '')
-        self.measurement_title.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        self.measurement_title.grid(column=1, row=5, padx=button_padx, pady=button_pady, sticky='ew')
 
         # tight_layout = True
         self.checkbox_tight_layout = ttkb.IntVar()
         self.checkbox_tight_layout.set(self.default_dict['tight_layout'])
         self.tight_layout = ttkb.Checkbutton(self.menu_left_lower, text='Tight layout', variable=self.checkbox_tight_layout, onvalue=1, offvalue=0)
-        self.tight_layout.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.tight_layout.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # hspace = 0.4 #standard is 0.4
         self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
-        self.label_h_space.grid(column=0, row=8)
+        # self.label_h_space.grid(column=0, row=6)
         self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.h_space.insert(0, self.default_dict['h_space'])
-        self.h_space.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
+        # self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
         self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
-        self.label_add_scalebar.grid(column=0, row=9)
+        self.label_add_scalebar.grid(column=0, row=7)
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
-        self.add_scalebar.grid(column=1, row=9, padx=button_padx, pady=button_pady, sticky='ew')
+        self.add_scalebar.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
 
         ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
@@ -726,11 +740,19 @@ for example fourier filtering.
         """Create the measurement instance depending on the chosen Measurement folder and plotting mode.
         Also handle which buttons are enabled or disabled depending on plotting mode.
         """
+        # print('plotting_mode: ', self.plotting_mode)
+        # if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
         if self.folder_path == None:
             print('No measurement found!')
-        elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+            
+
+
+        elif self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             channels = self._Get_Channels()
             self.measurement = ApproachCurve(self.folder_path, channels=channels)
+
+            # self._change_plotting_mode(3) # approach curve detected, switch plotting mode automatically
+                                               
 
             self.generate_plot_button.config(state=ON)
             self.button_save_to_gsftxt.config(state=DISABLED)
@@ -746,34 +768,18 @@ for example fourier filtering.
             self.menu_right_2_transform_log.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             # todo, add approach curve handling to snom package to make it also possible to store multiple curves in memory
-        elif self.plotting_mode is Plotting_Modes.APPROACH3D:
-            channels = self._Get_Channels()
-            self.measurement = Scan3D(self.folder_path, channels=channels)
-            # not fully implemented yet
-            # for now just display the averaged values
-            self.measurement.Set_Min_to_Zero()
-            self.measurement.Average_Data()
-            self.measurement.Display_Cutplane_V3(axis='x', line=0, channel=channels[0])
-
-            self.generate_plot_button.config(state=ON)
-            self.button_save_to_gsftxt.config(state=DISABLED)
-            self.menu_right_2_height_leveling.config(state=DISABLED)
-            self.menu_right_2_phase_drift_comp.config(state=DISABLED)
-            self.menu_right_2_overlay.config(state=DISABLED)
-            self.menu_right_2_gaussblurr.config(state=DISABLED)
-            self.menu_left_clear_plots_button.config(state=DISABLED)
-            self.menu_right_2_shift_phase.config(state=DISABLED)
-            self.menu_right_2_create_realpart.config(state=DISABLED)
-            self.menu_right_2_height_masking.config(state=DISABLED)
-            self.menu_right_2_rotation.config(state=DISABLED)
-            self.menu_right_2_transform_log.config(state=DISABLED)
-            self.save_plot_button.config(state=DISABLED)
         elif self.plotting_mode is Plotting_Modes.SNOM or self.plotting_mode is Plotting_Modes.AFM:
             if self.checkbox_autoscale.get() == 1:
                 autoscale = True
             else:
                 autoscale = False
             channels = self._Get_Channels()
+            # title = 'testtitle'
+
+            # if self.measurement != None:
+            #     del self.measurement
+            #     gc.collect()
+            print("Opening measurement with channels: ", channels)
             self.measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=autoscale)
 
             self.generate_plot_button.config(state=ON)
@@ -794,38 +800,19 @@ for example fourier filtering.
             # self.update_plot_button.config(state=DISABLED)
 
             Plot_Definitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
-        elif self.plotting_mode is Plotting_Modes.SPECTRUM:
+        elif self.plotting_mode is Plotting_Modes.SPECTRA:
             print("Spectra plotting mode is not yet implemented!")
 
-
     def _Get_Allowed_Channels(self):
-        """This function tries to find out which channels are allowed for the current measurement folder and plotting type.
-        The allowed channels are used to autocorrect the user input in the channel text field. 
-        Other channels are still accepted but cannot be autocorrected."""
-        snom_analysis_config = ConfigParser()
-        with open(snom_analysis_config_path, 'r') as f:
-            snom_analysis_config.read_file(f)
-        if self.file_type == None:
-            file_type = 'FILETYPE1' # todo, the snom_analysis config does not account for this none filetype
-        else:
-            file_type = self.file_type
-        phase_channels = self._get_from_config('phase_channels', file_type, snom_analysis_config)
-        amp_channels = self._get_from_config('amp_channels', file_type, snom_analysis_config)
-        real_channels = self._get_from_config('real_channels', file_type, snom_analysis_config)
-        imag_channels = self._get_from_config('imag_channels', file_type, snom_analysis_config)
-        height_channels = self._get_from_config('height_channels', file_type, snom_analysis_config)
-        mechanical_channels = self._get_from_config('mechanical_channels', file_type, snom_analysis_config)
-        default_appendix = self._get_from_config('channel_suffix_default', file_type, snom_analysis_config)
-        all_channels_default = [channel + default_appendix for channel in phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels]
-        all_channels_default += height_channels
-        # also include variations with the various suffixes
-        sync_appendix = self._get_from_config('channel_suffix_synccorrected_phase', file_type, snom_analysis_config)
-        all_channels_synccorrected = [channel + sync_appendix for channel in phase_channels]
-        manipulated_appendix = self._get_from_config('channel_suffix_manipulated', file_type, snom_analysis_config)
-        all_channels_manipulated = [channel + manipulated_appendix for channel in phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels]
-        overlain_appendix = self._get_from_config('channel_suffix_overlain', file_type, snom_analysis_config)
-        all_channels_overlain = [channel + overlain_appendix for channel in phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels]
-        self.allowed_channels = all_channels_default + all_channels_synccorrected + all_channels_manipulated + all_channels_overlain
+        """This function tries to find out which channels are allowed for the current measurement folder and plotting type."""
+        if self.plotting_mode == Plotting_Modes.APPROACHCURVES:
+            measurement = ApproachCurve(self.folder_path)
+        elif self.plotting_mode == Plotting_Modes.SNOM:
+            measurement = SnomMeasurement(self.folder_path)
+        elif self.plotting_mode == Plotting_Modes.NONE:
+            print('No plotting mode selected!')
+            return None
+        self.allowed_channels = measurement.all_channels_default + measurement.all_channels_custom
         return self.allowed_channels
 
     def _Get_Channels(self, as_list:bool=True):
@@ -854,24 +841,29 @@ for example fourier filtering.
         self.select_channels.delete(0,END)
         self.select_channels.insert(0, channels)
         '''
+        # print('in set channels: ', channels)
         # alternative with text widget:
         self.select_channels_text.delete('0.0', END)
         # does not work properly because width in px for font is unknown...
         select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
         # select_channels_text_width = 30 # this is the allowed width for text inside the text field
         encoded_text = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels()).Encode_Input(channels)
+        # print('allowed channels: ', self._Get_Allowed_Channels())
         text_height = encoded_text.count('\n')
         # change height of text widget
         self.select_channels_text.config(height=text_height+1)
         self.select_channels_text.insert(END, encoded_text, 'center')
+        # print('the channels text field is ', self.select_channels_text.winfo_width(), 'wide')
+        # print('The content is ', len(encoded_text), 'long')
+        # print('inserting: ', encoded_text)
 
     def _Generate_Plot(self):
         plt.close(self.fig)
-        # if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        # if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
         #     self.save_plot_button.config(state=ON)
         #     self.measurement.measurement_title = self.measurement_title.get()
         #     self._plot_approach_curve()
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             self.save_plot_button.config(state=ON)
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._Get_Channels()
@@ -879,6 +871,7 @@ for example fourier filtering.
                 self.measurement.Set_Min_to_Zero()
             # self.measurement.Display_Channels(channels) #show_plot=False
             self.measurement.Display_Channels_V2(channels) #show_plot=False
+            # print(self.measurement.measurement_tag_dict)
             # self._Fill_Canvas()
         else:
             Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
@@ -946,7 +939,7 @@ for example fourier filtering.
     def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
         # plt.close(self.fig)
         
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        if self.plotting_mode is Plotting_Modes.APPROACHCURVES:
             self._Generate_Plot()
             '''
             self.save_plot_button.config(state=ON)
@@ -961,6 +954,73 @@ for example fourier filtering.
                 self.measurement.Remove_Last_Subplots(len(channels))
             except: print('could not remove the last subplots! (Update Plot)')
             self._Generate_Plot()
+            '''
+            Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
+            Plot_Definitions.vmax_amp = -1
+            Plot_Definitions.vmin_real = 0
+            Plot_Definitions.vmax_real = 0
+            Plot_Definitions.colorbar_width = float(self.colorbar_width.get())
+            if self.checkbox_hide_ticks.get() == 1:
+                Plot_Definitions.hide_ticks = True
+            else:
+                Plot_Definitions.hide_ticks = False
+            if self.checkbox_show_titles.get() == 1:
+                Plot_Definitions.show_titles = True
+            else:
+                Plot_Definitions.show_titles = False
+            if self.checkbox_tight_layout.get() == 1:
+                Plot_Definitions.tight_layout = True
+            else:
+                Plot_Definitions.tight_layout = False
+            if self.checkbox_full_phase_range.get() == 1:
+                Plot_Definitions.full_phase_range = True
+            else:
+                Plot_Definitions.full_phase_range = False
+            if self.checkbox_amp_cbar_range.get() == 1:
+                Plot_Definitions.amp_cbar_range = True
+            else:
+                Plot_Definitions.amp_cbar_range = False
+            if self.checkbox_real_cbar_range.get() == 1:
+                Plot_Definitions.real_cbar_range = True
+            else:
+                Plot_Definitions.real_cbar_range = False
+            if self.checkbox_height_cbar_range.get() == 1:
+                Plot_Definitions.height_cbar_range = True
+            else:
+                Plot_Definitions.height_cbar_range = False
+        
+            Plot_Definitions.hspace = float(self.h_space.get())
+
+            if self.checkbox_autoscale.get() == 1:
+                self.measurement.Quadratic_Pixels()
+            
+            if self.checkbox_setmintozero_var.get() == 1:
+                self.measurement.Set_Min_to_Zero()
+            # if self.checkbox_gaussian_blurr.get() == 1:
+            #     self.measurement.Scale_Channels()
+            #     self.measurement.Gauss_Filter_Channels_complex()
+            try:
+                scalebar_channel = self.add_scalebar.get().split(',')
+            except:
+                scalebar_channel = [self.add_scalebar.get()]
+            if scalebar_channel != '':
+                self.measurement.Scalebar(channels=scalebar_channel)
+                # todo, scalebar works with channel label not channel name?            
+
+            self.measurement.measurement_title = self.measurement_title.get()
+            # plt.clf()
+            channels = self._Get_Channels()
+            try: 
+                self.measurement.Remove_Last_Subplots(len(channels))
+            except: print('could not remove the last subplots! (Update Plot)')
+            self.measurement.Display_Channels(channels) #show_plot=False
+            self.generate_all_plot_button.config(state=ON)
+            #enable savefile button
+            # self.button_save_to_gsftxt.config(state=ON)
+            # self._update_entry_values()
+            # update right menu
+            # self._Right_Menu()'''
+        # self._Fill_Canvas()
 
     def _Fill_Canvas(self):
         self.fig = plt.gcf()
@@ -980,7 +1040,27 @@ for example fourier filtering.
             self.toolbar.update()
             self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
-        self.canvas_fig.draw()        
+        
+        self.canvas_fig.draw()
+        
+        '''
+        # does not work properly: 
+        try:
+            # self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+            self.toolbar.update()
+        except:
+            print('exception in fill canvas!')
+            self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
+            self.toolbar = NavigationToolbar2Tk(self.canvas_fig, self.root, pack_toolbar=False)
+            self.toolbar.update()
+            # toolbar.pack(side=tk.BOTTOM, fill=tk.X)
+            self.toolbar.grid(column=1, row=1, columnspan=1)
+            self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
+        self.canvas_fig.draw()
+        '''
+
+        # self.canvas_fig.draw()
+        
         self._Change_Mainwindow_Size()
         # self.fig = None
         gc.collect()
@@ -995,98 +1075,76 @@ for example fourier filtering.
     def _Generate_Savefolder(self):
         """Generate a folder in the users home directory to save the the subplot information and gui settings. The same parent folder
         as for the snom analisis tool is used."""
-        self.snom_plotter_config_folder = Path(os.path.expanduser('~')) / Path('SNOM_Config') / Path('SNOM_Plotter')
-        self.config_path = self.snom_plotter_config_folder / Path('user_defaults.ini')
+        self.snom_plotter_config_folder = Path(os.path.expanduser('~')) / Path('SNOM_Config') / Path('SNOM_Analysis')
         if not Path.exists(self.snom_plotter_config_folder):
             os.makedirs(self.snom_plotter_config_folder)
 
-    def _Get_New_Folderpath(self):
-        new_measuement = False
-        old_folder_path = self.folder_path
-        self.folder_path = filedialog.askdirectory(initialdir=self.initialdir)
-        # check if folder path is valid
-        if self.folder_path == '':
-            self.folder_path = old_folder_path
-            return
-        if old_folder_path != self.folder_path:
-            new_measuement = True
-        self.measurement = None
-        # set new initail dir for the next filedialog
-        self.initialdir = Path(self.folder_path).parent
-
+    def _Get_Folderpath_from_Input(self):
+        # get old default channels to find out if the channel names change for new folder
+        # old_default_channels = self._Get_Default_Channels()
+        # check if old default path exists to use as initialdir
+        self._Get_Old_Folderpath() # alread done in init
+        initialdir = self.initialdir.parent
+        self.folder_path = filedialog.askdirectory(initialdir=initialdir)
+        # print('folder path: ', self.folder_path)
+        # print('type of folder path: ', type(self.folder_path))
+        # save filepath to txt and use as next initialdir
+        # first check if folder_path is correct, user might abort filedialog
+        if len(self.folder_path) > 5:
+            with open(self.snom_plotter_config_folder / Path('default_path.txt'), 'w') as file:
+                file.write('#' + self.folder_path)
+                # filepath for approach curves
+                self.approach_curve_fp = self.folder_path / Path(PurePath(self.folder_path).parts[-1] + '.txt')
+        # find out if measurement contains normal snom/afm data or approach curve
+        # if os.path.exists(self.approach_curve_fp):
+            # does not work! should be done via measurement type extracted from txt in folder
+            # automatically change plotting mode to approach curve
+            # self._change_plotting_mode(3)
+            # print('Approach curve detected, switched to approach curve plotting mode automatically!')
+        # else:
         # check if filetype has changed
         old_file_type = self.file_type
-        self._Get_Measurement_Details() # loads various new measurement details also the filetype
-
-        # save new old folder path and corresponding filetype to config file
-        config = ConfigParser()
-        with open(self.config_path, 'r') as file:
-            config.read_file(file)
-        config['OLDMEASUREMENT'] = {'folder_path': f'<{self.folder_path}>', 'file_type': f'<{self.file_type}>', 'plotting_mode': f'<{self.plotting_mode.value}>'}
-        with open(self.config_path, 'w') as file:
-            config.write(file)
-        # todo delete the following
-        self.config = ConfigParser()
-        with open(self.config_path, 'r') as file:
-            self.config.read_file(file)
-
-        # do stuff if the file has changed
-        if new_measuement:
-            # load the user defaults
-            self._Load_User_Defaults()
-            # get the allowed channels
-            self._Get_Allowed_Channels()
-            # upadate the buttons
-            self._Update_Buttons()
-        
-        # disable plot button since new measurement has to be loaded first
-        self.generate_plot_button.config(state=DISABLED)
-
-    def _Update_Buttons(self):
-        if self.file_type != None:
-            self._Set_Channels(self._Get_Default_Channels())
+        new_file_type = self._Get_Measurement_Filetype()
+        self.file_type = new_file_type
+        print('old filetype: ', old_file_type)
+        print('detected filetype: ', new_file_type)
+        # do stuff if the filetype has changed
+        if new_file_type != old_file_type and new_file_type != None:
+            
+            if new_file_type == File_Type.approach_curve:
+                # self.plotting_mode = Plotting_Modes.APPROACHCURVES
+                self._change_plotting_mode(3)
+            else: 
+                # self.plotting_mode = Plotting_Modes.SNOM # todo for now, if more modes are added change it
+                self._change_plotting_mode(1)
+            # print('set new filetype to: ', new_file_type)
+            # reload default channels as most probably different channels are needed
+            self.relod_default_channels = True
+            self.allowed_channels = self._Get_Allowed_Channels()
+        '''
+        if new_file_type != None and old_file_type == None:
+            print('enabeling all buttons')
             # enable all buttons
-            if self.measurement != None:
-                self.SnomMeasurement_button.config(state=ON)
-                self.generate_plot_button.config(state=ON)
-                # self.button_save_to_gsftxt.config(state=ON)
-                self.menu_right_2_height_leveling.config(state=ON)
-                self.menu_right_2_phase_drift_comp.config(state=ON)
-                self.menu_right_2_overlay.config(state=ON)
-                self.menu_right_2_gaussblurr.config(state=ON)
-                # self.menu_left_clear_plots_button.config(state=ON)
-                self.menu_right_2_shift_phase.config(state=ON)
-                self.menu_right_2_synccorrection.config(state=ON)
-                self.menu_right_2_create_realpart.config(state=ON)
-                self.menu_right_2_height_masking.config(state=ON)
-                self.menu_right_2_rotation.config(state=ON)
-                self.menu_right_2_transform_log.config(state=ON)
-                self.menu_right_2_create_gif.config(state=ON)
-                # self.save_plot_button.config(state=ON)
-                # self.update_plot_button.config(state=ON)
-            else:
-                self.SnomMeasurement_button.config(state=ON)
-                self.generate_plot_button.config(state=DISABLED)
-                # self.button_save_to_gsftxt.config(state=ON)
-                self.menu_right_2_height_leveling.config(state=DISABLED)
-                self.menu_right_2_phase_drift_comp.config(state=DISABLED)
-                self.menu_right_2_overlay.config(state=DISABLED)
-                self.menu_right_2_gaussblurr.config(state=DISABLED)
-                # self.menu_left_clear_plots_button.config(state=ON)
-                self.menu_right_2_shift_phase.config(state=DISABLED)
-                self.menu_right_2_synccorrection.config(state=ON)
-                self.menu_right_2_create_realpart.config(state=DISABLED)
-                self.menu_right_2_height_masking.config(state=DISABLED)
-                self.menu_right_2_rotation.config(state=DISABLED)
-                self.menu_right_2_transform_log.config(state=DISABLED)
-                self.menu_right_2_create_gif.config(state=DISABLED)
-                self.save_plot_button.config(state=DISABLED)
-                self.update_plot_button.config(state=DISABLED)
-        elif self.file_type == None:
+            self.SnomMeasurement_button.config(state=ON)
+            self.generate_plot_button.config(state=ON)
+            # self.button_save_to_gsftxt.config(state=ON)
+            self.menu_right_2_height_leveling.config(state=ON)
+            self.menu_right_2_phase_drift_comp.config(state=ON)
+            self.menu_right_2_overlay.config(state=ON)
+            self.menu_right_2_gaussblurr.config(state=ON)
+            # self.menu_left_clear_plots_button.config(state=ON)
+            self.menu_right_2_shift_phase.config(state=ON)
+            self.menu_right_2_synccorrection.config(state=ON)
+            self.menu_right_2_create_realpart.config(state=ON)
+            self.menu_right_2_height_masking.config(state=ON)
+            self.menu_right_2_rotation.config(state=ON)
+            self.menu_right_2_transform_log.config(state=ON)
+            self.menu_right_2_create_gif.config(state=ON)
+            # self.save_plot_button.config(state=ON)
+            # self.update_plot_button.config(state=ON)
+        elif new_file_type == None:
             # make shure to update the channel field
-            self.select_channels_text.delete('0.0', END)
-            self.select_channels_text.config(height=1)
-            self.select_channels_text.insert(END, 'unknown', 'center')
+            self._change_plotting_mode(5)
             # disable all buttons
             self.SnomMeasurement_button.config(state=DISABLED)
             self.generate_plot_button.config(state=DISABLED)
@@ -1106,119 +1164,191 @@ for example fourier filtering.
             self.menu_right_2_create_gif.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             self.update_plot_button.config(state=DISABLED)
-            
+        '''
+        # update buttons, if filetype has changed to none disable most buttons
+        self._Update_Buttons()
+        
+        # reload default channels if channels entry field was not changed
+        if self.relod_default_channels:
+            # reinitialize the default channels, only if default channels are different, eg. if a different filetype is selected with different channelnames
+            default_channels = self._Get_Default_Channels()
+            # if default_channels != old_default_channels:
+            # self._Set_Default_Channels(default_channels)
+            self._Set_Channels(default_channels)
+            self.relod_default_channels = False # use same channels on next loading, this might lead to problems if a user wants to switch between measurements with different channel names.
+        # disable plot button since new measurement has to be loaded first
+        self.generate_plot_button.config(state=DISABLED)
+
+    def _Update_Buttons(self):
+        if self.file_type != None:
+            # print('enabeling all buttons')
+            # enable all buttons
+            self.SnomMeasurement_button.config(state=ON)
+            self.generate_plot_button.config(state=ON)
+            # self.button_save_to_gsftxt.config(state=ON)
+            self.menu_right_2_height_leveling.config(state=ON)
+            self.menu_right_2_phase_drift_comp.config(state=ON)
+            self.menu_right_2_overlay.config(state=ON)
+            self.menu_right_2_gaussblurr.config(state=ON)
+            # self.menu_left_clear_plots_button.config(state=ON)
+            self.menu_right_2_shift_phase.config(state=ON)
+            self.menu_right_2_synccorrection.config(state=ON)
+            self.menu_right_2_create_realpart.config(state=ON)
+            self.menu_right_2_height_masking.config(state=ON)
+            self.menu_right_2_rotation.config(state=ON)
+            self.menu_right_2_transform_log.config(state=ON)
+            self.menu_right_2_create_gif.config(state=ON)
+            # self.save_plot_button.config(state=ON)
+            # self.update_plot_button.config(state=ON)
+        elif self.file_type == None:
+            # make shure to update the channel field
+            self._change_plotting_mode(5)
+            # disable all buttons
+            self.SnomMeasurement_button.config(state=DISABLED)
+            self.generate_plot_button.config(state=DISABLED)
+            self.generate_all_plot_button.config(state=DISABLED)
+            self.button_save_to_gsftxt.config(state=DISABLED)
+            self.menu_right_2_height_leveling.config(state=DISABLED)
+            self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+            self.menu_right_2_overlay.config(state=DISABLED)
+            self.menu_right_2_gaussblurr.config(state=DISABLED)
+            # self.menu_left_clear_plots_button.config(state=DISABLED)
+            self.menu_right_2_shift_phase.config(state=DISABLED)
+            self.menu_right_2_synccorrection.config(state=DISABLED)
+            self.menu_right_2_create_realpart.config(state=DISABLED)
+            self.menu_right_2_height_masking.config(state=DISABLED)
+            self.menu_right_2_rotation.config(state=DISABLED)
+            self.menu_right_2_transform_log.config(state=DISABLED)
+            self.menu_right_2_create_gif.config(state=DISABLED)
+            self.save_plot_button.config(state=DISABLED)
+            self.update_plot_button.config(state=DISABLED)
+
     def _Exit(self):
         self.root.quit()
         sys.exit()
 
-    def _init_old_measurement(self):
-        # try to get the old folder path from the config file
-        self._Get_Old_Folderpath()
-        # get the measurement details
-        self._Get_Measurement_Details()
-        # load the user defaults
-        self._Load_User_Defaults()
-        # get the allowed channels
-        self._Get_Allowed_Channels()
+    def _Get_Old_Folderpath(self):
+        # print('trying to find old folder path')
+        try:
+            with open(self.snom_plotter_config_folder / Path('default_path.txt'), 'r') as file:
+                content = file.read()
+            if content[0:1] == '#' and len(content) > 5:
+                self.initialdir = Path(content[1:]) # to do change to one level higher
+                # print('content: ', content)
+                # print('initialdir: ', self.initialdir)
+                self.folder_path = Path(self.initialdir)
 
-    def _Get_Old_Folderpath(self) -> bool:
-        folder_path = None
-        file_type = None
-        plotting_mode_val = None
-        folder_path = self._get_from_config('folder_path', 'OLDMEASUREMENT')
-        file_type = self._get_from_config('file_type', 'OLDMEASUREMENT')
-        plotting_mode_val = self._get_from_config('plotting_mode', 'OLDMEASUREMENT')
-        if folder_path != None and file_type != None and plotting_mode_val != None:
-            self.folder_path = Path(folder_path)
-            self.initialdir = self.folder_path.parent
-            self.file_type = file_type
-            self.plotting_mode = Plotting_Modes(int(plotting_mode_val))
-            return True
-        else:
-            self.folder_path = None
+            else: raise Exception
+        except:
             self.initialdir = this_files_path
-            self.file_type = None
-            self.plotting_mode = Plotting_Modes.NONE
-            return False
+            # self.folder_path = Path(self.initialdir)
+            self.folder_path = None
+            # print('no old folder path found!', this_files_path)
         
-    def _Get_Default_Channels(self, plotting_mode=None) -> list:
+        #set old path to folder as default
+        # self.folder_path = Path(self.initialdir)
+
+    def _Get_Default_Channels_old(self, plotting_mode=None) -> list:
         """Tries to find the default channels for the given file type by opening a measurement instance and returning the defaults saved there.
         If no file type is specified, the current file type will be used instead."""
-        # default_channels = self.default_dict['default_channels']
+        default_channels = ['O2A','O2P','Z C']
         if plotting_mode is None:
             plotting_mode = self.plotting_mode
-        if self.folder_path != None:
-            if plotting_mode == Plotting_Modes.APPROACHCURVE:
-                channels = self.default_dict['channels_approach_curve']
-                if channels is None:
+        if self.folder_path != this_files_path:
+            if plotting_mode == Plotting_Modes.APPROACHCURVES:
+                # first try to find old defaults from dict
+                try:
+                    default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.APPROACHCURVES]]
+                except:
                     Measurement = ApproachCurve(self.folder_path)
-                    channels = Measurement.channels
-                    # auto save the new defaults to config since the old ones were not yet implemented
-                    self.config[self.file_type]['channels_approach_curve'] = str(channels)
+                    default_channels = Measurement.channels
+                # this will return the default channels defined in the measurement class
+                # different filetypes might have different channel definitions
             elif plotting_mode == Plotting_Modes.SNOM:
-                channels = self.default_dict['channels_snom']
-                # print('default channels: ', channels)
-                if channels is None:
-                    # print('loading default channels from measurement...')
-                    Measurement = SnomMeasurement(self.folder_path)
-                    channels = Measurement.channels
-                    # auto save the new defaults to config since the old ones were not yet implemented
-                    self.config[self.file_type]['channels_snom'] = str(channels)
-            elif plotting_mode == Plotting_Modes.AFM:
-                channels = self.default_dict['channels_afm']
-                if channels is None:
-                    Measurement = SnomMeasurement(self.folder_path)
-                    channels = Measurement.height_channels
-                    # auto save the new defaults to config since the old ones were not yet implemented
-                    self.config[self.file_type]['channels_afm'] = str(channels)
-            elif plotting_mode == Plotting_Modes.SPECTRUM:
-                channels = self.default_dict['channels_spectrum']
-                if channels is None:
-                    print('Spectrum channels are not yet implemented!')
-                    channels = ['-unknown-']
-        else:
-            channels = ['-unknown-']
-        # save the config file
-        with open(self.config_path, 'w') as file:
-            self.config.write(file)
-        return channels
-    
-    def _Get_Measurement_Details(self):
-        if self.folder_path != None:
-            Measurement = FileHandler(self.folder_path)
-            self.file_type = Measurement.file_type
-            self.measurement_tag_dict = Measurement.measurement_tag_dict
-        else:
-            self.file_type = None
-            self.measurement_tag_dict = None
-        # try to identify the measurement type to set the correct plotting mode
-        self._Get_Measurement_Type()
-
-    def _Get_Measurement_Type(self):
-        """Try to identify the measurement type based on the measurement tags.
-        This will automatically set the plotting mode."""
-        if self.file_type != None:
-            try:
-                # not every filetype has a scan type
-                scan_type = self.measurement_tag_dict[Measurement_Tags.SCAN]
-            except:
-                # scan_type = None
-                # self.plotting_mode = Plotting_Modes.NONE
-                # todo, not all filetypes have a scan type, use additional ways to identify the measurement type
-                # for now assume, that all files without a scan type are standard snom measurements
-                plotting_mode = Plotting_Modes.SNOM
-            else:
-                if 'Approach Curve' in scan_type:
-                    plotting_mode = Plotting_Modes.APPROACHCURVE
-                elif '3D':
-                    plotting_mode = Plotting_Modes.APPROACH3D
-                elif 'Spectrum' in scan_type: # todo, not implemented yet
-                    plotting_mode = Plotting_Modes.SPECTRUM
+                # there might be different default channels for different filetypes
+                if self.file_type == File_Type.standard or self.file_type == File_Type.standard_new or self.file_type == File_Type.neaspec_version_1_6_3359_1:
+                    try:
+                        default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.SNOM]] # so far default channels dict is only available for standard filetype
+                    except:
+                        Measurement = SnomMeasurement(self.folder_path)
+                        default_channels = Measurement.channels
+                elif self.file_type == File_Type.aachen_ascii:
+                    default_channels = ['O2-F-abs','O2-F-arg','MT-F-abs']
+                elif self.file_type == File_Type.comsol_gsf:
+                    default_channels = ['abs','arg']
                 else:
-                    plotting_mode = Plotting_Modes.SNOM
+                    print('the default channels for this plotting mode and filetype are not implemented!')
+            else:
+                print('the default channels for this plotting mode are not implemented!')
+            print('default_channels: ', default_channels)
+            return default_channels
+        elif self.file_type is None:
+            print('No measurement found!')
+            default_channels = ['No measurement found!']
+            return default_channels
         else:
-            plotting_mode = Plotting_Modes.NONE
-        self._change_plotting_mode(plotting_mode.value)
+            print('Default channels not found! Proceeding with standard channels...')
+            return default_channels
+    
+    def _Get_Default_Channels(self, plotting_mode=None) -> list:
+        """Tries to get the default channels from the config file.
+        If no file type is specified, the current file type will be used instead."""
+        default_channels = ['O2A','O2P','Z C']
+        if plotting_mode is None:
+            plotting_mode = self.plotting_mode
+        if self.folder_path != this_files_path:
+            if plotting_mode == Plotting_Modes.APPROACHCURVES:
+                # first try to find old defaults from dict
+                try:
+                    default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.APPROACHCURVES]]
+                except:
+                    Measurement = ApproachCurve(self.folder_path)
+                    default_channels = Measurement.channels
+                # this will return the default channels defined in the measurement class
+                # different filetypes might have different channel definitions
+            elif plotting_mode == Plotting_Modes.SNOM:
+                # there might be different default channels for different filetypes
+                try:
+                    default_channels = self.default_dict[self.measurement_channels[Plotting_Modes.SNOM]] # so far default channels dict is only available for standard filetype
+                except:
+                    Measurement = SnomMeasurement(self.folder_path)
+                    default_channels = Measurement.channels
+                    print('the default channels for this plotting mode and filetype are not implemented!')
+            else:
+                print('the default channels for this plotting mode are not implemented!')
+            print('default_channels: ', default_channels)
+            return default_channels
+        elif self.file_type is None:
+            print('No measurement found!')
+            default_channels = ['No measurement found!']
+            return default_channels
+        else:
+            print('Default channels not found! Proceeding with standard channels...')
+            return default_channels
+
+    # not used anymore!
+    def _Set_Default_Channels(self, default_channels):# todo adjust once set_channels is implemented
+        default_channels = ','.join(default_channels)
+        self._Set_Channels(default_channels)
+        # self.select_channels.delete(0,END)
+        # self.select_channels.insert(0, default_channels)
+
+    def _Set_Phase_Range(self):
+        filetype = self._Get_Measurement_Filetype()
+        if filetype is File_Type.aachen_ascii:
+            self.checkbox_full_phase_range.set(0)  
+        else: 
+            self.checkbox_full_phase_range.set(1)
+
+    def _Get_Measurement_Filetype(self) -> File_Type:
+        if self.folder_path != this_files_path and self.folder_path != '' and self.folder_path != None:
+            # print('trying to find filetype')
+            # Measurement = SnomMeasurement(self.folder_path)
+            Measurement = FileHandler(self.folder_path)
+            filetype = Measurement.file_type
+            return filetype
+        else:
+            return None
 
     def _Change_Mainwindow_Size(self):
         # change size of main window to adjust size of plot
@@ -1246,14 +1376,35 @@ for example fourier filtering.
             self._Fill_Canvas()
     
     def _Synccorrection(self): # delete?
+        # print(self.default_dict['synccorr_lambda'])
+        # print(self.default_dict['synccorr_phasedir'])
         popup = SyncCorrectionPopup(self.root, self.folder_path, self._Get_Channels(), self.default_dict)
+        # print(self.default_dict['synccorr_lambda'])
+        # print(self.default_dict['synccorr_phasedir'])
+        # self.synccorrection_wavelength = popup.wavelength
+        # if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir != '':
+        #     wavelength = float(self.synccorrection_wavelength.get())
+        #     phasedir = str(self.synccorrection_phasedir.get())
+        #     if phasedir == 'n':
+        #         phasedir = -1
+        #     elif phasedir == 'p':
+        #         phasedir = 1
+        #     else:
+        #         print('Phasedir must be either \'n\' or \'p\'')
+        #     channels = self._Get_Channels()
+        #     measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=False)
+        #     measurement.Synccorrection(wavelength, phasedir)
+        #     print('finished synccorrection')
 
     def _Gauss_Blurr(self): #todo
         # make it such that channels which are in memory are used instead of loading
+        # print('gauss blurring: ',self._Get_Channels(as_list=False))
         popup = GaussBlurrPopup(self.root, self.measurement, self.folder_path, self._Get_Channels(as_list=False), self.default_dict)
         scaling = popup.scaling
         sigma = popup.sigma
         channels = popup.channels
+        # print('channels to blurr:', channels)
+        # Plot_Definitions.show_plot = False
         self.measurement.Scale_Channels(channels, scaling)
         self.measurement.Gauss_Filter_Channels_complex(channels, sigma)
 
@@ -1271,25 +1422,15 @@ for example fourier filtering.
         self.generate_all_plot_button.config(state=DISABLED)
 
     def _Save_User_Defaults(self):
-        """Save the user defaults to the config file for the currently active filetype."""
-        # get the channels from the text field
-        current_channels = self._Get_Channels()
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
-            self.default_dict['channels_approach_curve'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.SNOM:
-            self.default_dict['channels_snom'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.AFM:
-            self.default_dict['channels_afm'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.SPECTRUM:
-            self.default_dict['channels_spectrum'] = current_channels
+        new_default_channels = self._Get_Channels()
+        # first change corresponding entry in current defaults dict
         
-        
+        self.default_dict[self.measurement_channels[self.plotting_mode]] = new_default_channels
         default_dict = {
-            'default_channels'  : self.default_dict['default_channels'],
             'channels_snom'     : self.default_dict['channels_snom'],
-            'channels_afm'      : self.default_dict['channels_afm'],
+            'channels_afm'     : self.default_dict['channels_afm'],
             'channels_approach_curve'     : self.default_dict['channels_approach_curve'],
-            'channels_spectrum' : self.default_dict['channels_spectrum'],
+            'channels_spectrum'     : self.default_dict['channels_spectrum'],
             'dpi'               : self.figure_dpi.get(),
             'colorbar_width'    : self.colorbar_width.get(),
             'figure_width'      : self.canvas_fig_width.get(),
@@ -1302,7 +1443,7 @@ for example fourier filtering.
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
             'full_phase'        : self.checkbox_full_phase_range.get(),
-            'shared_phase'      : self.checkbox_shared_phase_range.get(),
+            'shared_phase'        : self.checkbox_shared_phase_range.get(),
             'shared_amp'        : self.checkbox_amp_cbar_range.get(),
             'shared_real'       : self.checkbox_real_cbar_range.get(),
             'shared_height'     : self.checkbox_height_cbar_range.get(),
@@ -1311,158 +1452,49 @@ for example fourier filtering.
             'synccorr_phasedir' : self.default_dict['synccorr_phasedir'],
             'pixel_integration_width': self.default_dict['pixel_integration_width'],
             'height_threshold': self.default_dict['height_threshold'],
-            'plotting_mode_id'     : self.plotting_mode.value
+            'plotting_mode_id'     : self.plotting_mode_id
+
+            # 'appendix'          : '_manipulated'
+
         }
-        # iterate through all keys in the config file of the current filetype and update the values
-        
-        for key in default_dict:
-            value = default_dict[key]
-            if value == '':
-                value = '<>'
-            self.config[self.file_type][key] = str(value)
-            # self.config[self.file_type][key] = default_dict[key]
-        # save updated config
-        with open(self.config_path, 'w') as f:
-            self.config.write(f)
+        print(default_dict)
+        with open(self.snom_plotter_config_folder / Path('user_defaults.json'), 'w') as f:
+            json.dump(default_dict, f, sort_keys=True, indent=4)
 
     def _Load_User_Defaults(self):
-        """Load the user defaults from the config file."""
-        # make shure to reload the config file in case it was changed
-        self._Load_User_Defaults_config()
-        self.default_dict = {}
-        if self.file_type == None:
-            file_type = 'FILETYPENONE'
-        else:
-            file_type = self.file_type
-        # iterate through all keys in the config file of the current filetype, if no filetype is active use the first filetype
-        for key in self.config[file_type]:
-            self.default_dict[key] = self._get_from_config(key, file_type)
+        try:
+            with open(self.snom_plotter_config_folder / Path('user_defaults.json'), 'r') as f:
+                self.default_dict = json.load(f)
+        except:
+            self._Load_Old_Defaults()
+            print('Could not find user defaults, continouing with old defaults!')
+        # else:
+        #     with open(self.snom_plotter_config_folder / Path('user_defaults.json'), 'r') as f:
+        #         self.default_dict = json.load(f)
 
-    def _Load_User_Defaults_config(self):
-        """Load the user defaults from the config file."""
-        # check if config file exists
-        if not Path.exists(self.config_path):
-            self._Load_All_Old_Defaults_new()
-        else:
-            self.config = ConfigParser()
-            with open(self.config_path, 'r') as f:
-                self.config.read_file(f)
-        
     def _Restore_User_Defaults(self):
         self._Load_User_Defaults()
         # reload gui
         self._Update_Gui_Parameters()
-    
-    def _Load_All_Old_Defaults_new(self):
-        """Create a default config file with the default values. Only use at initial setup or to reset the config file."""
-        # also load the snom analysis config to get the default channels
-        snom_analysis_config = ConfigParser()
-        with open(snom_analysis_config_path, 'r') as f:
-            snom_analysis_config.read_file(f)
-        
-        plotter_config = ConfigParser()
-        # add also defaults for no filetype
-        plotter_config['FILETYPENONE'] = {
-            'default_channels'  : 'None',
-            'channels_snom'     : 'None',
-            'channels_afm'      : 'None',
-            'channels_approach_curve'     : 'None',
-            'channels_spectrum' : 'None',
-            'dpi'               : 300,
-            'colorbar_width'    : 5,
-            'figure_width'      : canvas_width,
-            'figure_height'     : canvas_height,
-            'hide_ticks'        : 1,
-            'show_titles'       : 1,
-            'tight_layout'      : 1,
-            'h_space'           : 0.4,
-            'scalebar_channel'  : '<>',
-            'set_min_to_zero'   : 1,
-            'autoscale'         : 1,
-            'full_phase'        : 0,
-            'shared_phase'      : 0,
-            'shared_amp'        : 0,
-            'shared_real'       : 0,
-            'shared_height'     : 0,
-            'synccorr_lambda'   : '<>',
-            'synccorr_phasedir' : '<>',
-            'appendix'          : '<_manipulated>',
-            'pixel_integration_width': 1,
-            'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
-        }
-        plotter_config['FILETYPE1'] = {
-            'default_channels'  : snom_analysis_config['FILETYPE1']['preview_channels'],
-            'channels_snom'     : 'None',
-            'channels_afm'      : 'None',
-            'channels_approach_curve'     : 'None',
-            'channels_spectrum' : 'None',
-            'dpi'               : 300,
-            'colorbar_width'    : 5,
-            'figure_width'      : canvas_width,
-            'figure_height'     : canvas_height,
-            'hide_ticks'        : 1,
-            'show_titles'       : 1,
-            'tight_layout'      : 1,
-            'h_space'           : 0.4,
-            'scalebar_channel'  : '<>',
-            'set_min_to_zero'   : 1,
-            'autoscale'         : 1,
-            'full_phase'        : 0,
-            'shared_phase'      : 0,
-            'shared_amp'        : 0,
-            'shared_real'       : 0,
-            'shared_height'     : 0,
-            'synccorr_lambda'   : '<>',
-            'synccorr_phasedir' : '<>',
-            'appendix'          : '<_manipulated>',
-            'pixel_integration_width': 1,
-            'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
-        }
-        plotter_config['FILETYPE2'] = plotter_config['FILETYPE1']
-        plotter_config['FILETYPE2']['default_channels'] = snom_analysis_config['FILETYPE2']['preview_channels']
-        plotter_config['FILETYPE3'] = plotter_config['FILETYPE1']
-        plotter_config['FILETYPE3']['default_channels'] = snom_analysis_config['FILETYPE3']['preview_channels']
-        plotter_config['FILETYPE4'] = plotter_config['FILETYPE1']
-        plotter_config['FILETYPE4']['default_channels'] = snom_analysis_config['FILETYPE4']['preview_channels']
-        plotter_config['FILETYPE5'] = plotter_config['FILETYPE1']
-        plotter_config['FILETYPE5']['default_channels'] = snom_analysis_config['FILETYPE5']['preview_channels']
-        plotter_config['FILETYPE6'] = plotter_config['FILETYPE1']
-        plotter_config['FILETYPE6']['default_channels'] = snom_analysis_config['FILETYPE6']['preview_channels']
-
-        with open(self.config_path, 'w') as f:
-            plotter_config.write(f)
-
-        self.config = plotter_config
 
     def _Load_Old_Defaults(self):
-        """This function will only load the old defaults for the current filetype.
-        """
-        # load the snom analysis config to get the default channels
-        snom_analysis_config = ConfigParser()
-        with open(snom_analysis_config_path, 'r') as f:
-            snom_analysis_config.read_file(f)
-        # check if a valid filetype is selected by comparing to the section names in the config file
-        if self.file_type not in snom_analysis_config.sections():
-            print('No valid filetype selected, please select a valid filetype!')
-            return 0
+        # default_channels_snom = self._Get_Default_Channels(plotting_mode=Plotting_Modes.SNOM)
+        # default_channels_afm = self._Get_Default_Channels(plotting_mode=Plotting_Modes.AFM)
+        # default_channels_approach_curve = self._Get_Default_Channels(plotting_mode=Plotting_Modes.APPROACHCURVES)
+        # default_channels_spectrum = self._Get_Default_Channels(plotting_mode=Plotting_Modes.SPECTRA)
 
-        # load user defaults if the file exists otherwise load all old defaults and recreate the user defaults file
-        if not Path.exists(self.config_path):
-            self._Load_All_Old_Defaults_new()
-            print('User defaults file not found, creating new one!')
-            return 0
-        
-        self._Load_User_Defaults_config()
-
-        # overwrite the section with the current filetype with the old defaults
-        self.config[self.file_type] = {
-            'default_channels'  : snom_analysis_config['FILETYPE1']['preview_channels'],
-            'channels_snom'     : 'None',
-            'channels_afm'      : 'None',
-            'channels_approach_curve'     : 'None',
-            'channels_spectrum' : 'None',
+        default_channels_snom = ['O2A', 'O2P', 'Z C']
+        default_channels_afm = ['Z C']
+        default_channels_approach_curve = ['M1A']
+        default_channels_spectrum = ['-unknown-']
+        default_channels_none = ['no measurement found']
+        # also save filetype and save default channels for each filetype
+        self.default_dict = {
+            'channels_snom'     : default_channels_snom,
+            'channels_afm'     : default_channels_afm,
+            'channels_approach_curve'     : default_channels_approach_curve,
+            'channels_spectrum'     : default_channels_spectrum,
+            'channels_none'     : default_channels_none,
             'dpi'               : 300,
             'colorbar_width'    : 5,
             'figure_width'      : canvas_width,
@@ -1470,8 +1502,8 @@ for example fourier filtering.
             'hide_ticks'        : 1,
             'show_titles'       : 1,
             'tight_layout'      : 1,
-            'h_space'           : 0.4,
-            'scalebar_channel'  : '<>',
+            'h_space'           : '0.4',
+            'scalebar_channel'  : '',
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
             'full_phase'        : 0,
@@ -1479,67 +1511,23 @@ for example fourier filtering.
             'shared_amp'        : 0,
             'shared_real'       : 0,
             'shared_height'     : 0,
-            'synccorr_lambda'   : '<>',
-            'synccorr_phasedir' : '<>',
-            'appendix'          : '<_manipulated>',
+            'synccorr_lambda'   : '',
+            'synccorr_phasedir' : '',
+            'appendix'          : '_manipulated',
             'pixel_integration_width': 1,
-            'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
-        }
-        # save the updated config file
-        with open(self.config_path, 'w') as f:
-            self.config.write(f)
-        
+            'height_threshold'    : 0.5,
+            'plotting_mode_id'     : 1
 
-    def _get_from_config(self, option:str=None, section:str=None, config_file=None):
-        """This function gets the value of an option in a section of the config file.
-        If no option is specified the whole section is returned."""
-        if config_file is None:
-            config_file = self.config
-        if section is None:
-            # set the section to the file type if it is not specified, but only if file_type is defined
-            try: section = self.file_type
-            except: print('Filetype unknown, please specify the section! (In _get_from_config)')
-        if option is None:
-            return dict(config_file[section])
-        else:
-            try:
-                value = config_file[section][option]
-                # replace < and > with empty string if value is a string
-                if isinstance(value, str):
-                    if value[0] == '<':
-                        value = value.replace('<', '').replace('>', '')
-                    # convert string to list if it is a list
-                    # elif value[0] == '[':
-                    #     value = ast.literal_eval(value)
-                    # # convert string to dictionary if it is a dictionary
-                    # elif value[0] == '{':
-                    #     value = ast.literal_eval(value)
-                    # replace string with boolean if it is a boolean
-                    if value == 'True':
-                        value = True
-                    elif value == 'False':
-                        value = False
-                    elif value == 'None':
-                        value = None
-                    else:
-                        # try to convert string to float or int or list or dict
-                        try:
-                            value = ast.literal_eval(value)
-                        except:
-                            pass
-                return value
-            except:
-                return None
+        }
     
     def _Restore_Old_Defaults(self):
         self._Load_Old_Defaults()
         self._Update_Gui_Parameters()
         
     def _Update_Gui_Parameters(self):
-        self._Set_Channels(self._Get_Default_Channels())
+        self._Set_Channels(','.join(self.default_dict[self.measurement_channels[self.plotting_mode]]))
         # self.select_channels.delete(0, END)
-        # self.select_channels.insert(0, ','.join(self._Get_Default_Channels())),
+        # self.select_channels.insert(0, ','.join(self.default_dict[self.measurement_channels[self.plotting_mode]])),
         self.figure_dpi.delete(0, END)
         self.figure_dpi.insert(0, self.default_dict['dpi']),
         self.colorbar_width.delete(0, END)
@@ -1598,15 +1586,23 @@ for example fourier filtering.
         field.insert(0, value)
 
     def _save_to_gsf_or_txt(self):
+        # filetype = self.cb_savefiletype.get()
+        # channels = self.select_channels_tosave.get().split(',')
+        # appendix = self.appendix_tosave.get()
+        # print('current channels: ', self.measurement.channels)
+        print('default dict: ', self.default_dict)
         popup = SavedataPopup(self.root, self._Get_Channels(as_list=False), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
+        # print('popup channels: ', channels)
         appendix = popup.appendix
         self.default_dict['appendix'] = appendix
         if filetype == 'gsf':
             self.measurement.Save_to_gsf(channels=channels, appendix=appendix)
+            # print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
         elif filetype == 'txt':
             self.measurement.Save_to_txt(channels=channels, appendix=appendix)
+            # print(f'savedialog: filetype={filetype}, channels={channels}, appendix={appendix}')
         else:
             print('Wrong filetype selcted! Files cannot be saved!')
 
@@ -1648,7 +1644,26 @@ for example fourier filtering.
         forward_channel = popup.forward_channel
         backward_channel = popup.backward_channel
         overlay_channels = popup.overlay_channels
+        # print('forward channel: ', forward_channel, type(forward_channel))
+        # print('backward channel: ', backward_channel)
+        '''
+        if overlay_channels == 'all':
+            overlay_channels = None
+        else:
+            overlay_channels = [channel for channel in overlay_channels.split(',')]
+        self.measurement.Overlay_Forward_and_Backward_Channels_V2(forward_channel, backward_channel, overlay_channels)
+        '''
+        # print('overlain channels: ', self.measurement.channels)
+        # channels = ','.join(self.measurement.channels)
+        # print('channels: ', channels)
         self._Set_Channels(self.measurement.channels)
+        # self.select_channels.delete(0, END)
+        # self.select_channels.insert(0, channels)
+        # self.measurement.Initialize_Channels(self._Get_Channels()) # let user save data instead
+        # self.measurement.all_subplots=[]
+        # self.measurement.Initialize_Channels(self._Get_Channels())# plus save?
+        # self.measurement.channels = self._Get_Channels()
+        # self.measurement.Save_to_gsf()
         print('channels have been overlaid')
 
     def _change_phase_offset(self):
@@ -1665,6 +1680,7 @@ for example fourier filtering.
         for channel in self._Get_Channels():
             if self.measurement.phase_indicator in channel:
                 phase_channels.append(channel)
+        # print('phase channels: ', phase_channels)
         self.measurement._Write_to_Logfile('phase_shift', phase_offset)
         for channel in phase_channels:
             data = self.measurement.all_data[self.measurement.channels.index(channel)]
@@ -1676,6 +1692,8 @@ for example fourier filtering.
             # print min and max values of the phase data
             # print('min phase value: ', np.min(shifted_data))
             # print('max phase value: ', np.max(shifted_data))
+        # self.measurement.Shift_Phase(phase_offset, phase_channels)
+        # self.measurement.
 
     def _create_realpart(self):
         # pass
@@ -1694,9 +1712,14 @@ for example fourier filtering.
         amp_channel = popup.amp_channel
         phase_channel = popup.phase_channel
         complex_type = popup.complex_type
+        # print('complex type: ', complex_type)
         self.measurement.Manually_Create_Complex_Channel(amp_channel, phase_channel, complex_type)
         # the names of the newly created channels are added to the channels text field but not automatically loaded
+        # print(self.measurement.channels)
+        # self._Set_Channels(','.join(self.measurement.channels))
         self._Set_Channels(self.measurement.channels)
+        # self.select_channels.delete(0, END)
+        # self.select_channels.insert(0,','.join(self.measurement.channels))
 
     def _height_masking(self):
         popup = HeightMaskingPopup(self.root,self._Get_Channels(as_list=False), self.measurement, self.default_dict)
@@ -1748,23 +1771,48 @@ for example fourier filtering.
         # display the gif in the canvas
         self._Fill_Canvas()
 
-    def _change_plotting_mode(self, new_button_id):
-        old_button_id = self.plotting_mode.value
-        self.plotting_mode = Plotting_Modes(new_button_id)
-        # change button colors according to current plotting mode and previous plotting mode
-        # however, if the buttons are not yet created just change the plotting mode
-        try:
-            if new_button_id != old_button_id:
-                if old_button_id != None:
-                    # turn off old button
-                    self._change_plotting_mode_button_color(old_button_id, 0)
-                # set new plotting mode
-                # change new button color
-                self._change_plotting_mode_button_color(new_button_id, 1)
-                # do stuff after plotting mode was changed
-                self._Set_Channels(self._Get_Default_Channels())
-        except:
+    def _init_plotting_mode(self):
+        self.plotting_mode_dict = {1: Plotting_Modes.SNOM,
+                            2: Plotting_Modes.AFM,
+                            3: Plotting_Modes.APPROACHCURVES,
+                            4: Plotting_Modes.SPECTRA,
+                            5: Plotting_Modes.NONE}
+        # self.plotting_mode_id = self.default_dict['plotting_mode_id'] # that does not work since the old path might not be standard plotting mode
+        # better:
+        new_file_type = self._Get_Measurement_Filetype()
+        # print('old filetype: ', self.file_type)
+        # print('detected filetype: ', new_file_type)
+        if new_file_type != self.file_type and new_file_type != None:
+            self.file_type = new_file_type
+            if self.file_type == File_Type.approach_curve:
+                self.plotting_mode_id = 3
+                # print('approach curve detected!')
+            else:
+                self.plotting_mode_id = 1
+                # print('standard mode detected')
+        else:
+            # if no type can be found
+            self.plotting_mode_id = 5
+
+        self.plotting_mode = self.plotting_mode_dict[self.plotting_mode_id]
+        # self._Update_Buttons()
+        # self.plotting_mode_id = 1
+
+    def _plotting_mode_changed(self):
+        if self.plotting_mode is self.plotting_mode_dict[1]:
             pass
+        elif self.plotting_mode is self.plotting_mode_dict[2]:
+            pass
+        elif self.plotting_mode is self.plotting_mode_dict[3]:
+            self._Set_Channels(self.default_dict[self.measurement_channels[self.plotting_mode]])
+            # self.select_channels.delete(0, END)
+            # self.select_channels.insert(0, 'M1A')
+            # self.select_channels.insert(0, self.default_dict[self.measurement_channels[self.plotting_mode]])
+        elif self.plotting_mode is self.plotting_mode_dict[5]:
+            # self._Set_Channels(['No measurement found'])
+            self.select_channels_text.delete('0.0', END)
+            self.select_channels_text.config(height=1)
+            self.select_channels_text.insert(END, 'No measurement found', 'center')
 
     def _change_plotting_mode_button_color(self, button_id, button_state):
         if button_id == 1:
@@ -1788,14 +1836,30 @@ for example fourier filtering.
             elif button_state == 1:
                 self.plotting_mode_switch_4.config(bootstyle=SUCCESS)
         elif button_id == 5:
-            if button_state == 0:
-                self.plotting_mode_switch_5.config(bootstyle=DANGER)
-            elif button_state == 1:
-                self.plotting_mode_switch_5.config(bootstyle=SUCCESS)
+            # disable all buttons in that case
+            pass
         else:
             print('Error occured in change button color for plotting mode selection!')
             
- 
+    def _change_plotting_mode(self, new_button_id):
+        # find old button id
+        old_button_id = None
+        for id in self.plotting_mode_dict:
+            if self.plotting_mode_dict[id] == self.plotting_mode:
+                old_button_id = id
+                # print('Old plotting type: ', self.plotting_mode_dict[id])
+        if new_button_id != old_button_id:
+            if old_button_id != None:
+                # turn off old button
+                self._change_plotting_mode_button_color(old_button_id, 0)
+            # set new plotting mode
+            self.plotting_mode = self.plotting_mode_dict[new_button_id]
+            self.plotting_mode_id = new_button_id
+            # print('New plotting mode: ', self.plotting_mode)
+            # change new button color
+            self._change_plotting_mode_button_color(new_button_id, 1)
+            # do stuff after plotting mode was changed
+            self._plotting_mode_changed()
         
     
 
@@ -1806,3 +1870,37 @@ if __name__ == '__main__':
     main()
 
 
+#trash section
+'''
+# delete not in use, already implemented in snom classes
+    def _plot_approach_curve(self):
+        header = 27
+        x_channel = 'Depth'
+        y_channels = ['M1A']
+        # channels = self._Get_Channels()
+        x_channel_index = self._find_approach_curve_channel_index(self.approach_curve_fp, x_channel)
+        with open(self.approach_curve_fp, 'r') as file:
+            xdata = np.genfromtxt(file ,skip_header=header, usecols=(x_channel_index), delimiter='\t', invalid_raise = False)
+        
+        for channel in y_channels:
+            channel_index = self._find_approach_curve_channel_index(self.approach_curve_fp, channel)
+            # y_data.append(np.genfromtxt(file ,skip_header=header, usecols=(channel_index), delimiter=',', invalid_raise = False))
+            with open(self.approach_curve_fp, 'r') as file:
+                y_data = np.genfromtxt(file ,skip_header=header, usecols=(channel_index), delimiter='\t', invalid_raise = False)
+            plt.plot(xdata, y_data, label=channel)
+        plt.legend(loc='right')
+        self._Fill_Canvas()
+
+    def _find_approach_curve_channel_index(self, filepath, channel):
+        header = 27
+        with open(filepath, 'r') as file:
+            for i in range(header+1):
+                line = file.readline()
+        # print(line)
+        split_line = line.split('\t')
+        split_line.remove('\n')
+        # print(split_line)
+        return split_line.index(channel)
+
+
+'''

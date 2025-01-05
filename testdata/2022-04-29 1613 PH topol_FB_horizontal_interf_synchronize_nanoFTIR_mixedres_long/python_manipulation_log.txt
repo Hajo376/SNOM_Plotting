@@ -233,3 +233,9 @@ quadratic_pixels = True
 filename = 2022-04-29 1613 PH topol_FB_horizontal_interf_synchronize_nanoFTIR_mixedres_long
 quadratic_pixels = True
 set_min_to_zero = True
+05/01/2025 11:43:45
+filename = 2022-04-29 1613 PH topol_FB_horizontal_interf_synchronize_nanoFTIR_mixedres_long
+05/01/2025 11:43:45
+filename = 2022-04-29 1613 PH topol_FB_horizontal_interf_synchronize_nanoFTIR_mixedres_long
+quadratic_pixels = True
+set_min_to_zero = True

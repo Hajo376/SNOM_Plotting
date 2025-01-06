@@ -1698,3 +1698,139 @@ set_min_to_zero = True
 15/03/2024 15:17:24
 filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
 quadratic_pixels = True
+06/01/2025 13:29:28
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:29:28
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+06/01/2025 13:29:28
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_driftcomp_slope = -0.04961646198830408
+set_min_to_zero = True
+set_min_to_zero = True
+06/01/2025 13:30:14
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_driftcomp_slope = -0.045815666666666664
+set_min_to_zero = True
+06/01/2025 13:33:54
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:33:55
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:34:49
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:34:50
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_driftcomp_slope = -0.04488749999999997
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 40], [23, 3], [45, 30]]
+set_min_to_zero = True
+06/01/2025 13:37:09
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:37:10
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_driftcomp_slope = -0.047211851851851866
+set_min_to_zero = True
+06/01/2025 13:37:20
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_driftcomp_slope = -0.03371785185185185
+set_min_to_zero = True
+set_min_to_zero = True
+06/01/2025 13:37:35
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:40:51
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:40:52
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:42:45
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:42:46
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:44:28
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:44:29
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:47:49
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:47:50
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:48:21
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:48:22
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:49:40
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:49:41
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:50:09
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:50:11
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 13:50:25
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:50:26
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 44], [19, 2], [44, 33]]
+set_min_to_zero = True
+height_masking_threshold = 0.55
+06/01/2025 13:55:35
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 13:55:36
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[10, 45], [23, 3], [46, 32]]
+set_min_to_zero = True
+height_masking_threshold = 0.5
+set_min_to_zero = True
+height_masking_threshold = 0.5
+06/01/2025 14:00:29
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 14:00:30
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[11, 39], [32, 3], [41, 36]]
+set_min_to_zero = True
+height_masking_threshold = 0.5
+set_min_to_zero = True
+06/01/2025 14:11:01
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+06/01/2025 14:11:03
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+height_leveling_coordinates = [[12, 39], [28, 3], [45, 33]]
+set_min_to_zero = True
+height_masking_threshold = 0.55
+cut = autocut
+set_min_to_zero = True

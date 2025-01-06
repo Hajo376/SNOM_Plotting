@@ -3169,3 +3169,22 @@ quadratic_pixels = True
 set_min_to_zero = True
 height_leveling_coordinates = [[10, 39], [27, 2], [45, 40]]
 set_min_to_zero = True
+06/01/2025 11:30:58
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+06/01/2025 12:21:30
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+06/01/2025 12:21:41
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+06/01/2025 12:21:41
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+06/01/2025 12:21:42
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+quadratic_pixels = True
+set_min_to_zero = True
+06/01/2025 12:22:26
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+06/01/2025 12:27:39
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1
+06/01/2025 12:28:56
+filename = 2022-04-25 1212 PH pentamer_840nm_s50_1

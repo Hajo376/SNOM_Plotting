@@ -139,16 +139,16 @@ class MainGui():
         self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for AFM users, disable certain functions which only work for snom, maybe adjust colormaps or something like that
         self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(Plotting_Modes.AFM.value))
-        self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for Approach curves
         self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACHCURVE.value))
         self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for 3D Measurements (multiple Approach curves)
         self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="3D Scan", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACH3D.value))
-        self.plotting_mode_switch_4.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.plotting_mode_switch_4.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for NANO FTIR spectra or so
         self.plotting_mode_switch_5 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(Plotting_Modes.SPECTRUM.value))
-        self.plotting_mode_switch_5.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
+        # self.plotting_mode_switch_5.grid(column=4, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # turn on the mode which is currently active if it was found in user defaults for the old measurement
         self._change_plotting_mode_button_color(self.plotting_mode.value, 1)
 
@@ -1025,7 +1025,6 @@ for example fourier filtering.
         config['OLDMEASUREMENT'] = {'folder_path': f'<{self.folder_path}>', 'file_type': f'<{self.file_type}>', 'plotting_mode': f'<{self.plotting_mode.value}>'}
         with open(self.config_path, 'w') as file:
             config.write(file)
-        # todo delete the following
         self.config = ConfigParser()
         with open(self.config_path, 'r') as file:
             self.config.read_file(file)
@@ -1246,6 +1245,8 @@ for example fourier filtering.
             self._Fill_Canvas()
     
     def _Synccorrection(self): # delete?
+        # print('Synccorrection')
+        # print(self.measurement.measurement_tag_dict[Measurement_Tags.ROTATION])
         popup = SyncCorrectionPopup(self.root, self.folder_path, self._Get_Channels(), self.default_dict)
 
     def _Gauss_Blurr(self): #todo
@@ -1356,6 +1357,12 @@ for example fourier filtering.
     def _Load_All_Old_Defaults_new(self):
         """Create a default config file with the default values. Only use at initial setup or to reset the config file."""
         # also load the snom analysis config to get the default channels
+        # check if snom analysis config exists
+        if not Path.exists(snom_analysis_config_path):
+            # if not create a new one and ask the user to select a folder with a measurement to create the default config from
+            folder_path = filedialog.askdirectory(initialdir=self.initialdir, title='Please select a folder with a measurement to create the default config file')
+            # open the measurement, this will automatically create the config file
+            measurement = FileHandler(folder_path)
         snom_analysis_config = ConfigParser()
         with open(snom_analysis_config_path, 'r') as f:
             snom_analysis_config.read_file(f)
@@ -1490,7 +1497,6 @@ for example fourier filtering.
         with open(self.config_path, 'w') as f:
             self.config.write(f)
         
-
     def _get_from_config(self, option:str=None, section:str=None, config_file=None):
         """This function gets the value of an option in a section of the config file.
         If no option is specified the whole section is returned."""
@@ -1632,7 +1638,7 @@ for example fourier filtering.
             print('None of the selected channels was identified as a phase channel! \nThe phase leveling only works for phase channels!')
             return 1
         preview_phasechannel = self.measurement.preview_phasechannel
-        popup = PhaseDriftCompensation(self.root, self.measurement, preview_phasechannel, True)
+        popup = PhaseDriftCompensation(self.root, self.measurement, preview_phasechannel, True, self.default_dict)
 
         for channel in phase_channels: # use the phase slope to correct all channels in memory
             leveled_phase_data = self.measurement._Level_Phase_Slope(self.measurement.all_data[self.measurement.channels.index(channel)], popup.phase_slope)
@@ -1699,7 +1705,7 @@ for example fourier filtering.
         self._Set_Channels(self.measurement.channels)
 
     def _height_masking(self):
-        popup = HeightMaskingPopup(self.root,self._Get_Channels(as_list=False), self.measurement, self.default_dict)
+        popup = HeightMaskingPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)
 
     def _rotation(self):
         popup = RotationPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)

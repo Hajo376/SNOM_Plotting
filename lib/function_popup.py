@@ -307,11 +307,13 @@ Default is 1, so only the pixel you clicked on. Increase for noisy data, but not
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class PhaseDriftCompensation():
-    def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
+    def __init__(self, parent, measurement, phase_channel, autoscale, default_dict) -> None:
         self.parent = parent
         self.phase_channel = phase_channel
-        self.measurement = measurement
+        self.measurement = deepcopy(measurement)
         self.autoscale = autoscale
+        self.default_dict = default_dict
+        self.original_phase_data = self.measurement.all_data[self.measurement.channels.index(self.phase_channel)].copy()
 
         self.window = ttkb.Toplevel(parent)
         self.window.grab_set()
@@ -396,6 +398,11 @@ class PhaseDriftCompensation():
         plt.title('Please Select 2 Points to Specify the Phasedrift on the y-Axis!')
         self._Fill_Canvas()
 
+    def _redo_leveling(self):
+        # undo leveling
+        self.measurement.all_data[self.measurement.channels.index(self.phase_channel)] = self.original_phase_data
+        self._start_leveling()
+
 
     def _get_klicker_coordinates(self):
         klicker_coords = self.klicker.get_positions()['event'] #klicker returns a dictionary for the events
@@ -443,13 +450,13 @@ class PhaseDriftCompensation():
         self.label_zone_width = ttkb.Label(self.frame, text='Pixel integration width:')
         self.label_zone_width.grid(column=0, row=1, padx=button_padx, pady=button_pady, sticky='nsew')
         self.entry_zone_width = ttkb.Entry(self.frame, width=input_width, justify='center')
-        self.entry_zone_width.insert(0, 5)
+        self.entry_zone_width.insert(0, self.default_dict['pixel_integration_width'])
         self.entry_zone_width.grid(column=0, row=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.button_save_to_gsftxt = ttkb.Button(self.frame, text='Start Leveling', bootstyle=PRIMARY, command=self._level_phase_channel)
         # button_save_to_gsftxt.config(state=DISABLED) # todo disable unless clicker was clicked exactly 3 times
         self.button_save_to_gsftxt.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
-        self.button_redo_leveling = ttkb.Button(self.frame, text='Redo Leveling', bootstyle=WARNING, command=self._start_leveling)
+        self.button_redo_leveling = ttkb.Button(self.frame, text='Redo Leveling', bootstyle=WARNING, command=self._redo_leveling)
         self.button_redo_leveling.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
         self.button_save_leveling = ttkb.Button(self.frame, text='Save Leveling', bootstyle=SUCCESS, command=self._save_leveled_data)
         self.button_save_leveling.grid(column=0, row=5, sticky='nsew', padx=button_padx, pady=button_pady)
@@ -537,7 +544,6 @@ The overlaying will then automatically be applied, but currently the channels in
         else:
             self.overlay_channels = [channel for channel in self.overlay_channels.split(',')]
         self.measurement.Overlay_Forward_and_Backward_Channels_V2(self.forward_channel, self.backward_channel, self.overlay_channels)
-
         self.window.quit()
         self.window.destroy()
 
@@ -1118,7 +1124,8 @@ class HeightMaskingPopup():
         # because it needs to know it for autocut and to plot a white border around masked areas
         self.measurement.mask_array = self.mask_array
         if self.autocut.get() == 1:
-            self.measurement._Auto_Cut_Channels(self.mask_channels)
+            # self.measurement._Auto_Cut_Channels(self.mask_channels)
+            self.measurement.Cut_Channels(self.mask_channels, autocut=True)
         
         self.window.quit()
         self.window.destroy()

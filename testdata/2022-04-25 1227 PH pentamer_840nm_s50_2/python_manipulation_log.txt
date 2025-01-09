@@ -2080,3 +2080,12 @@ filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
 filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
 quadratic_pixels = True
 set_min_to_zero = True
+09/01/2025 11:08:39
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+09/01/2025 11:08:39
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+09/01/2025 11:08:40
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True

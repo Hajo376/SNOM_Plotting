@@ -2532,3 +2532,5 @@ gaussian_filter_complex_sigma = 2
 scaling = 4
 gaussian_filter_complex_sigma = 2
 set_min_to_zero = True
+09/01/2025 11:00:11
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize

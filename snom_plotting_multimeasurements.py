@@ -1168,6 +1168,7 @@ for example fourier filtering.
         """Tries to find the default channels for the given file type by opening a measurement instance and returning the defaults saved there.
         If no file type is specified, the current file type will be used instead."""
         # default_channels = self.default_dict['default_channels']
+        channels = ['-unknown-']
         if plotting_mode is None:
             plotting_mode = self.plotting_mode
         if self.folder_path != None:
@@ -1198,9 +1199,7 @@ for example fourier filtering.
                 channels = self.default_dict['channels_spectrum']
                 if channels is None:
                     print('Spectrum channels are not yet implemented!')
-                    channels = ['-unknown-']
-        else:
-            channels = ['-unknown-']
+                    channels = ['-unknown-']            
         # save the config file
         with open(self.config_path, 'w') as file:
             self.config.write(file)
@@ -1214,6 +1213,7 @@ for example fourier filtering.
         else:
             self.file_type = None
             self.measurement_tag_dict = None
+        print('file type:', self.file_type)
         # try to identify the measurement type to set the correct plotting mode
         self._get_measurement_type()
 
@@ -1233,7 +1233,7 @@ for example fourier filtering.
             else:
                 if 'Approach Curve' in scan_type:
                     plotting_mode = Plotting_Modes.APPROACHCURVE
-                elif '3D':
+                elif '3D' in scan_type:
                     plotting_mode = Plotting_Modes.APPROACH3D
                 elif 'Spectrum' in scan_type: # todo, not implemented yet
                     plotting_mode = Plotting_Modes.SPECTRUM
@@ -1241,6 +1241,7 @@ for example fourier filtering.
                     plotting_mode = Plotting_Modes.SNOM
         else:
             plotting_mode = Plotting_Modes.NONE
+        print('plotting mode:', plotting_mode)
         self._change_plotting_mode(plotting_mode.value)
 
     def _change_mainwindow_size(self):

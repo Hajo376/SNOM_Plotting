@@ -6,7 +6,7 @@ from gui_parameters import*
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, Plot_Definitions, Measurement_Tags, File_Type
+from SNOM_AFM_analysis.snom_analysis import SnomMeasurement, Plot_Definitions, Measurement_Tags
 Plot_Definitions.show_plot = False # mandatory for gui usage
 from SNOM_AFM_analysis.lib.snom_colormaps import *
 from mpl_point_clicker import clicker# used for getting coordinates from images
@@ -101,11 +101,8 @@ You also have to select the channels of which the data should be saved. Select n
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.window, 'How to Save Data to gsf or txt:', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
-        
         self.window.update()
         
-
-
     def _return_inputs(self):
         self.filetype = self.cb_savefiletype.get()
         self.channels = self.select_channels_tosave.get()
@@ -148,10 +145,10 @@ class HeightLevellingPopup():
         self.window.update()
         # self.window.update_idletasks()
         canvas_width = self.canvas_area.winfo_width()
-        print('canvasframe width: ', self.canvas_area.winfo_width())
+        # print('canvasframe width: ', self.canvas_area.winfo_width())
         # print('canvasfig width: ', self.canvas_fig.winfo_width())
         # self.canvas_fig
-        print('menu width: ', self.frame.winfo_width())
+        # print('menu width: ', self.frame.winfo_width())
         menu_width = self.frame.winfo_width()
         self.window.geometry(f'{self.window_width}x{self.window_height}')
 
@@ -164,7 +161,7 @@ class HeightLevellingPopup():
         # self.canvas_frame = ttkb.Frame(self.canvas_area, width=self.window_width-self.frame.winfo_width(), height=self.window_height)
         # self.canvas_frame.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -195,7 +192,7 @@ class HeightLevellingPopup():
             # self._Change_Mainwindow_Size()
             self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)'''
 
-    def _Update_Canvas(self):
+    def _update_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -228,7 +225,7 @@ class HeightLevellingPopup():
         ax.invert_yaxis()
 
         plt.title('3 Point leveling: please click on three points\nto specify the underground plane.')
-        self._Fill_Canvas()
+        self._fill_canvas()
 
     def _redo_leveling(self):
         fig, ax = plt.subplots()
@@ -241,8 +238,8 @@ class HeightLevellingPopup():
         ax.axis('scaled')
         ax.invert_yaxis()
         plt.title('3 Point leveling: please click on three points\nto specify the underground plane.')
-        # self._Update_Canvas()
-        self._Fill_Canvas()
+        # self._update_canvas()
+        self._fill_canvas()
 
 
     def _get_klicker_coordinates(self):
@@ -267,12 +264,12 @@ class HeightLevellingPopup():
         ax.axis('scaled')
         ax.invert_yaxis()
         plt.title('Leveled Height Data')
-        self._Fill_Canvas()
-        # self._Update_Canvas()
+        self._fill_canvas()
+        # self._update_canvas()
 
 
     def _save_leveled_data(self):
-        self.measurement._Write_to_Logfile('height_leveling_coordinates', self.klick_coordinates)
+        self.measurement._write_to_logfile('height_leveling_coordinates', self.klick_coordinates)
         self.window.quit()
         self.window.destroy()
 
@@ -336,7 +333,7 @@ class PhaseDriftCompensation():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -396,7 +393,7 @@ class PhaseDriftCompensation():
         ax.axis('scaled')
         ax.invert_yaxis()
         plt.title('Please Select 2 Points to Specify the Phasedrift on the y-Axis!')
-        self._Fill_Canvas()
+        self._fill_canvas()
 
     def _redo_leveling(self):
         # undo leveling
@@ -411,7 +408,7 @@ class PhaseDriftCompensation():
 
     def _level_phase_channel(self):
         self.klick_coordinates = self._get_klicker_coordinates()
-        mean_values = [self.measurement._Get_Mean_Value(self.phase_data, self.klick_coordinates[i][0], self.klick_coordinates[i][1], zone=int(self.entry_zone_width.get())) for i in range(len(self.klick_coordinates))]
+        mean_values = [self.measurement._get_mean_value(self.phase_data, self.klick_coordinates[i][0], self.klick_coordinates[i][1], zone=int(self.entry_zone_width.get())) for i in range(len(self.klick_coordinates))]
         if len(self.klick_coordinates) != 2:
             print('You have to select only two points!\nPhase data was not corrected!')
 
@@ -424,7 +421,7 @@ class PhaseDriftCompensation():
             mean_values[0] = mean_values[1]
             mean_values[1] = second_mean
         self.phase_slope = (mean_values[1] - mean_values[0])/(self.klick_coordinates[1][1] - self.klick_coordinates[0][1])
-        self.leveled_phase_data = self.measurement._Level_Phase_Slope(self.phase_data, self.phase_slope)
+        self.leveled_phase_data = self.measurement._level_phase_slope(self.phase_data, self.phase_slope)
         # self.leveled_phase_data = self.measurement._level_phase_data(self.phase_data, self.klick_coordinates, zone=1)
         self._show_leveled_data()
 
@@ -435,7 +432,7 @@ class PhaseDriftCompensation():
         ax.axis('scaled')
         ax.invert_yaxis()
         plt.title('Corrected Phase Data')
-        self._Fill_Canvas()
+        self._fill_canvas()
 
     def _save_leveled_data(self):
         self.window.quit()
@@ -543,7 +540,7 @@ The overlaying will then automatically be applied, but currently the channels in
             self.overlay_channels = None
         else:
             self.overlay_channels = [channel for channel in self.overlay_channels.split(',')]
-        self.measurement.Overlay_Forward_and_Backward_Channels_V2(self.forward_channel, self.backward_channel, self.overlay_channels)
+        self.measurement.overlay_forward_and_backward_channels_v2(self.forward_channel, self.backward_channel, self.overlay_channels)
         self.window.quit()
         self.window.destroy()
 
@@ -576,7 +573,7 @@ class SyncCorrectionPopup():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -594,16 +591,16 @@ class SyncCorrectionPopup():
         self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
         self.canvas_fig.draw()  
 
-    def _Synccorrection_Preview(self):
+    def _synccorrection_preview(self):
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
             measurement = SnomMeasurement(self.folder_path, channels=self.channels, autoscale=False)
             Plot_Definitions.show_plot = False
             # scanangle = measurement.measurement_tag_dict[Measurement_Tags.rotation]*np.pi/180
-            measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
-            self._Fill_Canvas()
+            measurement._create_synccorr_preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
+            self._fill_canvas()
 
-    def _Synccorrection(self):
+    def _synccorrection(self):
         if self.synccorrection_wavelength.get() != '' and self.synccorrection_phasedir.get() != '':
             self.wavelength = float(self.synccorrection_wavelength.get())
             self.phasedir = str(self.synccorrection_phasedir.get())
@@ -636,7 +633,7 @@ class SyncCorrectionPopup():
         self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda'])
         self.synccorrection_wavelength.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # first generate preview
-        self.button_synccorrection_preview = ttkb.Button(self.frame, text='Generate preview', command=self._Synccorrection_Preview)
+        self.button_synccorrection_preview = ttkb.Button(self.frame, text='Generate preview', command=self._synccorrection_preview)
         self.button_synccorrection_preview.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # then enter phasedir from preview
         self.label_synccorrection_phasedir = ttkb.Label(self.frame, text='Phasedir (n or p):')
@@ -645,7 +642,7 @@ class SyncCorrectionPopup():
         self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
         self.synccorrection_phasedir.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
         # if phasedir and wavelength are known start synccorrection
-        self.button_synccorrection = ttkb.Button(self.frame, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
+        self.button_synccorrection = ttkb.Button(self.frame, text='Synccorrection', bootstyle=PRIMARY, command=self._synccorrection)
         self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
@@ -689,7 +686,7 @@ class GaussBlurrPopup():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -707,7 +704,7 @@ class GaussBlurrPopup():
         # self.canvas_fig = FigureCanvasTkAgg(self.fig, self.canvas_area)
         # self.canvas_fig.draw()  
 
-    def _Gaussblurr_Preview(self):
+    def _gaussblurr_preview(self):
         # new measurement:
         channels = self.select_gaussblurr_channel.get().split(',')
         scaling = int(self.entry_scaling.get())
@@ -725,14 +722,14 @@ class GaussBlurrPopup():
         for channel in channels:
             if preview_measurement.filter_gauss_indicator in preview_measurement.channels_label[preview_measurement.channels.index(channel)]:
                 channels.remove(channel) # remove channel if its label already has the appendix indicating that it was blurred
-        preview_measurement.Scale_Channels(channels, scaling)
-        preview_measurement.Gauss_Filter_Channels_complex(channels, sigma)
-        preview_measurement.Display_Channels()
-        preview_measurement.Remove_Last_Subplots(number_of_plots)
+        preview_measurement.scale_channels(channels, scaling)
+        preview_measurement.gauss_filter_channels_complex(channels, sigma)
+        preview_measurement.display_channels()
+        preview_measurement.remove_last_subplots(number_of_plots)
         print('Done blurring! Blurred channels: ', channels)
-        self._Fill_Canvas()
+        self._fill_canvas()
 
-    def _Gaussblurr(self):
+    def _gaussblurr(self):
         self.scaling = int(self.entry_scaling.get())
         self.sigma = int(self.gaussblurr_sigma.get())
         self.channels = self.select_gaussblurr_channel.get().split(',')
@@ -752,8 +749,8 @@ class GaussBlurrPopup():
         self.entry_scaling.insert(0, 4)
         self.entry_scaling.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # sigma for gauss blurr
-        self.label_Gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
-        self.label_Gaussblurr_sigma.grid(column=0, row=1)
+        self.label_gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
+        self.label_gaussblurr_sigma.grid(column=0, row=1)
         self.gaussblurr_sigma = ttkb.Entry(self.frame, width=input_width, justify='center')
         self.gaussblurr_sigma.insert(0, 2)
         self.gaussblurr_sigma.grid(column=1, row=1, padx=button_padx, pady=button_pady, sticky='ew')
@@ -764,10 +761,10 @@ class GaussBlurrPopup():
         self.select_gaussblurr_channel.insert(0, self.channels)
         self.select_gaussblurr_channel.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # first generate preview
-        self.button_gaussblurr_preview = ttkb.Button(self.frame, text='Generate preview', command=self._Gaussblurr_Preview)
+        self.button_gaussblurr_preview = ttkb.Button(self.frame, text='Generate preview', command=self._gaussblurr_preview)
         self.button_gaussblurr_preview.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # start Gaussblurr
-        self.button_gaussblurr = ttkb.Button(self.frame, text='Gaussblurr', bootstyle=PRIMARY, command=self._Gaussblurr)
+        self.button_gaussblurr = ttkb.Button(self.frame, text='Gaussblurr', bootstyle=PRIMARY, command=self._gaussblurr)
         self.button_gaussblurr.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
@@ -806,7 +803,7 @@ class PhaseOffsetPopup():
         self._create_canvas()
         self._change_popup_size()
 
-        self._Fill_Canvas()
+        self._fill_canvas()
 
         # self._start_leveling()
         self.window.bind('<Return>', self._on_change_entry)
@@ -867,7 +864,7 @@ class PhaseOffsetPopup():
         axis.set_title(title)
         axis.axis('scaled')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self._create_fig()
         # self._create_fig_v2()
         # self.fig = plt.gcf()
@@ -912,7 +909,7 @@ class PhaseOffsetPopup():
         # self.previous_shift = float(self.rounded_val)   
 
     def _save_leveled_data(self):
-        # self.measurement._Write_to_Logfile('height_leveling_coordinates', self.klick_coordinates)
+        # self.measurement._write_to_logfile('height_leveling_coordinates', self.klick_coordinates)
         self.phase_offset = float(self.rounded_val)
         self.window.quit()
         self.window.destroy()
@@ -924,7 +921,7 @@ class PhaseOffsetPopup():
         self.entry_slider.insert(0, self.rounded_val)
         # self.shifted_phase_data = self.measurement._Shift_Phase_Data(self.phase_data, float(self.rounded_val))
         self._shift_phase()
-        self._Fill_Canvas()
+        self._fill_canvas()
 
     def _on_change_entry(self, event):
         # print('entry value: ', self.entry_slider.get())
@@ -1056,7 +1053,7 @@ class HeightMaskingPopup():
         self.preview_channel = self.measurement.height_channel
         # if height channel not in measurement load it extra
         if self.preview_channel not in self.measurement.channels:
-            self.measurement.Add_Channels([self.preview_channel])
+            self.measurement.add_channels([self.preview_channel])
 
         self.window = ttkb.Toplevel(parent)
         self.window.grab_set()
@@ -1079,7 +1076,7 @@ class HeightMaskingPopup():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -1090,10 +1087,10 @@ class HeightMaskingPopup():
         self.canvas_fig.draw()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
 
-    def _Heightmask_Preview(self):#todo
+    def _heightmask_preview(self):#todo
         height_data = self.measurement.all_data[self.measurement.channels.index(self.preview_channel)]
         self.threshold = float(self.entry_threshold.get())
-        self.mask_array = self.measurement._Create_Mask_Array(height_data, self.threshold)
+        self.mask_array = self.measurement._create_mask_array(height_data, self.threshold)
         
 
         self.fig, ax = plt.subplots()
@@ -1105,10 +1102,10 @@ class HeightMaskingPopup():
 
         plt.title('Height Mask Preview')
 
-        self._Fill_Canvas()
+        self._fill_canvas()
         self.button_heightmask.config(state=ON)
 
-    def _Heightmask(self):
+    def _heightmask(self):
         self.mask_channels = self.select_heightmask_channel.get().split(',')
         
         
@@ -1119,13 +1116,13 @@ class HeightMaskingPopup():
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_masked'
 
         print('The following channels have been masked!\n', self.mask_channels)
-        self.measurement._Write_to_Logfile('height_masking_threshold', self.threshold)
+        self.measurement._write_to_logfile('height_masking_threshold', self.threshold)
         # also make shure to transferr the mask array to the measurement, 
         # because it needs to know it for autocut and to plot a white border around masked areas
         self.measurement.mask_array = self.mask_array
         if self.autocut.get() == 1:
-            # self.measurement._Auto_Cut_Channels(self.mask_channels)
-            self.measurement.Cut_Channels(self.mask_channels, autocut=True)
+            # self.measurement._Auto_cut_channels(self.mask_channels)
+            self.measurement.cut_channels(self.mask_channels, autocut=True)
         
         self.window.quit()
         self.window.destroy()
@@ -1143,8 +1140,8 @@ class HeightMaskingPopup():
         self.entry_threshold.insert(0, self.default_dict['height_threshold'])
         self.entry_threshold.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # sigma for gauss blurr
-        # self.label_Gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
-        # self.label_Gaussblurr_sigma.grid(column=0, row=1)
+        # self.label_gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
+        # self.label_gaussblurr_sigma.grid(column=0, row=1)
         # self.gaussblurr_sigma = ttkb.Entry(self.frame, width=input_width, justify='center')
         # self.gaussblurr_sigma.insert(0, 2)
         # self.gaussblurr_sigma.grid(column=1, row=1, padx=button_padx, pady=button_pady, sticky='ew')
@@ -1155,7 +1152,7 @@ class HeightMaskingPopup():
         self.select_heightmask_channel.insert(0, self.channels)
         self.select_heightmask_channel.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # first generate preview
-        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._Heightmask_Preview)
+        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._heightmask_preview)
         self.button_heightmask_preview.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         self.autocut = ttkb.IntVar()
@@ -1163,7 +1160,7 @@ class HeightMaskingPopup():
         self.checkbox_autocut = ttkb.Checkbutton(self.frame, text='Autocut Channels', variable=self.autocut, onvalue=1, offvalue=0)
         self.checkbox_autocut.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # start Masking
-        self.button_heightmask = ttkb.Button(self.frame, text='Heightmask Channels', bootstyle=PRIMARY, command=self._Heightmask)
+        self.button_heightmask = ttkb.Button(self.frame, text='Heightmask Channels', bootstyle=PRIMARY, command=self._heightmask)
         self.button_heightmask.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         self.button_heightmask.config(state=DISABLED)
 
@@ -1217,7 +1214,7 @@ class RotationPopup():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -1228,7 +1225,7 @@ class RotationPopup():
         self.canvas_fig.draw()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
 
-    def _Rotation_Preview(self):#todo
+    def _rotation_preview(self):#todo
         self.rotation = float(self.cb_rotation.get())
         preview_data = self.measurement.all_data[self.measurement.channels.index(self.preview_channel)]
         # preview_measurement = self.measurement.copy().all_data[self.measurement.channels.index(self.preview_channel)]
@@ -1248,9 +1245,9 @@ class RotationPopup():
 
         plt.title('Rotation Preview')
 
-        self._Fill_Canvas()
+        self._fill_canvas()
 
-    def _Rotate(self):
+    def _rotate(self):
         self.rotation = float(self.cb_rotation.get())
         self.rotation_channels = self.select_heightmask_channel.get().split(',')
         rotations = int(self.rotation / 90)        
@@ -1270,8 +1267,8 @@ class RotationPopup():
                 self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.rotation] += rotations*90 # careful, i dont know the definition from the snom
 
         # print('The following channels have been masked!\n', self.rotation_channels)
-        # self.measurement._Write_to_Logfile('height_masking_threshold', self.threshold)
-        self.measurement._Write_to_Logfile('rotation', self.rotation)
+        # self.measurement._write_to_logfile('height_masking_threshold', self.threshold)
+        self.measurement._write_to_logfile('rotation', self.rotation)
         # also make shure to transferr the mask array to the measurement, 
         # because it needs to know it for autocut and to plot a white border around masked areas'''
         for i in range(rotations):
@@ -1297,8 +1294,8 @@ class RotationPopup():
         self.cb_rotation['state'] = 'readonly'
         self.cb_rotation.grid(column=1, row=0, padx=input_padx, pady=input_pady, sticky='nsew')
         # sigma for gauss blurr
-        # self.label_Gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
-        # self.label_Gaussblurr_sigma.grid(column=0, row=1)
+        # self.label_gaussblurr_sigma = ttkb.Label(self.frame, text='Sigma:')
+        # self.label_gaussblurr_sigma.grid(column=0, row=1)
         # self.gaussblurr_sigma = ttkb.Entry(self.frame, width=input_width, justify='center')
         # self.gaussblurr_sigma.insert(0, 2)
         # self.gaussblurr_sigma.grid(column=1, row=1, padx=button_padx, pady=button_pady, sticky='ew')
@@ -1309,11 +1306,11 @@ class RotationPopup():
         self.select_heightmask_channel.insert(0, self.channels)
         self.select_heightmask_channel.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # first generate preview
-        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._Rotation_Preview)
+        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._rotation_preview)
         self.button_heightmask_preview.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         # start Masking
-        self.button_heightmask = ttkb.Button(self.frame, text='Rotate Channels', bootstyle=PRIMARY, command=self._Rotate)
+        self.button_heightmask = ttkb.Button(self.frame, text='Rotate Channels', bootstyle=PRIMARY, command=self._rotate)
         self.button_heightmask.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # self.button_heightmask.config(state=DISABLED)
 
@@ -1376,7 +1373,7 @@ class LogarithmPopup():
         self.canvas_area = ttkb.Frame(self.window, width=600, height=600)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         try:
             self.canvas_fig.get_tk_widget().destroy()
@@ -1387,7 +1384,7 @@ class LogarithmPopup():
         self.canvas_fig.draw()
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1) 
 
-    def _Logarithm_Preview(self):#todo
+    def _logarithm_preview(self):#todo
         preview_data = self.measurement.all_data[self.measurement.channels.index(self.preview_channel)]
         preview_data = np.log(preview_data)
 
@@ -1399,9 +1396,9 @@ class LogarithmPopup():
 
         plt.title('Logarithm Preview')
 
-        self._Fill_Canvas()
+        self._fill_canvas()
 
-    def _Apply_Log(self):
+    def _apply_log(self):
         self.logarithm_channels = self.select_logarithm_channel.get().split(',')
         
         for channel in self.measurement.channels:
@@ -1411,7 +1408,7 @@ class LogarithmPopup():
                 self.measurement.all_data[channel_index] = np.log(self.measurement.all_data[channel_index])
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_log' # eigentlich ueberfluessig
 
-        self.measurement._Write_to_Logfile('logarithm', self.logarithm_channels)
+        self.measurement._write_to_logfile('logarithm', self.logarithm_channels)
         
         self.window.quit()
         self.window.destroy()
@@ -1425,11 +1422,11 @@ class LogarithmPopup():
         self.select_logarithm_channel.insert(0, self.amp_channels)
         self.select_logarithm_channel.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # first generate preview
-        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._Logarithm_Preview)
+        self.button_heightmask_preview = ttkb.Button(self.frame, text='Generate Preview', command=self._logarithm_preview)
         self.button_heightmask_preview.grid(column=0, row=4, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         # start Masking
-        self.button_heightmask = ttkb.Button(self.frame, text='Apply log to Channels', bootstyle=PRIMARY, command=self._Apply_Log)
+        self.button_heightmask = ttkb.Button(self.frame, text='Apply log to Channels', bootstyle=PRIMARY, command=self._apply_log)
         self.button_heightmask.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
         #todo
@@ -1467,7 +1464,7 @@ class GifCreationPopup():
         channels = self.measurement.channels
         initial_channels = []
         for channel in channels:
-            demodulation_order = self.measurement._Get_Demodulation_Order(channel)
+            demodulation_order = self.measurement._get_demodulation_num(channel)
             if self.measurement.amp_indicator in channel:
                 # check if phase channel of same demodulation is present, either normal or e.g. corrected 
                 phase_channel = channel.replace(self.measurement.amp_indicator, self.measurement.phase_indicator)
@@ -1545,7 +1542,7 @@ Also make shure to select the corrected phase channel if you are working with th
         self.frames = int(self.frames.get())
         self.fps = int(self.fps.get())
         self.dpi = int(self.dpi.get())
-        self.gif_path = self.measurement.Create_Gif(self.gif_channels[0], self.gif_channels[1], self.frames, self.fps, self.dpi)
+        self.gif_path = self.measurement.create_gif(self.gif_channels[0], self.gif_channels[1], self.frames, self.fps, self.dpi)
 
         self.window.quit()
         self.window.destroy()        

@@ -2,6 +2,7 @@
 # heigth = 200
 # width = 200
 
+# https://gist.github.com/mp035/9f2027c3ef9172264532fcd6262f3b01
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -12,6 +13,7 @@ import platform
 # ************************
 # Scrollable Frame Class
 # ************************
+
 class ScrollFrame(tk.Frame):
     def __init__(self, parent, heigth, width=None):
         self.canvas_height = heigth

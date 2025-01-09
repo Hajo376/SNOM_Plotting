@@ -29,8 +29,8 @@ from configparser import ConfigParser
 import ast # for string to list, dict ... conversion
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from SNOM_AFM_analysis.python_classes_snom import Plot_Definitions, Measurement_Tags, File_Type
-from SNOM_AFM_analysis.python_classes_snom import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
+from SNOM_AFM_analysis.snom_analysis import Plot_Definitions, Measurement_Tags
+from SNOM_AFM_analysis.snom_analysis import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
 import numpy as np
 
 # for animations like gif
@@ -45,7 +45,6 @@ this_files_path = Path(__file__).parent
 from lib.function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup, GifCreationPopup
 from lib.function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup, LogarithmPopup
 #for scrollframe
-import platform
 from lib.scrollframe import ScrollFrame
 from lib.channel_textfield import ChannelTextfield
 # config file path for the snom_classes conig file
@@ -89,19 +88,19 @@ class MainGui():
         # currently there is no way around it instead of setting the scaling manually, dont ask why 1.33 instead of 1.25, i have no idea
 
         # self.root.iconbitmap(os.path.join(this_files_path,'snom_plotting.ico'))
-        self.root.iconbitmap(this_files_path / Path('snom_plotting_v2.ico'))
-        self._Generate_Savefolder()
-        self._Load_User_Defaults_config()
+        self.root.iconbitmap(this_files_path / Path('icon.ico'))
+        self._generate_savefolder()
+        self._load_user_defaults_config()
         # try to load the old defaults from the last measurement
         self._init_old_measurement()
-        self._Main_App()
+        self._main_app()
         
-    def _Main_App(self):
-        self._Left_Menu()
-        self._Canvas_Area()
-        self._Right_Menu()
-        self._Change_Mainwindow_Size()
-        self._Update_Scrollframes()
+    def _main_app(self):
+        self._left_menu()
+        self._canvas_area()
+        self._right_menu()
+        self._change_mainwindow_size()
+        self._update_scrollframes()
         # self.root.eval('tk::PlaceWindow . center') # does not work...
         
         # configure canvas to scale with window
@@ -112,13 +111,13 @@ class MainGui():
 
         
         # start mainloop
-        self.canvas_area.bind("<Configure>", self._Windowsize_changed)
+        self.canvas_area.bind("<Configure>", self._windowsize_changed)
         self.root.bind("<<NotebookTabChanged>>", self._on_tab_changed)
-        self.root.protocol("WM_DELETE_WINDOW", self._Exit)# make shure all processes are closed when closing main window
+        self.root.protocol("WM_DELETE_WINDOW", self._exit)# make shure all processes are closed when closing main window
 
         self.root.mainloop()
 
-    def _Left_Menu(self):
+    def _left_menu(self):
         self.menu_left = ttkb.Frame(self.root, padding=5)
         self.menu_left.grid(column=0, row=0, rowspan=2)
 
@@ -153,7 +152,7 @@ class MainGui():
         self._change_plotting_mode_button_color(self.plotting_mode.value, 1)
 
         # top level controls for plot
-        self.get_folder_path_button = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._Get_New_Folderpath())
+        self.get_folder_path_button = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._get_new_folderpath())
         self.get_folder_path_button.grid(column=0, row=0, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.label_select_channels = ttkb.Label(self.menu_left_upper, text='Select Channels:')
@@ -163,21 +162,21 @@ class MainGui():
         self.select_channels_text.tag_config('center', justify=CENTER) # only works on first line
         self.select_channels_text.tag_add('center', '1.0', END)
         self.select_channels_text.grid(column=0, row=2, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
-        self.select_channels_text.insert(END, ','.join(self._Get_Default_Channels()), 'center')
+        self.select_channels_text.insert(END, ','.join(self._get_default_channels()), 'center')
 
-        self.SnomMeasurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._Create_Measurement)
+        self.SnomMeasurement_button = ttkb.Button(self.menu_left_upper, text="Load Channels", bootstyle=INFO, command=self._create_measurement)
         self.SnomMeasurement_button.grid(column=0, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
         if self.file_type == None:
             self.SnomMeasurement_button.config(state=DISABLED)
-        self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Plot Channels", bootstyle=INFO, command=lambda:self._Generate_Plot())
+        self.generate_plot_button = ttkb.Button(self.menu_left_upper, text="Plot Channels", bootstyle=INFO, command=lambda:self._generate_plot())
         self.generate_plot_button.config(state=DISABLED)
         self.generate_plot_button.grid(column=1, row=3, columnspan=1, padx=button_padx, pady=button_pady, sticky='nsew')
         # todo, update plot button
-        self.update_plot_button = ttkb.Button(self.menu_left_upper, text='Update Plot', command=self._Update_Plot)
+        self.update_plot_button = ttkb.Button(self.menu_left_upper, text='Update Plot', command=self._update_plot)
         self.update_plot_button.config(state=DISABLED)
         self.update_plot_button.grid(column=0, row=4, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # plot all plot in memory:
-        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Show all Plots", bootstyle=PRIMARY, command=self._Generate_all_Plot)
+        self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Show all Plots", bootstyle=PRIMARY, command=self._generate_all_plot)
         self.generate_all_plot_button.config(state=DISABLED)
         self.generate_all_plot_button.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # save button, only enable if plot was generated previously
@@ -191,22 +190,22 @@ class MainGui():
         # self.figure_dpi.insert(0, '100')
         self.figure_dpi.insert(0, self.default_dict['dpi'])
         self.figure_dpi.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
-        self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._Save_Plot())
+        self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._save_plot())
         self.save_plot_button.config(state=DISABLED)
         self.save_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
         # exit button, closes everything
-        self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._Exit, bootstyle=DANGER)
+        self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._exit, bootstyle=DANGER)
         self.exit_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
         # save all defaults:
-        self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._Save_User_Defaults)
+        self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._save_user_defaults)
         self.save_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # load all defaults:
-        self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._Restore_User_Defaults)
+        self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._restore_user_defaults)
         self.load_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # restore all old defaults:
-        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._Restore_Old_Defaults)
+        self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._restore_old_defaults)
         self.restore_defaults_button.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         # help button popup
@@ -311,7 +310,7 @@ But data manipulation functions have to be applied manually.
         self.h_space.insert(0, self.default_dict['h_space'])
         self.h_space.grid(column=1, row=6, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
-        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
+        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='scalebar channel:')
         self.label_add_scalebar.grid(column=0, row=7)
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
@@ -348,7 +347,7 @@ But data manipulation functions have to be applied manually.
         # vmin_real = 0
         # vmax_real = 0
 
-    def _Right_Menu(self):
+    def _right_menu(self):
         self.menu_right = ttkb.Frame(self.root) #, width=200
         self.menu_right.grid(column=2, row=0, rowspan=2, padx=button_padx, pady=button_pady)
 
@@ -363,13 +362,13 @@ But data manipulation functions have to be applied manually.
         self.menu_right_2_scrollframe.pack()
 
         # first tab:
-        self._Right_Menu_Tab1()
+        self._right_menu_tab1()
 
         # second tab:
-        self._Right_Menu_Tab2()
+        self._right_menu_tab2()
 
         # third tab: save channels to gsf or txt
-        # self._Right_Menu_Tab3()
+        # self._right_menu_tab3()
 
         # add tabs to notebook
         self.menu_right_notebook.add(self.menu_right_1_scrollframe, text='Basic')
@@ -388,7 +387,7 @@ But data manipulation functions have to be applied manually.
         # event.widget.configure(height=tab.winfo_reqheight())
         # event.widget.configure(width=tab.winfo_reqwidth())
 
-    def _Right_Menu_Tab1(self):
+    def _right_menu_tab1(self):
         self.menu_right_1 = ttkb.Frame(self.menu_right_1_scrollframe.viewPort)
         self.menu_right_1.grid(column=0, row=0)
 
@@ -448,11 +447,11 @@ But data manipulation functions have to be applied manually.
         self.h_space.insert(0, self.default_dict['h_space'])
         self.h_space.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
-        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='Scalebar channel:')
-        self.label_add_scalebar.grid(column=0, row=9)
+        self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='scalebar channel:')
+        self.label_add_scalebar.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
-        self.add_scalebar.grid(column=1, row=9, padx=button_padx, pady=button_pady, sticky='ew')
+        self.add_scalebar.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
 
         ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
@@ -549,7 +548,7 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.synccorrection_wavelength.insert(0, self.default_dict['synccorr_lambda'])
         self.synccorrection_wavelength.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='ew')
         # first generate preview
-        self.button_synccorrection_preview = ttkb.Button(self.menu_right_synccorrection, text='Generate preview', command=self._Synccorrection_Preview)
+        self.button_synccorrection_preview = ttkb.Button(self.menu_right_synccorrection, text='Generate preview', command=self._synccorrection_Preview)
         self.button_synccorrection_preview.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # then enter phasedir from preview
         self.label_synccorrection_phasedir = ttkb.Label(self.menu_right_synccorrection, text='Phasedir (n or p):')
@@ -558,10 +557,10 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.synccorrection_phasedir.insert(0, self.default_dict['synccorr_phasedir'])
         self.synccorrection_phasedir.grid(column=1, row=2, padx=button_padx, pady=button_pady, sticky='ew')
         # if phasedir and wavelength are known start synccorrection
-        self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
+        self.button_synccorrection = ttkb.Button(self.menu_right_synccorrection, text='Synccorrection', bootstyle=PRIMARY, command=self._synccorrection)
         self.button_synccorrection.grid(column=0, row=3, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)'''
 
-    def _Right_Menu_Tab2(self):
+    def _right_menu_tab2(self):
         # self.menu_right_2_scrollframe = ScrollFrame(self.menu_right_notebook, main_window_minheight-2*button_pady) # , 170
         # self.menu_right_2_scrollframe.pack()
         self.menu_right_2 = ttkb.Frame(self.menu_right_2_scrollframe.viewPort)
@@ -590,10 +589,10 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.menu_right_2_shift_phase.config(state=DISABLED)
         self.menu_right_2_shift_phase.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_synccorrection = ttkb.Button(self.menu_right_2, text='Synccorrection', bootstyle=PRIMARY, command=self._Synccorrection)
+        self.menu_right_2_synccorrection = ttkb.Button(self.menu_right_2, text='Synccorrection', bootstyle=PRIMARY, command=self._synccorrection)
         self.menu_right_2_synccorrection.grid(column=0, row=5, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        self.menu_right_2_gaussblurr = ttkb.Button(self.menu_right_2, text='Gauss Blurr', bootstyle=PRIMARY, command=self._Gauss_Blurr)
+        self.menu_right_2_gaussblurr = ttkb.Button(self.menu_right_2, text='Gauss Blurr', bootstyle=PRIMARY, command=self._gauss_blurr)
         self.menu_right_2_gaussblurr.config(state=DISABLED)
         self.menu_right_2_gaussblurr.grid(column=0, row=6, sticky='nsew', padx=button_padx, pady=button_pady)
 
@@ -647,7 +646,7 @@ for example fourier filtering.
         self.menu_left_help_button = ttkb.Button(self.menu_right_2, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'Advanced Operations', help_message))
         self.menu_left_help_button.grid(column=0, row=99, columnspan=1, padx=button_padx, pady=button_pady, sticky='ew')
 
-    def _Right_Menu_Tab3(self):# delete? todo
+    def _right_menu_tab3(self):# delete? todo
         self.menu_right_3 = ttkb.Frame(self.menu_right_notebook)
         self.menu_right_3.pack()
 
@@ -672,7 +671,7 @@ for example fourier filtering.
         self.label_select_channels_tosave.grid(column=0, row=1, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         self.select_channels_tosave = ttkb.Entry(self.menu_right_3, justify='center')
         self.root.update_idletasks()
-        self.select_channels_tosave.insert(0, self._Get_Channels(as_list=False))
+        self.select_channels_tosave.insert(0, self._get_channels(as_list=False))
         self.select_channels_tosave.grid(column=0, row=2, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # select appendix
         self.label_appendix_tosave = ttkb.Label(self.menu_right_3, text='Select Savefile Appendix:')
@@ -686,7 +685,7 @@ for example fourier filtering.
         self.button_save_to_gsftxt.grid(column=0, row=5, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         '''
 
-    def _Canvas_Area(self):
+    def _canvas_area(self):
         # canvas area
         self.canvas_area = ttkb.Frame(self.root) #, width=self.default_dict['figure_width'], height=self.default_dict['figure_height']      , width=self.canvas_width, height=self.canvas_height, width=800, height=700
         self.canvas_area.grid(column=1, row=0, sticky='nsew')
@@ -699,7 +698,7 @@ for example fourier filtering.
         self.toolbar.grid(column=1, row=1, columnspan=1)
         self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
-    def _Windowsize_changed(self, event):
+    def _windowsize_changed(self, event):
         self.canvas_fig_height.delete(0, END)
         self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
         self.canvas_fig_width.delete(0, END)
@@ -708,28 +707,28 @@ for example fourier filtering.
         #update the canvas
         # self.canvas_frame.configure( width=self.canvas_area.winfo_width(), height=self.canvas_area.winfo_height())
         # update the size of the left menue scroll region
-        self._Update_Scrollframes()
+        self._update_scrollframes()
 
-    def _Update_Scrollframes(self):
+    def _update_scrollframes(self):
         # update the size of the left menue scroll region
         self.menu_left_scrollframe.changeCanvasHeight(self.root.winfo_height())
         # also for right menu
         self.menu_right_1_scrollframe.changeCanvasHeight(self.root.winfo_height())
         
-    def _Update_Canvas_Area(self):
+    def _update_canvas_area(self):
         self.canvas_fig_height.delete(0, END)
         self.canvas_fig_height.insert(0, f'{self.canvas_area.winfo_height()}')
         self.canvas_fig_width.delete(0, END)
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
 
-    def _Create_Measurement(self):
+    def _create_measurement(self):
         """Create the measurement instance depending on the chosen Measurement folder and plotting mode.
         Also handle which buttons are enabled or disabled depending on plotting mode.
         """
         if self.folder_path == None:
             print('No measurement found!')
         elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             self.measurement = ApproachCurve(self.folder_path, channels=channels)
 
             self.generate_plot_button.config(state=ON)
@@ -747,13 +746,13 @@ for example fourier filtering.
             self.save_plot_button.config(state=DISABLED)
             # todo, add approach curve handling to snom package to make it also possible to store multiple curves in memory
         elif self.plotting_mode is Plotting_Modes.APPROACH3D:
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             self.measurement = Scan3D(self.folder_path, channels=channels)
             # not fully implemented yet
             # for now just display the averaged values
-            self.measurement.Set_Min_to_Zero()
-            self.measurement.Average_Data()
-            self.measurement.Display_Cutplane_V3(axis='x', line=0, channel=channels[0])
+            self.measurement.set_min_to_zero()
+            self.measurement.average_data()
+            self.measurement.display_cutplane_v3(axis='x', line=0, channel=channels[0])
 
             self.generate_plot_button.config(state=ON)
             self.button_save_to_gsftxt.config(state=DISABLED)
@@ -773,7 +772,7 @@ for example fourier filtering.
                 autoscale = True
             else:
                 autoscale = False
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             self.measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=autoscale)
 
             self.generate_plot_button.config(state=ON)
@@ -797,8 +796,7 @@ for example fourier filtering.
         elif self.plotting_mode is Plotting_Modes.SPECTRUM:
             print("Spectra plotting mode is not yet implemented!")
 
-
-    def _Get_Allowed_Channels(self):
+    def _get_allowed_channels(self):
         """This function tries to find out which channels are allowed for the current measurement folder and plotting type.
         The allowed channels are used to autocorrect the user input in the channel text field. 
         Other channels are still accepted but cannot be autocorrected."""
@@ -828,26 +826,35 @@ for example fourier filtering.
         self.allowed_channels = all_channels_default + all_channels_synccorrected + all_channels_manipulated + all_channels_overlain
         return self.allowed_channels
 
-    def _Get_Channels(self, as_list:bool=True):
+    def _correct_channel_from_input(self, text_field_width, channels:str) -> list:
+        if channels == '':
+            return None
+        else:
+            text_field_handler = ChannelTextfield(text_field_width, self.allowed_channels)
+            channels = text_field_handler.decode_input(channels) # convert string to list and auto ignore linebreaks
+            channels = text_field_handler.correct_channels_input(channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
+            return channels
+
+    def _get_channels(self, as_list:bool=True):
         """Read out the current channels in the entry/text field for the channels and return as list."""
         # self.channels = self.select_channels.get()
         self.channels = self.select_channels_text.get('1.0', 'end-1c')
         # does not work properly because width in px for font is unknown...
         select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
         # select_channels_text_width = 30 # this is the allowed width for text inside the text field
-        # text_field_handler = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels())
-        text_field_handler = ChannelTextfield(select_channels_text_width, self.allowed_channels)
-        self.channels = text_field_handler.Decode_Input(self.channels) # convert string to list and auto ignore linebreaks
-        self.channels = text_field_handler.Correct_Channels_Input(self.channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
+        # text_field_handler = ChannelTextfield(select_channels_text_width, self.allowed_channels)
+        # self.channels = text_field_handler.decode_input(self.channels) # convert string to list and auto ignore linebreaks
+        # self.channels = text_field_handler.correct_channels_input(self.channels) # try to fix simple user mistakes like wrong separation sybol or lowercase instead of upper...
+        self.channels = self._correct_channel_from_input(select_channels_text_width, self.channels)
         # update the channels in the text field so autocorrect the user input
-        self._Set_Channels(self.channels.split(','))
+        self._set_channels(self.channels.split(','))
         # als long as the speciefied channel are in the allowed list
         if as_list:
             return self.channels.split(',')
         else:
             return self.channels
     
-    def _Set_Channels(self, channels:list) -> None:
+    def _set_channels(self, channels:list) -> None:
         """Set the specified channels as the new selection and write to input field."""
         '''
         # old version based on one line entry
@@ -859,13 +866,13 @@ for example fourier filtering.
         # does not work properly because width in px for font is unknown...
         select_channels_text_width = (self.select_channels_text.winfo_width() - 2*button_padx)*0.12
         # select_channels_text_width = 30 # this is the allowed width for text inside the text field
-        encoded_text = ChannelTextfield(select_channels_text_width, self._Get_Allowed_Channels()).Encode_Input(channels)
+        encoded_text = ChannelTextfield(select_channels_text_width, self._get_allowed_channels()).encode_input(channels)
         text_height = encoded_text.count('\n')
         # change height of text widget
         self.select_channels_text.config(height=text_height+1)
         self.select_channels_text.insert(END, encoded_text, 'center')
 
-    def _Generate_Plot(self):
+    def _generate_plot(self):
         plt.close(self.fig)
         # if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
         #     self.save_plot_button.config(state=ON)
@@ -874,13 +881,13 @@ for example fourier filtering.
         if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
             self.save_plot_button.config(state=ON)
             self.measurement.measurement_title = self.measurement_title.get()
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             if self.checkbox_setmintozero_var.get() == 1:
-                self.measurement.Set_Min_to_Zero()
-            # self.measurement.Display_Channels(channels) #show_plot=False
-            self.measurement.Display_Channels_V2(channels) #show_plot=False
-            # self._Fill_Canvas()
-        else:
+                self.measurement.set_min_to_zero()
+            # self.measurement.display_channels(channels) #show_plot=False
+            self.measurement.display_channels_v2(channels) #show_plot=False
+            # self._fill_canvas()
+        elif self.plotting_mode is Plotting_Modes.SNOM or self.plotting_mode is Plotting_Modes.AFM:
             Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
             Plot_Definitions.vmax_amp = -1
             Plot_Definitions.vmin_real = 0
@@ -925,44 +932,61 @@ for example fourier filtering.
             Plot_Definitions.hspace = float(self.h_space.get())
 
             if self.checkbox_setmintozero_var.get() == 1:
-                self.measurement.Set_Min_to_Zero()
+                self.measurement.set_min_to_zero()
             # try to load channel to add a scalebar to, if only one is present try to convert to list anyways
-            try:
-                scalebar_channel = self.add_scalebar.get().split(',')
-            except:
-                scalebar_channel = [self.add_scalebar.get()]
-            if scalebar_channel != '':
-                self.measurement.Scalebar(channels=scalebar_channel)
+            # autocorrect the scalebar_channels
+            # print('scalebar channels:', self.add_scalebar.get())
+            scalebar_channels = self._correct_channel_from_input(100, self.add_scalebar.get())
+            # print('corrected scalebar channels:', scalebar_channels)
+            # try:
+            #     scalebar_channels = self.add_scalebar.get().split(',')
+            # except:
+            #     scalebar_channels = [self.add_scalebar.get()]
+            
+            if scalebar_channels is not None:
+                # update corrected channels in the text field
+                self.add_scalebar.delete(0, END)
+                self.add_scalebar.insert(0, str(scalebar_channels))
+                self.measurement.scalebar(channels=scalebar_channels)
             Plot_Definitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
             self.measurement.measurement_title = self.measurement_title.get()
-            channels = self._Get_Channels()
-            self.measurement.Display_Channels(channels) #show_plot=False
-        self._Fill_Canvas()
+            channels = self._get_channels()
+            self.measurement.display_channels(channels) #show_plot=False
+        elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+            if self.checkbox_setmintozero_var.get() == 1:
+                self.measurement.set_min_to_zero()
+            Plot_Definitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
+            self.measurement.measurement_title = self.measurement_title.get()
+            channels = self._get_channels()
+            self.measurement.display_channels(channels) #show_plot=False
+        else:
+            print("Spectra plotting mode is not yet implemented!")
+        self._fill_canvas()
         # enable buttons
         # self.button_save_to_gsftxt.config(state=ON)
         # self.button_update_plot.config(state=ON)
         # self.button_generate_all_plot.config(state=ON)
                
-    def _Update_Plot(self): #todo, right now copy of generate_plot without creation of new measurement!
+    def _update_plot(self): #todo, right now copy of generate_plot without creation of new measurement!
         # plt.close(self.fig)
         
         if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
-            self._Generate_Plot()
+            self._generate_plot()
             '''
             self.save_plot_button.config(state=ON)
             self.measurement.measurement_title = self.measurement_title.get()
-            channels = self._Get_Channels()
-            self.measurement.Display_Channels(channels) #show_plot=False
+            channels = self._get_channels()
+            self.measurement.display_channels(channels) #show_plot=False
             '''
-            # self._Fill_Canvas()
+            # self._fill_canvas()
         else:
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             try: 
-                self.measurement.Remove_Last_Subplots(len(channels))
+                self.measurement.remove_last_subplots(len(channels))
             except: print('could not remove the last subplots! (Update Plot)')
-            self._Generate_Plot()
+            self._generate_plot()
 
-    def _Fill_Canvas(self):
+    def _fill_canvas(self):
         self.fig = plt.gcf()
         
         # works but memory increases with each call!
@@ -981,18 +1005,18 @@ for example fourier filtering.
             self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
         self.canvas_fig.draw()        
-        self._Change_Mainwindow_Size()
+        self._change_mainwindow_size()
         # self.fig = None
         gc.collect()
         
-    def _Save_Plot(self):
+    def _save_plot(self):
         allowed_filetypes = (("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg"), ("EPS file", "*.ps"))
         file = filedialog.asksaveasfile(mode='wb', defaultextension=".png", filetypes=allowed_filetypes) #(("PNG file", "*.png"),("All Files", "*.*") )
         extension = file.name.split('.')[-1]
         dpi = int(self.figure_dpi.get())
         self.fig.savefig(file, format=extension, dpi=dpi)
 
-    def _Generate_Savefolder(self):
+    def _generate_savefolder(self):
         """Generate a folder in the users home directory to save the the subplot information and gui settings. The same parent folder
         as for the snom analisis tool is used."""
         self.snom_plotter_config_folder = Path(os.path.expanduser('~')) / Path('SNOM_Config') / Path('SNOM_Plotter')
@@ -1000,7 +1024,7 @@ for example fourier filtering.
         if not Path.exists(self.snom_plotter_config_folder):
             os.makedirs(self.snom_plotter_config_folder)
 
-    def _Get_New_Folderpath(self):
+    def _get_new_folderpath(self):
         new_measuement = False
         old_folder_path = self.folder_path
         self.folder_path = filedialog.askdirectory(initialdir=self.initialdir)
@@ -1016,7 +1040,7 @@ for example fourier filtering.
 
         # check if filetype has changed
         old_file_type = self.file_type
-        self._Get_Measurement_Details() # loads various new measurement details also the filetype
+        self._get_measurement_details() # loads various new measurement details also the filetype
 
         # save new old folder path and corresponding filetype to config file
         config = ConfigParser()
@@ -1032,18 +1056,18 @@ for example fourier filtering.
         # do stuff if the file has changed
         if new_measuement:
             # load the user defaults
-            self._Load_User_Defaults()
+            self._load_user_defaults()
             # get the allowed channels
-            self._Get_Allowed_Channels()
+            self._get_allowed_channels()
             # upadate the buttons
-            self._Update_Buttons()
+            self._update_buttons()
         
         # disable plot button since new measurement has to be loaded first
         self.generate_plot_button.config(state=DISABLED)
 
-    def _Update_Buttons(self):
+    def _update_buttons(self):
         if self.file_type != None:
-            self._Set_Channels(self._Get_Default_Channels())
+            self._set_channels(self._get_default_channels())
             # enable all buttons
             if self.measurement != None:
                 self.SnomMeasurement_button.config(state=ON)
@@ -1106,21 +1130,21 @@ for example fourier filtering.
             self.save_plot_button.config(state=DISABLED)
             self.update_plot_button.config(state=DISABLED)
             
-    def _Exit(self):
+    def _exit(self):
         self.root.quit()
         sys.exit()
 
     def _init_old_measurement(self):
         # try to get the old folder path from the config file
-        self._Get_Old_Folderpath()
+        self._get_old_folderpath()
         # get the measurement details
-        self._Get_Measurement_Details()
+        self._get_measurement_details()
         # load the user defaults
-        self._Load_User_Defaults()
+        self._load_user_defaults()
         # get the allowed channels
-        self._Get_Allowed_Channels()
+        self._get_allowed_channels()
 
-    def _Get_Old_Folderpath(self) -> bool:
+    def _get_old_folderpath(self) -> bool:
         folder_path = None
         file_type = None
         plotting_mode_val = None
@@ -1140,7 +1164,7 @@ for example fourier filtering.
             self.plotting_mode = Plotting_Modes.NONE
             return False
         
-    def _Get_Default_Channels(self, plotting_mode=None) -> list:
+    def _get_default_channels(self, plotting_mode=None) -> list:
         """Tries to find the default channels for the given file type by opening a measurement instance and returning the defaults saved there.
         If no file type is specified, the current file type will be used instead."""
         # default_channels = self.default_dict['default_channels']
@@ -1182,7 +1206,7 @@ for example fourier filtering.
             self.config.write(file)
         return channels
     
-    def _Get_Measurement_Details(self):
+    def _get_measurement_details(self):
         if self.folder_path != None:
             Measurement = FileHandler(self.folder_path)
             self.file_type = Measurement.file_type
@@ -1191,9 +1215,9 @@ for example fourier filtering.
             self.file_type = None
             self.measurement_tag_dict = None
         # try to identify the measurement type to set the correct plotting mode
-        self._Get_Measurement_Type()
+        self._get_measurement_type()
 
-    def _Get_Measurement_Type(self):
+    def _get_measurement_type(self):
         """Try to identify the measurement type based on the measurement tags.
         This will automatically set the plotting mode."""
         if self.file_type != None:
@@ -1219,7 +1243,7 @@ for example fourier filtering.
             plotting_mode = Plotting_Modes.NONE
         self._change_plotting_mode(plotting_mode.value)
 
-    def _Change_Mainwindow_Size(self):
+    def _change_mainwindow_size(self):
         # change size of main window to adjust size of plot
         self.root.update()
         new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
@@ -1234,47 +1258,47 @@ for example fourier filtering.
         center_y = int(screen_height/2 - new_main_window_height/2)
         self.root.geometry(f"{new_main_window_width}x{new_main_window_height}+{center_x}+{center_y}")
 
-    def _Synccorrection_Preview(self):# delete?
+    def _synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
-            channels = self._Get_Channels()
+            channels = self._get_channels()
             measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=False)
             Plot_Definitions.show_plot = False
             # scanangle = measurement.measurement_tag_dict[Measurement_Tags.rotation]*np.pi/180
-            measurement._Create_Synccorr_Preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
-            self._Fill_Canvas()
+            measurement._create_synccorr_preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
+            self._fill_canvas()
     
-    def _Synccorrection(self): # delete?
+    def _synccorrection(self): # delete?
         # print('Synccorrection')
         # print(self.measurement.measurement_tag_dict[Measurement_Tags.ROTATION])
-        popup = SyncCorrectionPopup(self.root, self.folder_path, self._Get_Channels(), self.default_dict)
+        popup = SyncCorrectionPopup(self.root, self.folder_path, self._get_channels(), self.default_dict)
 
-    def _Gauss_Blurr(self): #todo
+    def _gauss_blurr(self): #todo
         # make it such that channels which are in memory are used instead of loading
-        popup = GaussBlurrPopup(self.root, self.measurement, self.folder_path, self._Get_Channels(as_list=False), self.default_dict)
+        popup = GaussBlurrPopup(self.root, self.measurement, self.folder_path, self._get_channels(as_list=False), self.default_dict)
         scaling = popup.scaling
         sigma = popup.sigma
         channels = popup.channels
-        self.measurement.Scale_Channels(channels, scaling)
-        self.measurement.Gauss_Filter_Channels_complex(channels, sigma)
+        self.measurement.scale_channels(channels, scaling)
+        self.measurement.gauss_filter_channels_complex(channels, sigma)
 
-    def _Generate_all_Plot(self):
+    def _generate_all_plot(self):
         plt.close(self.fig)
         # Plot_Definitions.show_plot = True
-        self.measurement.Display_All_Subplots()
-        self._Fill_Canvas()
+        self.measurement.display_all_subplots()
+        self._fill_canvas()
 
     def _clear_all_plots(self):
         # self.measurement.all_subplots = [] # doesn't work because the variable is a class variable so this would only delete it for the specific instance
         # SnomMeasurement.all_subplots = []
-        self.measurement._Delete_All_Subplots()
+        self.measurement._delete_all_subplots()
 
         self.generate_all_plot_button.config(state=DISABLED)
 
-    def _Save_User_Defaults(self):
+    def _save_user_defaults(self):
         """Save the user defaults to the config file for the currently active filetype."""
         # get the channels from the text field
-        current_channels = self._Get_Channels()
+        current_channels = self._get_channels()
         if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
             self.default_dict['channels_approach_curve'] = current_channels
         elif self.plotting_mode is Plotting_Modes.SNOM:
@@ -1326,10 +1350,10 @@ for example fourier filtering.
         with open(self.config_path, 'w') as f:
             self.config.write(f)
 
-    def _Load_User_Defaults(self):
+    def _load_user_defaults(self):
         """Load the user defaults from the config file."""
         # make shure to reload the config file in case it was changed
-        self._Load_User_Defaults_config()
+        self._load_user_defaults_config()
         self.default_dict = {}
         if self.file_type == None:
             file_type = 'FILETYPENONE'
@@ -1339,22 +1363,22 @@ for example fourier filtering.
         for key in self.config[file_type]:
             self.default_dict[key] = self._get_from_config(key, file_type)
 
-    def _Load_User_Defaults_config(self):
+    def _load_user_defaults_config(self):
         """Load the user defaults from the config file."""
         # check if config file exists
         if not Path.exists(self.config_path):
-            self._Load_All_Old_Defaults_new()
+            self._load_all_old_defaults_new()
         else:
             self.config = ConfigParser()
             with open(self.config_path, 'r') as f:
                 self.config.read_file(f)
         
-    def _Restore_User_Defaults(self):
-        self._Load_User_Defaults()
+    def _restore_user_defaults(self):
+        self._load_user_defaults()
         # reload gui
-        self._Update_Gui_Parameters()
+        self._update_gui_parameters()
     
-    def _Load_All_Old_Defaults_new(self):
+    def _load_all_old_defaults_new(self):
         """Create a default config file with the default values. Only use at initial setup or to reset the config file."""
         # also load the snom analysis config to get the default channels
         # check if snom analysis config exists
@@ -1443,7 +1467,7 @@ for example fourier filtering.
 
         self.config = plotter_config
 
-    def _Load_Old_Defaults(self):
+    def _load_old_defaults(self):
         """This function will only load the old defaults for the current filetype.
         """
         # load the snom analysis config to get the default channels
@@ -1457,11 +1481,11 @@ for example fourier filtering.
 
         # load user defaults if the file exists otherwise load all old defaults and recreate the user defaults file
         if not Path.exists(self.config_path):
-            self._Load_All_Old_Defaults_new()
+            self._load_all_old_defaults_new()
             print('User defaults file not found, creating new one!')
             return 0
         
-        self._Load_User_Defaults_config()
+        self._load_user_defaults_config()
 
         # overwrite the section with the current filetype with the old defaults
         self.config[self.file_type] = {
@@ -1538,14 +1562,14 @@ for example fourier filtering.
             except:
                 return None
     
-    def _Restore_Old_Defaults(self):
-        self._Load_Old_Defaults()
-        self._Update_Gui_Parameters()
+    def _restore_old_defaults(self):
+        self._load_old_defaults()
+        self._update_gui_parameters()
         
-    def _Update_Gui_Parameters(self):
-        self._Set_Channels(self._Get_Default_Channels())
+    def _update_gui_parameters(self):
+        self._set_channels(self._get_default_channels())
         # self.select_channels.delete(0, END)
-        # self.select_channels.insert(0, ','.join(self._Get_Default_Channels())),
+        # self.select_channels.insert(0, ','.join(self._get_default_channels())),
         self.figure_dpi.delete(0, END)
         self.figure_dpi.insert(0, self.default_dict['dpi']),
         self.colorbar_width.delete(0, END)
@@ -1555,7 +1579,7 @@ for example fourier filtering.
         self.canvas_fig_height.delete(0, END)
         self.canvas_fig_height.insert(0, self.default_dict['figure_height']),
         # change mainwindow size to adjust for new canvas size:
-        self._Change_Mainwindow_Size()
+        self._change_mainwindow_size()
 
         self.checkbox_hide_ticks.set(self.default_dict['hide_ticks']),
         self.checkbox_show_titles.set(self.default_dict['show_titles']),
@@ -1597,14 +1621,14 @@ for example fourier filtering.
 
     def _update_entry_values(self):#remove? todo
         # save to gsf channels:
-        self._update_entry_value(self.select_channels_tosave, self._Get_Channels(as_list=False))
+        self._update_entry_value(self.select_channels_tosave, self._get_channels(as_list=False))
        
     def _update_entry_value(self, field, value):
         field.delete(0, END)
         field.insert(0, value)
 
     def _save_to_gsf_or_txt(self):
-        popup = SavedataPopup(self.root, self._Get_Channels(as_list=False), self.default_dict['appendix'])
+        popup = SavedataPopup(self.root, self._get_channels(as_list=False), self.default_dict['appendix'])
         filetype = popup.filetype
         channels = popup.channels.split(',')
         appendix = popup.appendix
@@ -1618,7 +1642,7 @@ for example fourier filtering.
 
     def _3_point_height_leveling(self):
         height_channel = None
-        for channel in self._Get_Channels():
+        for channel in self._get_channels():
             if self.measurement.height_indicator in channel:
                 height_channel = channel
         if height_channel is None:
@@ -1631,7 +1655,7 @@ for example fourier filtering.
         
     def _phase_drift_compensation(self):
         phase_channels = []
-        for channel in self._Get_Channels():
+        for channel in self._get_channels():
             if self.measurement.phase_indicator in channel:
                 phase_channels.append(channel)
         if phase_channels == []:
@@ -1641,11 +1665,11 @@ for example fourier filtering.
         popup = PhaseDriftCompensation(self.root, self.measurement, preview_phasechannel, True, self.default_dict)
 
         for channel in phase_channels: # use the phase slope to correct all channels in memory
-            leveled_phase_data = self.measurement._Level_Phase_Slope(self.measurement.all_data[self.measurement.channels.index(channel)], popup.phase_slope)
+            leveled_phase_data = self.measurement._level_phase_slope(self.measurement.all_data[self.measurement.channels.index(channel)], popup.phase_slope)
             self.measurement.all_data[self.measurement.channels.index(channel)] = leveled_phase_data
             self.measurement.channels_label[self.measurement.channels.index(channel)] += '_leveled'
         
-        self.measurement._Write_to_Logfile('phase_driftcomp_slope', popup.phase_slope)
+        self.measurement._write_to_logfile('phase_driftcomp_slope', popup.phase_slope)
 
     def _overlay_channels(self):
         forward_height_channel = self.measurement.height_channels[0]
@@ -1654,13 +1678,13 @@ for example fourier filtering.
         forward_channel = popup.forward_channel
         backward_channel = popup.backward_channel
         overlay_channels = popup.overlay_channels
-        self._Set_Channels(self.measurement.channels)
+        self._set_channels(self.measurement.channels)
         print('channels have been overlaid')
 
     def _change_phase_offset(self):
         # find appropriate phase channel for preview
         phase_channel = None
-        for channel in self._Get_Channels():
+        for channel in self._get_channels():
             if self.measurement.phase_indicator in channel:
                 phase_channel = channel # just take the first one
                 break
@@ -1668,16 +1692,16 @@ for example fourier filtering.
         popup = PhaseOffsetPopup(self.root, self.measurement, phase_channel, True)
         phase_offset = popup.phase_offset
         phase_channels = []
-        for channel in self._Get_Channels():
+        for channel in self._get_channels():
             if self.measurement.phase_indicator in channel:
                 phase_channels.append(channel)
-        self.measurement._Write_to_Logfile('phase_shift', phase_offset)
+        self.measurement._write_to_logfile('phase_shift', phase_offset)
         for channel in phase_channels:
             data = self.measurement.all_data[self.measurement.channels.index(channel)]
             # print min and max values of the phase data
             # print('min phase value: ', np.min(data))
             # print('max phase value: ', np.max(data))
-            shifted_data = self.measurement._Shift_Phase_Data(data, phase_offset)
+            shifted_data = self.measurement._shift_phase_data(data, phase_offset)
             self.measurement.all_data[self.measurement.channels.index(channel)] = shifted_data
             # print min and max values of the phase data
             # print('min phase value: ', np.min(shifted_data))
@@ -1687,7 +1711,7 @@ for example fourier filtering.
         # pass
         amp_channel = None
         phase_channel = None
-        for channel in self._Get_Channels():
+        for channel in self._get_channels():
             if self.measurement.amp_indicator in channel :
                 amp_channel = channel
             elif self.measurement.phase_indicator in channel:
@@ -1700,18 +1724,18 @@ for example fourier filtering.
         amp_channel = popup.amp_channel
         phase_channel = popup.phase_channel
         complex_type = popup.complex_type
-        self.measurement.Manually_Create_Complex_Channel(amp_channel, phase_channel, complex_type)
+        self.measurement.manually_create_complex_channel(amp_channel, phase_channel, complex_type)
         # the names of the newly created channels are added to the channels text field but not automatically loaded
-        self._Set_Channels(self.measurement.channels)
+        self._set_channels(self.measurement.channels)
 
     def _height_masking(self):
-        popup = HeightMaskingPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)
+        popup = HeightMaskingPopup(self.root, self._get_channels(as_list=False), self.measurement, self.default_dict)
 
     def _rotation(self):
-        popup = RotationPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)
+        popup = RotationPopup(self.root, self._get_channels(as_list=False), self.measurement, self.default_dict)
 
     def _transform_log(self):
-        popup = LogarithmPopup(self.root, self._Get_Channels(as_list=False), self.measurement, self.default_dict)
+        popup = LogarithmPopup(self.root, self._get_channels(as_list=False), self.measurement, self.default_dict)
 
     def _create_gif(self):
         """This function creates a popup and lets the user create a gif of channels in the current measurement.
@@ -1721,9 +1745,9 @@ for example fourier filtering.
         popup = GifCreationPopup(self.root, self.measurement)
         gif_path = popup.gif_path
         fps = popup.fps
-        self._Display_Gif(gif_path, fps)
+        self._display_gif(gif_path, fps)
         
-    def _Display_Gif(self, gif_path, fps:int=10):
+    def _display_gif(self, gif_path, fps:int=10):
         """This function displays a gif in the canvas.
 
         Args:
@@ -1752,7 +1776,7 @@ for example fourier filtering.
         ani = FuncAnimation(fig, update_image, frames=len(frames), interval=1000/fps, repeat=True)
 
         # display the gif in the canvas
-        self._Fill_Canvas()
+        self._fill_canvas()
 
     def _change_plotting_mode(self, new_button_id):
         old_button_id = self.plotting_mode.value
@@ -1768,7 +1792,7 @@ for example fourier filtering.
                 # change new button color
                 self._change_plotting_mode_button_color(new_button_id, 1)
                 # do stuff after plotting mode was changed
-                self._Set_Channels(self._Get_Default_Channels())
+                self._set_channels(self._get_default_channels())
         except:
             pass
 

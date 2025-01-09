@@ -6,7 +6,7 @@ class ChannelTextfield:
         self.allowed_width = allowed_width
         self.allowed_channels = allowed_channels
 
-    def Decode_Input(self, input):
+    def decode_input(self, input):
         # try to find out if user input is correct.
         # for this each element must eighter be separated by a comma or a new line character
         # check if user used '.' or ';' to separate channels and replace with ','
@@ -21,7 +21,7 @@ class ChannelTextfield:
                     input = input.replace('\n', ',',1) # if user used linebreak and no ','
         return input
     
-    def Correct_Channels_Input(self, input):
+    def correct_channels_input(self, input):
         input = input.replace('\n', '')
         input = input.split(',')
         corrected_input = []
@@ -41,7 +41,7 @@ class ChannelTextfield:
         corrected_input = ','.join(corrected_input)
         return corrected_input
 
-    def Encode_Input(self, list_input):
+    def encode_input(self, list_input):
         # reverse to decode, add '\n' after ',' if line would be longer than text widget width
         # todo, for now arbitrary:
         text_width = 3 # in units of channels, so 3 channels per line are allowed, later adapt to actual width of widget

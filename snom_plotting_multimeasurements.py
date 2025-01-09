@@ -813,8 +813,9 @@ for example fourier filtering.
         imag_channels = self._get_from_config('imag_channels', file_type, snom_analysis_config)
         height_channels = self._get_from_config('height_channels', file_type, snom_analysis_config)
         mechanical_channels = self._get_from_config('mechanical_channels', file_type, snom_analysis_config)
-        default_appendix = self._get_from_config('channel_suffix_default', file_type, snom_analysis_config)
-        all_channels_default = [channel + default_appendix for channel in phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels]
+        # default_appendix = self._get_from_config('channel_suffix_default', file_type, snom_analysis_config)
+        # all_channels_default = [channel + default_appendix for channel in phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels]
+        all_channels_default = phase_channels + amp_channels + real_channels + imag_channels + mechanical_channels
         all_channels_default += height_channels
         # also include variations with the various suffixes
         sync_appendix = self._get_from_config('channel_suffix_synccorrected_phase', file_type, snom_analysis_config)
@@ -827,6 +828,7 @@ for example fourier filtering.
         return self.allowed_channels
 
     def _correct_channel_from_input(self, text_field_width, channels:str) -> list:
+        self._get_allowed_channels()
         if channels == '':
             return None
         else:

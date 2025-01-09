@@ -1213,7 +1213,7 @@ for example fourier filtering.
         else:
             self.file_type = None
             self.measurement_tag_dict = None
-        print('file type:', self.file_type)
+        # print('file type:', self.file_type)
         # try to identify the measurement type to set the correct plotting mode
         self._get_measurement_type()
 
@@ -1241,7 +1241,7 @@ for example fourier filtering.
                     plotting_mode = Plotting_Modes.SNOM
         else:
             plotting_mode = Plotting_Modes.NONE
-        print('plotting mode:', plotting_mode)
+        # print('plotting mode:', plotting_mode)
         self._change_plotting_mode(plotting_mode.value)
 
     def _change_mainwindow_size(self):

@@ -1272,7 +1272,7 @@ class RotationPopup():
         # also make shure to transferr the mask array to the measurement, 
         # because it needs to know it for autocut and to plot a white border around masked areas'''
         for i in range(rotations):
-            self.measurement.Rotate_90_deg()
+            self.measurement.rotate_90_deg()
 
         
         self.window.quit()

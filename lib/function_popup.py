@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import ttkbootstrap as ttkb
 from ttkbootstrap.constants import *
 from gui_parameters import*
@@ -6,12 +7,13 @@ from gui_parameters import*
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from SNOM_AFM_analysis.snom_analysis import SnomMeasurement, Plot_Definitions, Measurement_Tags
-Plot_Definitions.show_plot = False # mandatory for gui usage
-from SNOM_AFM_analysis.lib.snom_colormaps import *
+from snom_analysis.main import SnomMeasurement, PlotDefinitions, MeasurementTags
+PlotDefinitions.show_plot = False # mandatory for gui usage
+from snom_analysis.lib.snom_colormaps import *
 from mpl_point_clicker import clicker# used for getting coordinates from images
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
+import gc
 
 from copy import deepcopy # to copy the measurement instance
 
@@ -524,7 +526,9 @@ class OverlayChannels():
         help_message = """The overlay channels method is ment to overlay forward and backwards channels.
 This works by shifting the x-coordinates relative to each other. For optimal results leveled height channels should be used.
 The overlay itself is then applied to the specified channels. So far it usually only makes sense for amplitude and height data.
-The overlaying will then automatically be applied, but currently the channels in memory will be overwritten!"""
+The overlaying will then automatically be applied, but currently the channels in memory will be overwritten!
+You only need to specify the forward amplitude channels. The channels also don't need to be in memory.
+If you want to overlay all channels, just type 'all'."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Overlay Method Work?', help_message))
         self.button_help.grid(column=0, row=8, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
@@ -595,8 +599,8 @@ class SyncCorrectionPopup():
         if self.synccorrection_wavelength.get() != '':
             wavelength = float(self.synccorrection_wavelength.get())
             measurement = SnomMeasurement(self.folder_path, channels=self.channels, autoscale=False)
-            Plot_Definitions.show_plot = False
-            # scanangle = measurement.measurement_tag_dict[Measurement_Tags.rotation]*np.pi/180
+            PlotDefinitions.show_plot = False
+            # scanangle = measurement.measurement_tag_dict[MeasurementTags.rotation]*np.pi/180
             measurement._create_synccorr_preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
             self._fill_canvas()
 
@@ -612,7 +616,7 @@ class SyncCorrectionPopup():
                 print('self.phasedir must be either \'n\' or \'p\'')
             channels = self.channels
             measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=False)
-            measurement.Synccorrection(self.wavelength, self.phasedir)
+            measurement.synccorrection(self.wavelength, self.phasedir)
             print('finished synccorrection')
             self.default_dict['synccorr_lambda'] = float(self.synccorrection_wavelength.get())
             self.default_dict['synccorr_phasedir'] = str(self.synccorrection_phasedir.get())
@@ -717,7 +721,7 @@ class GaussBlurrPopup():
         # preview_measurement = SnomMeasurement(self.folder_path, channels, autoscale=self.default_dict['autoscale'])
         # preview_measurement = self.measurement
         preview_measurement = deepcopy(self.measurement)
-        # Plot_Definitions.show_plot = False
+        # PlotDefinitions.show_plot = False
         # make shure that no channel is blurred twice! eg. for repeated previewing
         for channel in channels:
             if preview_measurement.filter_gauss_indicator in preview_measurement.channels_label[preview_measurement.channels.index(channel)]:
@@ -780,6 +784,172 @@ The channels will get the appendix\'_corrected\' and are exported as \'.gsf\' fi
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
 class PhaseOffsetPopup():
+    def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
+        self.parent = parent
+        self.phase_channel = phase_channel
+        self.measurement = measurement
+        self.autoscale = autoscale
+        self.window_width = 1000
+        self.window_height = 600
+
+        self.phase_data = self.measurement.all_data[measurement.channels.index(self.phase_channel)]
+        self.shifted_phase_data = np.copy(self.phase_data)# temporary copy
+        self.previous_shift = 0
+
+
+        self.window = ttkb.Toplevel(parent)
+        self.window.grab_set()
+        self.window.title('Shift Phase')
+        # self.window.geometry(f'800x600')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
+
+        self._create_menu()
+        self._create_canvas()
+        self._update_plot()
+        self._change_popup_size()
+
+
+        # self._start_leveling()
+        # self.window.bind('<Return>', self._on_change_entry)
+        # all the space for canvas
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_rowconfigure(0, weight=1)
+
+        self.window.mainloop()
+
+    def _change_popup_size(self):
+        self.window.update()
+        # self.window.update_idletasks()
+        canvas_width = self.canvas_area.winfo_width()
+        # print('canvasframe width: ', self.canvas_area.winfo_width())
+        # print('canvasfig width: ', self.canvas_fig.winfo_width())
+        # self.canvas_fig
+        # print('menu width: ', self.frame.winfo_width())
+        menu_width = self.frame.winfo_width()
+        self.window.geometry(f'{self.window_width}x{self.window_height}')
+
+    def _create_canvas(self):
+        # canvas area
+        # self.window.update()
+
+        self.fig, self.ax = plt.subplots(figsize=(5, 4))
+        self.fig.tight_layout(pad=3)
+
+        self.canvas_area = ttkb.Frame(self.window, width=self.window_width-self.frame.winfo_width(), height=self.window_height)
+        self.canvas_area.grid(column=0, row=0, sticky='nsew')
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.canvas_area)
+        self.canvas_widget = self.canvas.get_tk_widget()
+        self.canvas_widget.pack(fill=tk.BOTH, expand=1)
+
+    def _update_plot(self):
+        """Update the plot based on the slider value."""
+        try:
+            value = float(self.slider_var.get())
+            # add sleep to simulate long running process
+            # time.sleep(0.1)
+            self._shift_phase(value)
+            self.ax.clear()
+            image = self.ax.pcolormesh(self.shifted_phase_data, cmap=SNOM_phase, vmin=0, vmax=pi*2)
+            self.ax.invert_yaxis()
+            # divider = make_axes_locatable(self.ax)
+            # cax = divider.append_axes("right", size="5%", pad=0.05)
+            # cbar = plt.colorbar(image, cax=cax)
+            # cbar.ax.get_yaxis().labelpad = 15
+            # label = 'Phase'
+            # title = 'Shift the phase'
+            # cbar.ax.set_ylabel(label, rotation=270)
+            # self.ax.set_title(title)
+            self.ax.axis('scaled')
+            # self.ax.legend()
+            self.canvas.draw()
+        except ValueError:
+            print('ValueError in update plot')
+            pass
+
+    def _shift_phase(self, shift):
+        yres = len(self.shifted_phase_data)
+        xres = len(self.shifted_phase_data[0])
+        for y in range(yres):
+            for x in range(xres):
+                self.shifted_phase_data[y][x] = (self.phase_data[y][x] + shift) % (2*pi)
+
+    def _save_leveled_data(self):
+        self.phase_offset = float(float(self.slider_var.get()))
+        self.window.quit()
+        self.window.destroy()
+
+    def _on_slider_click(self, event):
+        """Handle clicking on the slider to set the value directly."""
+        slider_length = self.slider.winfo_width()
+        slider_start = self.slider.winfo_rootx()
+        click_position = event.x_root - slider_start
+        value = self.slider.cget("from") + (click_position / slider_length) * (self.slider.cget("to") - self.slider.cget("from"))
+        self.slider.set(value)
+        self.slider_var.set(f"{value:.2f}")
+        # self._update_plot()
+        
+    def _on_slider_change(self, val):
+        """Update the text entry when the slider changes."""
+        print('slider changed: val: ', val)
+        # print('slider event type: ', type(val))
+        # print('slider value: ', self.slider.get())
+        # print('slider value type: ', type(self.slider.get()))
+        if ',' in val: val = val.replace(',', '.')
+        print('updated val: ', val)
+
+        # self.slider_var.set(f"{self.slider.get():.2f}")
+        # self.slider_var.set(val)
+        # self._update_plot()
+
+    def _on_entry_change(self, event):
+        # print('entry changed: event: ', event)
+        # print('entry value: ', self.slider_entry.get())
+        self.slider.set(self.slider_entry.get())
+        self._on_slider_change(event)
+
+    def _update_slider(self, *args):
+        """Update the slider when the text entry changes."""
+        try:
+            value = float(self.slider_var.get())
+            print('in update slider, value: ', value)
+            self.slider.set(value)
+            print('in update slider, plotting...')
+            self._update_plot()
+        except ValueError:
+            print('ValueError in update slider')
+            pass
+
+    def _create_menu(self):
+        self.frame = ttkb.Labelframe(self.window, text='Shift Phase Data', padding=10)
+        self.frame.grid(column=1, row=0)
+        # self.frame = tk.Frame(self.window)
+        # self.frame.grid(column=1, row=0)
+
+
+        # Add a text field to display and edit the slider value
+        self.slider_var = tk.StringVar(value="0.00")
+        self.slider_entry = tk.Entry(self.frame, textvariable=self.slider_var, width=10)
+        self.slider_entry.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.slider_var.trace_add("write", self._update_slider)
+
+        self.slider = tk.Scale(self.frame, from_=0.0, to=1, resolution=0.01, orient="horizontal") # bootstrap slider has a self recursive bug, not good for big data
+        self.slider.set(0)
+        self.slider.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.slider.configure(command=self._on_slider_change)
+        self.slider.bind("<Button-1>", self._on_slider_click)
+
+        self.button_save = ttkb.Button(self.frame, text='Save', bootstyle=SUCCESS, command=self._save_leveled_data)
+        self.button_save.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        help_message = """This simple phase offset correction will apply a phase correction to all phase channels in memory.
+Currently the first phase channel is used as a preview channel.
+To change the phase offset simply change the slider or type the value in the entry field and hit enter."""
+        # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
+        self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+class PhaseOffsetPopup_old():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
         self.parent = parent
         self.phase_channel = phase_channel
@@ -915,26 +1085,52 @@ class PhaseOffsetPopup():
         self.window.destroy()
 
     def _on_change_slider(self, event):
-        # print('slider value: ', self.slider.get())
-        self.rounded_val = str(round(float(self.slider.get()), 3))
-        self.entry_slider.delete(0, END)
-        self.entry_slider.insert(0, self.rounded_val)
-        # self.shifted_phase_data = self.measurement._Shift_Phase_Data(self.phase_data, float(self.rounded_val))
-        self._shift_phase()
-        self._fill_canvas()
+        print('slider changed: event: ', event)
+        print('event type: ', type(event))
+        print('old value: ', self.rounded_val)
+        # print('slider value: ', str(self.slider.get()))
+        # new_val = str(round(float(self.slider.get()), 3))
+        # new_val = round(self.slider.get(), 3)
+        new_val = event
+        if new_val != self.rounded_val:
+            # self.rounded_val = str(round(float(self.slider.get()), 3))
+            # self.rounded_val = round(float(self.slider.get()), 3)
+            self.rounded_val = new_val
+            self.entry_slider.delete(0, END)
+            # self.entry_slider.insert(0, float(self.rounded_val))
+            self.entry_slider.insert(0, str(round(float(event),2)))
+            # self.shifted_phase_data = self.measurement._Shift_Phase_Data(self.phase_data, float(self.rounded_val))
+            self._shift_phase()
+            print('shifted phase data')
+            self._fill_canvas()
+            gc.collect()
+        print('changed slider')
+
+    def _on_slider_click(self, event):
+        """Handle clicking on the slider to set the value directly."""
+        slider_length = self.slider.winfo_width()
+        slider_start = self.slider.winfo_rootx()
+        click_position = event.x_root - slider_start
+        value = self.slider.cget("from") + (click_position / slider_length) * (self.slider.cget("to") - self.slider.cget("from"))
+        self.slider.set(value)
+        
 
     def _on_change_entry(self, event):
-        # print('entry value: ', self.entry_slider.get())
-        self.slider.set(float(self.entry_slider.get()))
-        self._on_change_slider(None)
+        print('entry changed: event: ', event)
+        print('entry value: ', self.entry_slider.get())
+        self.slider.set(self.entry_slider.get())
+        self._on_change_slider(event)
 
     def _create_menu(self):
         self.frame = ttkb.Labelframe(self.window, text='Shift Phase Data', padding=10)
         self.frame.grid(column=1, row=0)
 
-        self.slider = ttkb.Scale(self.frame, from_=0, to=2*pi, orient=HORIZONTAL, command=self._on_change_slider)
+        self.slider = ttkb.Scale(self.frame, from_=0, to=2*pi, orient=HORIZONTAL, command=self._on_change_slider) # bootstrap slider has a self recursive bug, not good for big data
+        # self.slider = ttk.Scale(self.frame, from_=0, to=2*pi, orient=HORIZONTAL, command=self._on_change_slider)
+        # self.slider =  tk.Scale(self.frame, from_=0, to=2*pi, orient=HORIZONTAL, command=self._on_change_slider, resolution=0.1)
         self.slider.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
-
+        # self.slider.set('1.3')
+        self.rounded_val = '0'
 
         self.entry_slider = ttkb.Entry(self.frame, width=10, justify='center')
         self.entry_slider.insert(0, 0)
@@ -968,6 +1164,7 @@ To change the phase offset simply change the slider or type the value in the ent
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
 
 class CreateRealpartPopup():
     def __init__(self, parent, preview_ampchannel, preview_phasechannel) -> None:
@@ -1260,11 +1457,11 @@ class RotationPopup():
                     self.measurement.all_data[channel_index] = np.rot90(self.measurement.all_data[channel_index], axes=self.rotation_orientation) # todo, rotations larger than 90 lead to issues with gif
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_rotated' # eigentlich ueberfluessig
 
-                XReal, YReal = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.scan_area]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.scan_area] = [YReal, XReal]
-                XRes, YRes = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.pixel_area]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.pixel_area] = [YRes, XRes]
-                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][Measurement_Tags.rotation] += rotations*90 # careful, i dont know the definition from the snom
+                XReal, YReal = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][MeasurementTags.scan_area]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][MeasurementTags.scan_area] = [YReal, XReal]
+                XRes, YRes = self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][MeasurementTags.pixel_area]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][MeasurementTags.pixel_area] = [YRes, XRes]
+                self.measurement.channel_tag_dict[self.measurement.channels.index(channel)][MeasurementTags.rotation] += rotations*90 # careful, i dont know the definition from the snom
 
         # print('The following channels have been masked!\n', self.rotation_channels)
         # self.measurement._write_to_logfile('height_masking_threshold', self.threshold)
@@ -1483,9 +1680,9 @@ class GifCreationPopup():
         # add label plus entry for number of frames
         self.label_frames = ttkb.Label(self.frame, text='Number of Frames:')
         self.label_frames.grid(column=0, row=2, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
-        self.frames = ttkb.Entry(self.frame, justify='center')
-        self.frames.insert(0, '20')
-        self.frames.grid(column=1, row=2, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.frames_entry = ttkb.Entry(self.frame, justify='center')
+        self.frames_entry.insert(0, '20')
+        self.frames_entry.grid(column=1, row=2, columnspan=1, sticky='nsew', padx=button_padx, pady=button_pady)
 
         # add label plus entry for fps value
         self.label_fps = ttkb.Label(self.frame, text='Frames per second:')
@@ -1539,7 +1736,7 @@ Also make shure to select the corrected phase channel if you are working with th
         else:
             self.gif_channels = [self.gif_channels[0], self.gif_channels[1]]
         # get all the other values from the entry fields
-        self.frames = int(self.frames.get())
+        self.frames = int(self.frames_entry.get())
         self.fps = int(self.fps.get())
         self.dpi = int(self.dpi.get())
         self.gif_path = self.measurement.create_gif(self.gif_channels[0], self.gif_channels[1], self.frames, self.fps, self.dpi)

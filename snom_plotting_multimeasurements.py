@@ -29,8 +29,8 @@ from configparser import ConfigParser
 import ast # for string to list, dict ... conversion
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from SNOM_AFM_analysis.snom_analysis import Plot_Definitions, Measurement_Tags
-from SNOM_AFM_analysis.snom_analysis import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
+from snom_analysis.main import PlotDefinitions, MeasurementTags
+from snom_analysis.main import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
 import numpy as np
 
 # for animations like gif
@@ -76,7 +76,7 @@ class MainGui():
         self.measurement = None # to keep track of the measurement object
         self.initialdir = os.path.expanduser('~') # will be used if no old measurement is found
         # on startup make shure the all_subplots memory gets cleaned
-        Plot_Definitions.autodelete_all_subplots = True # set to false once the first measurement is loaded
+        PlotDefinitions.autodelete_all_subplots = True # set to false once the first measurement is loaded
         # variable to check if user has changed the channels, if so do not change on relod of new measurements
         self.relod_default_channels = True # set initialy to true, this will try to reload the old defaults set by the user
         self.file_type = None # make shure to overwrite the channels with corresponding default channels if filetype changes
@@ -792,7 +792,7 @@ for example fourier filtering.
             self.save_plot_button.config(state=DISABLED)
             # self.update_plot_button.config(state=DISABLED)
 
-            Plot_Definitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
+            PlotDefinitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
         elif self.plotting_mode is Plotting_Modes.SPECTRUM:
             print("Spectra plotting mode is not yet implemented!")
 
@@ -890,48 +890,48 @@ for example fourier filtering.
             self.measurement.display_channels_v2(channels) #show_plot=False
             # self._fill_canvas()
         elif self.plotting_mode is Plotting_Modes.SNOM or self.plotting_mode is Plotting_Modes.AFM:
-            Plot_Definitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
-            Plot_Definitions.vmax_amp = -1
-            Plot_Definitions.vmin_real = 0
-            Plot_Definitions.vmax_real = 0
-            Plot_Definitions.colorbar_width = float(self.colorbar_width.get())
+            PlotDefinitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
+            PlotDefinitions.vmax_amp = -1
+            PlotDefinitions.vmin_real = 0
+            PlotDefinitions.vmax_real = 0
+            PlotDefinitions.colorbar_width = float(self.colorbar_width.get())
             if self.checkbox_hide_ticks.get() == 1:
-                Plot_Definitions.hide_ticks = True
+                PlotDefinitions.hide_ticks = True
             else:
-                Plot_Definitions.hide_ticks = False
+                PlotDefinitions.hide_ticks = False
             if self.checkbox_show_titles.get() == 1:
-                Plot_Definitions.show_titles = True
+                PlotDefinitions.show_titles = True
             else:
-                Plot_Definitions.show_titles = False
+                PlotDefinitions.show_titles = False
             if self.checkbox_tight_layout.get() == 1:
-                Plot_Definitions.tight_layout = True
+                PlotDefinitions.tight_layout = True
             else:
-                Plot_Definitions.tight_layout = False
+                PlotDefinitions.tight_layout = False
             if self.checkbox_full_phase_range.get() == 1:
-                Plot_Definitions.full_phase_range = True
+                PlotDefinitions.full_phase_range = True
             else:
-                Plot_Definitions.full_phase_range = False
+                PlotDefinitions.full_phase_range = False
             if self.checkbox_shared_phase_range.get() == 1:
-                Plot_Definitions.shared_phase_range = True
+                PlotDefinitions.shared_phase_range = True
             else:
-                Plot_Definitions.shared_phase_range = False
+                PlotDefinitions.shared_phase_range = False
             if self.checkbox_amp_cbar_range.get() == 1:
-                Plot_Definitions.amp_cbar_range = True
+                PlotDefinitions.amp_cbar_range = True
             else:
-                Plot_Definitions.amp_cbar_range = False
+                PlotDefinitions.amp_cbar_range = False
             if self.checkbox_real_cbar_range.get() == 1:
-                Plot_Definitions.real_cbar_range = True
+                PlotDefinitions.real_cbar_range = True
             else:
-                Plot_Definitions.real_cbar_range = False
+                PlotDefinitions.real_cbar_range = False
             if self.checkbox_height_cbar_range.get() == 1:
-                Plot_Definitions.height_cbar_range = True
+                PlotDefinitions.height_cbar_range = True
             else:
-                Plot_Definitions.height_cbar_range = False
+                PlotDefinitions.height_cbar_range = False
             self.generate_all_plot_button.config(state=ON)
             self.save_plot_button.config(state=ON)
             self.update_plot_button.config(state=ON)
 
-            Plot_Definitions.hspace = float(self.h_space.get())
+            PlotDefinitions.hspace = float(self.h_space.get())
 
             if self.checkbox_setmintozero_var.get() == 1:
                 self.measurement.set_min_to_zero()
@@ -950,14 +950,14 @@ for example fourier filtering.
                 self.add_scalebar.delete(0, END)
                 self.add_scalebar.insert(0, str(scalebar_channels))
                 self.measurement.scalebar(channels=scalebar_channels)
-            Plot_Definitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
+            PlotDefinitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._get_channels()
             self.measurement.display_channels(channels) #show_plot=False
         elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
             if self.checkbox_setmintozero_var.get() == 1:
                 self.measurement.set_min_to_zero()
-            Plot_Definitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
+            PlotDefinitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._get_channels()
             self.measurement.display_channels(channels) #show_plot=False
@@ -1225,7 +1225,7 @@ for example fourier filtering.
         if self.file_type != None:
             try:
                 # not every filetype has a scan type
-                scan_type = self.measurement_tag_dict[Measurement_Tags.SCAN]
+                scan_type = self.measurement_tag_dict[MeasurementTags.SCAN]
             except:
                 # scan_type = None
                 # self.plotting_mode = Plotting_Modes.NONE
@@ -1266,14 +1266,14 @@ for example fourier filtering.
             wavelength = float(self.synccorrection_wavelength.get())
             channels = self._get_channels()
             measurement = SnomMeasurement(self.folder_path, channels=channels, autoscale=False)
-            Plot_Definitions.show_plot = False
-            # scanangle = measurement.measurement_tag_dict[Measurement_Tags.rotation]*np.pi/180
+            PlotDefinitions.show_plot = False
+            # scanangle = measurement.measurement_tag_dict[MeasurementTags.rotation]*np.pi/180
             measurement._create_synccorr_preview(measurement.preview_phasechannel, wavelength, nouserinput=True)
             self._fill_canvas()
     
     def _synccorrection(self): # delete?
         # print('Synccorrection')
-        # print(self.measurement.measurement_tag_dict[Measurement_Tags.ROTATION])
+        # print(self.measurement.measurement_tag_dict[MeasurementTags.ROTATION])
         popup = SyncCorrectionPopup(self.root, self.folder_path, self._get_channels(), self.default_dict)
 
     def _gauss_blurr(self): #todo
@@ -1287,7 +1287,7 @@ for example fourier filtering.
 
     def _generate_all_plot(self):
         plt.close(self.fig)
-        # Plot_Definitions.show_plot = True
+        # PlotDefinitions.show_plot = True
         self.measurement.display_all_subplots()
         self._fill_canvas()
 

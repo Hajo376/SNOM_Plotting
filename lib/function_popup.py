@@ -796,11 +796,11 @@ class PhaseOffsetPopup():
         self.cmap = SNOM_phase
 
         self.phase_data = self.measurement.all_data[measurement.channels.index(self.phase_channel)]
-        print('original xres, yres: ', len(self.phase_data[0]), len(self.phase_data))
+        # print('original xres, yres: ', len(self.phase_data[0]), len(self.phase_data))
         self.shifted_phase_data = np.copy(self.phase_data)# temporary copy
         # resize phase data to make preview more efficient
         self.phase_data_resized = self.resize_data(self.phase_data, [self.window_width-100,self.window_height])
-        print('resized xres, yres: ', len(self.phase_data_resized[0]), len(self.phase_data_resized))
+        # print('resized xres, yres: ', len(self.phase_data_resized[0]), len(self.phase_data_resized))
         self.previous_shift = 0
 
 
@@ -924,13 +924,15 @@ class PhaseOffsetPopup():
         self.window.destroy()
 
     def _update_image(self, val):
-        shifted_phase_data = self._shift_phase(self.phase_data_resized, float(val))
-        print('xres, yres: ', len(shifted_phase_data[0]), len(shifted_phase_data))
-        phase_data_scaled = ((shifted_phase_data - np.min(shifted_phase_data)) / (np.max(shifted_phase_data) - np.min(shifted_phase_data)) * 255).astype(np.uint8)
-        image = Image.fromarray(np.uint8(self.cmap(phase_data_scaled)*255))
-        tk_image = ImageTk.PhotoImage(image)
-        self.canvas.imgref = tk_image
-        self.canvas.itemconfig(self.image_on_canvas, image=tk_image)
+        try:
+            shifted_phase_data = self._shift_phase(self.phase_data_resized, float(val))
+            # print('xres, yres: ', len(shifted_phase_data[0]), len(shifted_phase_data))
+            phase_data_scaled = ((shifted_phase_data - np.min(shifted_phase_data)) / (np.max(shifted_phase_data) - np.min(shifted_phase_data)) * 255).astype(np.uint8)
+            image = Image.fromarray(np.uint8(self.cmap(phase_data_scaled)*255))
+            tk_image = ImageTk.PhotoImage(image)
+            self.canvas.imgref = tk_image
+            self.canvas.itemconfig(self.image_on_canvas, image=tk_image)
+        except: pass
 
     def _on_change_slider(self, event):
         phase = 2*pi/100*float(event)

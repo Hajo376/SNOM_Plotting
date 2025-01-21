@@ -2097,3 +2097,15 @@ quadratic_pixels = True
 set_min_to_zero = True
 phase_shift = 1.53
 set_min_to_zero = True
+21/01/2025 17:27:41
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+21/01/2025 17:27:43
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+21/01/2025 17:28:16
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+21/01/2025 17:28:17
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+21/01/2025 17:30:08
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2

@@ -14,6 +14,8 @@ from mpl_point_clicker import clicker# used for getting coordinates from images
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import gc
+import time
+from PIL import Image, ImageTk
 
 from copy import deepcopy # to copy the measurement instance
 
@@ -791,9 +793,14 @@ class PhaseOffsetPopup():
         self.autoscale = autoscale
         self.window_width = 1000
         self.window_height = 600
+        self.cmap = SNOM_phase
 
         self.phase_data = self.measurement.all_data[measurement.channels.index(self.phase_channel)]
+        print('original xres, yres: ', len(self.phase_data[0]), len(self.phase_data))
         self.shifted_phase_data = np.copy(self.phase_data)# temporary copy
+        # resize phase data to make preview more efficient
+        self.phase_data_resized = self.resize_data(self.phase_data, [self.window_width-100,self.window_height])
+        print('resized xres, yres: ', len(self.phase_data_resized[0]), len(self.phase_data_resized))
         self.previous_shift = 0
 
 
@@ -805,12 +812,10 @@ class PhaseOffsetPopup():
 
         self._create_menu()
         self._create_canvas()
-        self._update_plot()
         self._change_popup_size()
 
-
         # self._start_leveling()
-        # self.window.bind('<Return>', self._on_change_entry)
+        self.window.bind('<Return>', self._on_change_entry)
         # all the space for canvas
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_rowconfigure(0, weight=1)
@@ -818,126 +823,142 @@ class PhaseOffsetPopup():
         self.window.mainloop()
 
     def _change_popup_size(self):
-        self.window.update()
-        # self.window.update_idletasks()
-        canvas_width = self.canvas_area.winfo_width()
-        # print('canvasframe width: ', self.canvas_area.winfo_width())
-        # print('canvasfig width: ', self.canvas_fig.winfo_width())
-        # self.canvas_fig
-        # print('menu width: ', self.frame.winfo_width())
+        self.window.update_idletasks()
+        # self.window.update()
+        # get current size:
+        width = self.window.winfo_width()
+        height = self.window.winfo_height()
+        # get image size:
+        xres = len(self.phase_data_resized[0])
+        yres = len(self.phase_data_resized)
+        # get menu width:
         menu_width = self.frame.winfo_width()
-        self.window.geometry(f'{self.window_width}x{self.window_height}')
+        menu_height = self.frame.winfo_height()
+        # total needed size:
+        x_total = xres + menu_width + 0 # somehow there is some unknown padding or so...
+        y_total = yres + menu_height + 0 # somehow there is some unknown padding or so...
+        # adjust winwo size:
+        # get the screen width and height of the display used
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        center_x = int(screen_width/2 - x_total/2)
+        center_y = int(screen_height/2 - y_total/2)
+        self.window.geometry(f"{x_total}x{y_total}+{center_x}+{center_y}")
+        # print('changed window geometry to: ', x_total, y_total)
 
     def _create_canvas(self):
         # canvas area
-        # self.window.update()
-
-        self.fig, self.ax = plt.subplots(figsize=(5, 4))
-        self.fig.tight_layout(pad=3)
-
-        self.canvas_area = ttkb.Frame(self.window, width=self.window_width-self.frame.winfo_width(), height=self.window_height)
+        self.window.update_idletasks()
+        # self.canvas_area = ttkb.Frame(self.window)
+        self.canvas_area = ttkb.Frame(self.window)
         self.canvas_area.grid(column=0, row=0, sticky='nsew')
+        self.canvas = ttkb.Canvas(self.canvas_area, width=self.window_width-self.frame.winfo_width(), height=self.window_height)
+        self.canvas.pack()
+        # Initial plot
+        # create image
+        phase_data_scaled = ((self.phase_data_resized - np.min(self.phase_data_resized)) / (np.max(self.phase_data_resized) - np.min(self.phase_data_resized)) * 255).astype(np.uint8)
+        self.image = Image.fromarray(np.uint8(self.cmap(phase_data_scaled)*255))
+        self.tk_image = ImageTk.PhotoImage(self.image)
+        self.image_on_canvas = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_image)
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.canvas_area)
-        self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.pack(fill=tk.BOTH, expand=1)
+    def resize_data(self, data, bounds:list=[500,500], min_dev=0.3, max_scaling:int=5):
+        # bounds = [x,y] in px
+        # min dev means if data is more than min_dev (in percent) smaller that the respective bound it should be upscaled
+        x_bound, y_bound = bounds
+        # print('x_bound, y_bound:', x_bound, y_bound)
+        xres = len(data[0])
+        yres = len(data)
+        x_scaling, y_scaling = 1, 1
+        # print('xres:', xres, 'yres:', yres)
+        
+        # print('canvas size:', self.canvas_frame.winfo_width(), self.canvas_frame.winfo_height())
+        # if resolutionis larger than the canvas size, resize the data
+        if xres > x_bound:
+            xres = x_bound
+            x_scaling = (xres / len(data[0]))
+            y_scaling = x_scaling
+            yres = int(yres * x_scaling)
+        elif yres > y_bound:
+            yres = y_bound
+            y_scaling = (yres / len(data))
+            x_scaling = y_scaling
+            xres = int(xres * y_scaling)
+        elif xres < x_bound and yres < y_bound:
+            x_scaling = x_bound / xres
+            y_scaling = y_bound / yres
+            if x_scaling < y_scaling:
+                xres = x_bound
+                yres = int(yres * x_scaling)
+            else:
+                yres = y_bound
+                xres = int(xres * y_scaling)
+        # print('x_scaling:', x_scaling, 'y_scaling:', y_scaling)
+        if (xres != len(data[0]) or yres != len(data)) and ((x_scaling > (1 + min_dev) and y_scaling > (1 + min_dev)) or (x_scaling < (1 - min_dev) and y_scaling < (1 - min_dev))):
+            # print('Resizing data')
+            # print('xres:', xres, 'yres:', yres)
+            # print('x_scaling:', x_scaling, 'y_scaling:', y_scaling)
+            if x_scaling > max_scaling and y_scaling > max_scaling: 
+                xres = len(data[0])*max_scaling
+                yres = len(data)*max_scaling
+                # instead of upscaling the data which would make the phase shift calculation slower we implement the zoom method for the photoimage
+                # self.zoom_factor = min([x_scaling, y_scaling])
+                # print('zoom factor: ', self.zoom_factor)
+                # return data
+            # else:
+                # return np.resize(data, (yres, xres))
+            img = Image.fromarray(data)
+            img = img.resize((xres, yres), Image.Resampling.NEAREST)
+            return np.array(img)
+        # print('Data not resized')
+        return data
 
-    def _update_plot(self):
-        """Update the plot based on the slider value."""
-        try:
-            value = float(self.slider_var.get())
-            # add sleep to simulate long running process
-            # time.sleep(0.1)
-            self._shift_phase(value)
-            self.ax.clear()
-            image = self.ax.pcolormesh(self.shifted_phase_data, cmap=SNOM_phase, vmin=0, vmax=pi*2)
-            self.ax.invert_yaxis()
-            # divider = make_axes_locatable(self.ax)
-            # cax = divider.append_axes("right", size="5%", pad=0.05)
-            # cbar = plt.colorbar(image, cax=cax)
-            # cbar.ax.get_yaxis().labelpad = 15
-            # label = 'Phase'
-            # title = 'Shift the phase'
-            # cbar.ax.set_ylabel(label, rotation=270)
-            # self.ax.set_title(title)
-            self.ax.axis('scaled')
-            # self.ax.legend()
-            self.canvas.draw()
-        except ValueError:
-            print('ValueError in update plot')
-            pass
-
-    def _shift_phase(self, shift):
-        yres = len(self.shifted_phase_data)
-        xres = len(self.shifted_phase_data[0])
-        for y in range(yres):
-            for x in range(xres):
-                self.shifted_phase_data[y][x] = (self.phase_data[y][x] + shift) % (2*pi)
+    def _shift_phase(self, data, shift):
+        def apply_shift(x):
+            return (x + shift) % (2*pi)
+        return np.vectorize(apply_shift)(data)   
 
     def _save_leveled_data(self):
-        self.phase_offset = float(float(self.slider_var.get()))
+        # self.measurement._write_to_logfile('height_leveling_coordinates', self.klick_coordinates)
+        self.phase_offset = float(self.entry_slider.get())
         self.window.quit()
         self.window.destroy()
 
-    def _on_slider_click(self, event):
-        """Handle clicking on the slider to set the value directly."""
-        slider_length = self.slider.winfo_width()
-        slider_start = self.slider.winfo_rootx()
-        click_position = event.x_root - slider_start
-        value = self.slider.cget("from") + (click_position / slider_length) * (self.slider.cget("to") - self.slider.cget("from"))
-        self.slider.set(value)
-        self.slider_var.set(f"{value:.2f}")
-        # self._update_plot()
-        
-    def _on_slider_change(self, val):
-        """Update the text entry when the slider changes."""
-        print('slider changed: val: ', val)
-        # print('slider event type: ', type(val))
-        # print('slider value: ', self.slider.get())
-        # print('slider value type: ', type(self.slider.get()))
-        if ',' in val: val = val.replace(',', '.')
-        print('updated val: ', val)
+    def _update_image(self, val):
+        shifted_phase_data = self._shift_phase(self.phase_data_resized, float(val))
+        print('xres, yres: ', len(shifted_phase_data[0]), len(shifted_phase_data))
+        phase_data_scaled = ((shifted_phase_data - np.min(shifted_phase_data)) / (np.max(shifted_phase_data) - np.min(shifted_phase_data)) * 255).astype(np.uint8)
+        image = Image.fromarray(np.uint8(self.cmap(phase_data_scaled)*255))
+        tk_image = ImageTk.PhotoImage(image)
+        self.canvas.imgref = tk_image
+        self.canvas.itemconfig(self.image_on_canvas, image=tk_image)
 
-        # self.slider_var.set(f"{self.slider.get():.2f}")
-        # self.slider_var.set(val)
-        # self._update_plot()
+    def _on_change_slider(self, event):
+        phase = 2*pi/100*float(event)
+        # self.slider_var.set(f"{phase:.2f}")
+        self.entry_slider.delete(0, END)
+        self.entry_slider.insert(0, str(round(float(phase),2)))
+        self._update_image(phase)  
 
-    def _on_entry_change(self, event):
+    def _on_change_entry(self, event):
         # print('entry changed: event: ', event)
-        # print('entry value: ', self.slider_entry.get())
-        self.slider.set(self.slider_entry.get())
-        self._on_slider_change(event)
-
-    def _update_slider(self, *args):
-        """Update the slider when the text entry changes."""
-        try:
-            value = float(self.slider_var.get())
-            print('in update slider, value: ', value)
-            self.slider.set(value)
-            print('in update slider, plotting...')
-            self._update_plot()
-        except ValueError:
-            print('ValueError in update slider')
-            pass
+        # print('entry value: ', self.entry_slider.get())
+        # self.slider.set(self.entry_slider.get())
+        value = float(self.entry_slider.get())
+        slider_val = value/(2*pi)*100
+        self.slider.set(slider_val)
+        self._on_change_slider(event)
 
     def _create_menu(self):
         self.frame = ttkb.Labelframe(self.window, text='Shift Phase Data', padding=10)
         self.frame.grid(column=1, row=0)
-        # self.frame = tk.Frame(self.window)
-        # self.frame.grid(column=1, row=0)
 
+        self.entry_slider = ttkb.Entry(self.frame, width=10, justify='center')
+        self.entry_slider.insert(0, 0)
+        self.entry_slider.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
 
-        # Add a text field to display and edit the slider value
-        self.slider_var = tk.StringVar(value="0.00")
-        self.slider_entry = tk.Entry(self.frame, textvariable=self.slider_var, width=10)
-        self.slider_entry.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
-        self.slider_var.trace_add("write", self._update_slider)
-
-        self.slider = tk.Scale(self.frame, from_=0.0, to=1, resolution=0.01, orient="horizontal") # bootstrap slider has a self recursive bug, not good for big data
+        self.slider = ttkb.Scale(self.frame, from_=0, to=100, orient=HORIZONTAL, command=self._on_change_slider) # bootstrap slider has a self recursive bug, not good for big data
         self.slider.set(0)
         self.slider.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
-        self.slider.configure(command=self._on_slider_change)
-        self.slider.bind("<Button-1>", self._on_slider_click)
 
         self.button_save = ttkb.Button(self.frame, text='Save', bootstyle=SUCCESS, command=self._save_leveled_data)
         self.button_save.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
@@ -948,6 +969,7 @@ To change the phase offset simply change the slider or type the value in the ent
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
 
 class PhaseOffsetPopup_old():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
@@ -1164,7 +1186,6 @@ To change the phase offset simply change the slider or type the value in the ent
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
-
 
 class CreateRealpartPopup():
     def __init__(self, parent, preview_ampchannel, preview_phasechannel) -> None:

@@ -44,6 +44,7 @@ from pathlib import Path, PurePath
 this_files_path = Path(__file__).parent
 from lib.function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup, GifCreationPopup
 from lib.function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup, LogarithmPopup
+from lib.function_popup import CutDataPopup_using_package_library
 #for scrollframe
 from lib.scrollframe import ScrollFrame
 from lib.channel_textfield import ChannelTextfield
@@ -441,17 +442,56 @@ But data manipulation functions have to be applied manually.
         self.tight_layout = ttkb.Checkbutton(self.menu_left_lower, text='Tight layout', variable=self.checkbox_tight_layout, onvalue=1, offvalue=0)
         self.tight_layout.grid(column=0, row=7, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # hspace = 0.4 #standard is 0.4
-        self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
-        self.label_h_space.grid(column=0, row=8)
-        self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
-        self.h_space.insert(0, self.default_dict['h_space'])
-        self.h_space.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
+        # self.label_h_space = ttkb.Label(self.menu_left_lower, text='Horizontal space:')
+        # self.label_h_space.grid(column=0, row=8)
+        # self.h_space = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
+        # self.h_space.insert(0, self.default_dict['h_space'])
+        # self.h_space.grid(column=1, row=8, padx=button_padx, pady=button_pady, sticky='ew')
         # add scalebar
         self.label_add_scalebar = ttkb.Label(self.menu_left_lower, text='scalebar channel:')
         self.label_add_scalebar.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         self.add_scalebar = ttkb.Entry(self.menu_left_lower, width=input_width, justify='center')
         self.add_scalebar.insert(0, self.default_dict['scalebar_channel'])
         self.add_scalebar.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # add sliders for the subplot parameters like hspace, wspace, etc.
+        # wspace 0-1
+        self.label_change_subplots_wspace = ttkb.Label(self.menu_left_lower, text='wspace:')
+        self.label_change_subplots_wspace.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_wspace = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_wspace.set(str(float(self.default_dict['subplot_wspace'])*10))	
+        # print('wspace:', float(self.default_dict['subplot_wspace'])*10)
+        self.slider_change_subplots_wspace.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # hspace 0-1
+        self.label_change_subplots_hspace = ttkb.Label(self.menu_left_lower, text='hspace:')
+        self.label_change_subplots_hspace.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_hspace = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_hspace.set(str(float(self.default_dict['subplot_hspace'])*10))
+        self.slider_change_subplots_hspace.grid(column=0, row=14, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # left 0-0.5
+        self.label_change_subplots_left = ttkb.Label(self.menu_left_lower, text='left:')
+        self.label_change_subplots_left.grid(column=0, row=15, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_left = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_left.set(str(float(self.default_dict['subplot_left'])*20))
+        self.slider_change_subplots_left.grid(column=0, row=16, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # right 0.5-1
+        self.label_change_subplots_right = ttkb.Label(self.menu_left_lower, text='right:')
+        self.label_change_subplots_right.grid(column=0, row=17, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_right = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_right.set(str(float(self.default_dict['subplot_right']-0.5)*20))
+        self.slider_change_subplots_right.grid(column=0, row=18, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # top 0.5-1
+        self.label_change_subplots_top = ttkb.Label(self.menu_left_lower, text='top:')
+        self.label_change_subplots_top.grid(column=0, row=19, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_top = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_top.set(str(float(self.default_dict['subplot_top']-0.5)*20))
+        self.slider_change_subplots_top.grid(column=0, row=20, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        # bottom 0-0.5
+        self.label_change_subplots_bottom = ttkb.Label(self.menu_left_lower, text='bottom:')
+        self.label_change_subplots_bottom.grid(column=0, row=21, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.slider_change_subplots_bottom = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
+        self.slider_change_subplots_bottom.set(str(float(self.default_dict['subplot_bottom'])*20))
+        self.slider_change_subplots_bottom.grid(column=0, row=22, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+
 
         ################## separator #####################
         self.menu_right_separator = ttkb.Separator(self.menu_right_1, orient='horizontal')
@@ -611,6 +651,10 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.menu_right_2_create_gif = ttkb.Button(self.menu_right_2, text='Gif Creation', bootstyle=PRIMARY, command=self._create_gif)
         self.menu_right_2_create_gif.config(state=DISABLED)
         self.menu_right_2_create_gif.grid(column=0, row=9, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.menu_right_2_cut_data = ttkb.Button(self.menu_right_2, text='Cut Data', bootstyle=PRIMARY, command=self._cut_data_manual)
+        self.menu_right_2_cut_data.config(state=ON)
+        self.menu_right_2_cut_data.grid(column=0, row=10, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
 
@@ -931,7 +975,7 @@ for example fourier filtering.
             self.save_plot_button.config(state=ON)
             self.update_plot_button.config(state=ON)
 
-            PlotDefinitions.hspace = float(self.h_space.get())
+            # PlotDefinitions.hspace = float(self.h_space.get())
 
             if self.checkbox_setmintozero_var.get() == 1:
                 self.measurement.set_min_to_zero()
@@ -1006,6 +1050,33 @@ for example fourier filtering.
             self.toolbar.update()
             self.canvas_fig.get_tk_widget().pack(fill=tk.BOTH, expand=1)
 
+        # adjust whitespace
+        try:
+            # get values from sliders if they already exist:
+            hspace = round(float(self.slider_change_subplots_hspace.get())/10, 2)
+            wspace = round(float(self.slider_change_subplots_wspace.get())/10, 2)
+            right = round(float(self.slider_change_subplots_right.get())/20 + 0.5, 2)
+            left = round(float(self.slider_change_subplots_left.get())/20, 2)
+            top = round(float(self.slider_change_subplots_top.get())/20 + 0.5, 2)
+            bottom = round(float(self.slider_change_subplots_bottom.get())/20, 2)
+        except:
+            # if they don't exist take the values from the user defaults
+            hspace = self.default_dict['subplot_hspace']
+            wspace = self.default_dict['subplot_wspace']
+            right = self.default_dict['subplot_right']
+            left = self.default_dict['subplot_left']
+            top = self.default_dict['subplot_top']
+            bottom = self.default_dict['subplot_bottom']
+        else:
+            # set values to dictionary
+            self.default_dict['subplot_hspace'] = hspace
+            self.default_dict['subplot_wspace'] = wspace
+            self.default_dict['subplot_left'] = left
+            self.default_dict['subplot_right'] = right
+            self.default_dict['subplot_top'] = top
+            self.default_dict['subplot_bottom'] = bottom
+        self.fig.subplots_adjust(hspace=hspace, wspace=wspace, right=right, left=left, top=top, bottom=bottom)
+        
         self.canvas_fig.draw()        
         self._change_mainwindow_size()
         # self.fig = None
@@ -1325,7 +1396,12 @@ for example fourier filtering.
             'hide_ticks'        : self.checkbox_hide_ticks.get(),
             'show_titles'       : self.checkbox_show_titles.get(),
             'tight_layout'      : self.checkbox_tight_layout.get(),
-            'h_space'           : self.h_space.get(), # remove
+            'subplot_hspace'    : round(float(self.slider_change_subplots_hspace.get())/10, 2),
+            'subplot_wspace'    : round(float(self.slider_change_subplots_wspace.get())/10, 2),
+            'subplot_right'     : round(float(self.slider_change_subplots_right.get())/20 + 0.5, 2),
+            'subplot_left'      : round(float(self.slider_change_subplots_left.get())/20, 2),
+            'subplot_top'       : round(float(self.slider_change_subplots_top.get())/20 + 0.5, 2),
+            'subplot_bottom'    : round(float(self.slider_change_subplots_bottom.get())/20, 2),
             'scalebar_channel'  : self.add_scalebar.get(),
             'set_min_to_zero'   : self.checkbox_setmintozero_var.get(),
             'autoscale'         : self.checkbox_autoscale.get(),
@@ -1409,7 +1485,12 @@ for example fourier filtering.
             'hide_ticks'        : 1,
             'show_titles'       : 1,
             'tight_layout'      : 1,
-            'h_space'           : 0.4,
+            'subplot_hspace'    : 0.4,
+            'subplot_wspace'    : 0.4,
+            'subplot_right'     : 0.9,
+            'subplot_left'      : 0.03,
+            'subplot_top'       : 0.9,
+            'subplot_bottom'    : 0.07,
             'scalebar_channel'  : '<>',
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
@@ -1438,7 +1519,12 @@ for example fourier filtering.
             'hide_ticks'        : 1,
             'show_titles'       : 1,
             'tight_layout'      : 1,
-            'h_space'           : 0.4,
+            'subplot_hspace'    : 0.4,
+            'subplot_wspace'    : 0.4,
+            'subplot_right'     : 0.9,
+            'subplot_left'      : 0.03,
+            'subplot_top'       : 0.9,
+            'subplot_bottom'    : 0.07,
             'scalebar_channel'  : '<>',
             'set_min_to_zero'   : 1,
             'autoscale'         : 1,
@@ -1694,6 +1780,16 @@ for example fourier filtering.
 
         popup = PhaseOffsetPopup(self.root, self.measurement, phase_channel, True)
         phase_offset = popup.phase_offset
+        
+        # alternative using package based functionality with popup:
+        # works also but does not follow the current structure and style
+        # delete current plot
+        # plt.close(self.fig)
+        # from lib.function_popup import PhaseOffsetPopup_using_package_library
+        # popup = PhaseOffsetPopup_using_package_library(self.root, self.measurement, phase_channel)
+        # phase_offset = popup.phase_offset
+
+
         phase_channels = []
         for channel in self._get_channels():
             if self.measurement.phase_indicator in channel:
@@ -1781,6 +1877,12 @@ for example fourier filtering.
         # display the gif in the canvas
         self._fill_canvas()
 
+    def _cut_data_manual(self):
+        # delete current plot
+        plt.close(self.fig)
+        popup = CutDataPopup_using_package_library(self.root, self.measurement)
+        self.measurement = popup.measurement
+
     def _change_plotting_mode(self, new_button_id):
         old_button_id = self.plotting_mode.value
         self.plotting_mode = Plotting_Modes(new_button_id)
@@ -1827,8 +1929,10 @@ for example fourier filtering.
                 self.plotting_mode_switch_5.config(bootstyle=SUCCESS)
         else:
             print('Error occured in change button color for plotting mode selection!')
-            
- 
+
+    def _update_canvas(self, event):
+        self._fill_canvas()
+
         
     
 

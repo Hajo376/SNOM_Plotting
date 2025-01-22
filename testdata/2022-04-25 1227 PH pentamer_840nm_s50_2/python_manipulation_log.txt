@@ -2109,3 +2109,17 @@ filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
 quadratic_pixels = True
 21/01/2025 17:30:08
 filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+22/01/2025 12:59:12
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+22/01/2025 12:59:14
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 12:59:30
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+22/01/2025 12:59:32
+filename = 2022-04-25 1227 PH pentamer_840nm_s50_2
+quadratic_pixels = True
+set_min_to_zero = True
+phase_shift = 5.225918548759944
+set_min_to_zero = True

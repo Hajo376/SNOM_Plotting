@@ -3222,3 +3222,314 @@ filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
 quadratic_pixels = True
 21/01/2025 16:52:41
 filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:00:35
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:00:36
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+phase_shift = 1.4434782972095586
+set_min_to_zero = True
+22/01/2025 13:06:03
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:06:05
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 13:14:33
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:14:35
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:14:57
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:14:58
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:16:05
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:16:07
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:17:13
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:17:14
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:17:39
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:17:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+scaling = 4
+gaussian_filter_complex_sigma = 2
+scaling = 4
+gaussian_filter_complex_sigma = 2
+set_min_to_zero = True
+22/01/2025 13:19:52
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:19:53
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:20:43
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:20:44
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:23:58
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:23:59
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:25:26
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:25:28
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:27:14
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:27:16
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:27:45
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:27:46
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:29:00
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:29:01
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:32:12
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:32:13
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:33:35
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:33:36
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:34:25
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:34:27
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 13:38:44
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:38:45
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 13:41:39
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:41:40
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 13:42:55
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:42:57
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 13:44:11
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:44:12
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 13:45:08
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 13:45:09
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+set_min_to_zero = True
+22/01/2025 14:24:11
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:24:12
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:24:50
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:24:52
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:26:50
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:26:51
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:27:25
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:27:26
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:28:42
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:29:29
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:29:35
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:31:10
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:31:12
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:32:34
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:32:37
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:33:24
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:33:25
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:35:45
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:35:47
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:37:22
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:37:23
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:41:11
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:41:13
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:48:24
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:48:26
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:48:59
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:49:01
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:49:14
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:49:19
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:52:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:52:42
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:53:30
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:53:32
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:55:08
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:55:11
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:55:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:55:42
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:56:43
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:56:45
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 14:57:10
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 14:57:12
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:01:49
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:01:49
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 15:01:51
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:02:20
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:02:22
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:02:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:02:43
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:03:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:03:55
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:09:39
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:09:41
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:10:32
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:10:32
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+22/01/2025 15:10:33
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:11:20
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:11:22
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+22/01/2025 15:11:44
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+22/01/2025 15:11:46
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True

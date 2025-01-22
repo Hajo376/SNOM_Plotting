@@ -785,6 +785,12 @@ The channels will get the appendix\'_corrected\' and are exported as \'.gsf\' fi
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Synccorrection Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
 
+class PhaseOffsetPopup_using_package_library():
+    def __init__(self, parent, measurement, phase_channel):
+        phase_data = measurement.all_data[measurement.channels.index(phase_channel)]
+        from snom_analysis.lib.phase_slider import get_phase_offset
+        self.phase_offset = get_phase_offset(phase_data)
+
 class PhaseOffsetPopup():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
         self.parent = parent
@@ -801,8 +807,7 @@ class PhaseOffsetPopup():
         # resize phase data to make preview more efficient
         self.phase_data_resized = self.resize_data(self.phase_data, [self.window_width-100,self.window_height])
         # print('resized xres, yres: ', len(self.phase_data_resized[0]), len(self.phase_data_resized))
-        self.previous_shift = 0
-
+        self.phase_shift = 0
 
         self.window = ttkb.Toplevel(parent)
         self.window.grab_set()
@@ -816,6 +821,7 @@ class PhaseOffsetPopup():
 
         # self._start_leveling()
         self.window.bind('<Return>', self._on_change_entry)
+        self.canvas_area.bind("<Configure>", self._windowsize_changed)
         # all the space for canvas
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_rowconfigure(0, weight=1)
@@ -846,14 +852,26 @@ class PhaseOffsetPopup():
         self.window.geometry(f"{x_total}x{y_total}+{center_x}+{center_y}")
         # print('changed window geometry to: ', x_total, y_total)
 
+    def _windowsize_changed(self, event):
+        self.window.update_idletasks()
+        # get current size:
+        width = self.canvas_area.winfo_width()
+        height = self.canvas_area.winfo_height()
+        # resize image
+        # the bounds have to be reduced by the padding and text height of the labelframe containing the canvas
+        text_height = 12
+        self.phase_data_resized = self.resize_data(self.phase_data, [width-4*button_padx, height-4*button_pady-text_height], min_dev=0, max_scaling=5)
+        # update image
+        self._update_image(self.phase_shift)
+
     def _create_canvas(self):
         # canvas area
         self.window.update_idletasks()
         # self.canvas_area = ttkb.Frame(self.window)
-        self.canvas_area = ttkb.Frame(self.window)
-        self.canvas_area.grid(column=0, row=0, sticky='nsew')
+        self.canvas_area = ttkb.LabelFrame(self.window, text='Phase Shift Preview', padding=button_padx)
+        self.canvas_area.grid(column=0, row=0, sticky='nsew', padx=button_padx, pady=button_pady)
         self.canvas = ttkb.Canvas(self.canvas_area, width=self.window_width-self.frame.winfo_width(), height=self.window_height)
-        self.canvas.pack()
+        self.canvas.pack(expand=True, fill='both')
         # Initial plot
         # create image
         phase_data_scaled = ((self.phase_data_resized - np.min(self.phase_data_resized)) / (np.max(self.phase_data_resized) - np.min(self.phase_data_resized)) * 255).astype(np.uint8)
@@ -925,6 +943,7 @@ class PhaseOffsetPopup():
 
     def _update_image(self, val):
         try:
+            self.phase_shift = float(val)
             shifted_phase_data = self._shift_phase(self.phase_data_resized, float(val))
             # print('xres, yres: ', len(shifted_phase_data[0]), len(shifted_phase_data))
             phase_data_scaled = ((shifted_phase_data - np.min(shifted_phase_data)) / (np.max(shifted_phase_data) - np.min(shifted_phase_data)) * 255).astype(np.uint8)
@@ -943,12 +962,14 @@ class PhaseOffsetPopup():
 
     def _on_change_entry(self, event):
         # print('entry changed: event: ', event)
+        # print('event type: ', type(event))
         # print('entry value: ', self.entry_slider.get())
+        # print('entry value type: ', type(self.entry_slider.get()))
         # self.slider.set(self.entry_slider.get())
         value = float(self.entry_slider.get())
         slider_val = value/(2*pi)*100
         self.slider.set(slider_val)
-        self._on_change_slider(event)
+        self._on_change_slider(str(slider_val))
 
     def _create_menu(self):
         self.frame = ttkb.Labelframe(self.window, text='Shift Phase Data', padding=10)
@@ -967,7 +988,12 @@ class PhaseOffsetPopup():
 
         help_message = """This simple phase offset correction will apply a phase correction to all phase channels in memory.
 Currently the first phase channel is used as a preview channel.
-To change the phase offset simply change the slider or type the value in the entry field and hit enter."""
+To change the phase offset simply change the slider or type the value in the entry field and hit enter.
+You can use the left mouse button to drag and drop the slider. If you click the left mouse button on the slider the slider will move in that direction by a small amount (1%), good for finetuning.
+If you right click on the slider the slider will move to the position of the mouse pointer.
+You can also change the size of the popup and thus the image by dragging the window borders.
+However be aware that the data will be scaled accordingly so larger image means slower preview.
+There is also a maximum scaling factor of 5 to limit the size of the data. If the data becomes too large and the slider feedback too slow, bugs might appear..."""
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
@@ -1767,6 +1793,16 @@ Also make shure to select the corrected phase channel if you are working with th
         self.window.quit()
         self.window.destroy()        
 
+class CutDataPopup_using_package_library():
+    def __init__(self, parent, measurement):
+        self.measurement = measurement
+        self._cut_data()
+        # from snom_analysis.lib.rectangle_selector import select_rectangle
+        # self.coordinates = select_rectangle(data, channel)
+    
+    def _cut_data(self):
+        self.measurement.cut_channels()
+        
 
 def main():
     root = ttkb.Window(themename='darkly')

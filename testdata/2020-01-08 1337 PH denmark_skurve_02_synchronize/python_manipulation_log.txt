@@ -3533,3 +3533,18 @@ filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
 filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
 quadratic_pixels = True
 set_min_to_zero = True
+24/01/2025 10:14:19
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+24/01/2025 10:14:19
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+24/01/2025 10:14:20
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True
+24/01/2025 11:05:15
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+24/01/2025 11:05:15
+filename = 2020-01-08 1337 PH denmark_skurve_02_synchronize
+quadratic_pixels = True
+set_min_to_zero = True

@@ -144,3 +144,17 @@ filename = DLSPPW_bragg_8slits_Ex_ongold
 filename = DLSPPW_bragg_8slits_Ex_ongold
 quadratic_pixels = True
 set_min_to_zero = True
+24/01/2025 10:13:46
+filename = DLSPPW_bragg_8slits_Ex_ongold
+24/01/2025 10:13:46
+filename = DLSPPW_bragg_8slits_Ex_ongold
+quadratic_pixels = True
+24/01/2025 10:13:49
+filename = DLSPPW_bragg_8slits_Ex_ongold
+quadratic_pixels = True
+24/01/2025 11:05:24
+filename = DLSPPW_bragg_8slits_Ex_ongold
+24/01/2025 11:05:24
+filename = DLSPPW_bragg_8slits_Ex_ongold
+quadratic_pixels = True
+set_min_to_zero = True

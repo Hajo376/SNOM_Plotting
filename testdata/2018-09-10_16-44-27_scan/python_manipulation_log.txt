@@ -400,3 +400,26 @@ filename = 2018-09-10_16-44-27_scan
 filename = 2018-09-10_16-44-27_scan
 06/01/2025 13:29:21
 filename = 2018-09-10_16-44-27_scan
+24/01/2025 10:09:06
+filename = 2018-09-10_16-44-27_scan
+24/01/2025 10:10:56
+filename = 2018-09-10_16-44-27_scan
+24/01/2025 10:10:56
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+24/01/2025 10:10:58
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+24/01/2025 10:13:38
+filename = 2018-09-10_16-44-27_scan
+24/01/2025 10:13:41
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True
+24/01/2025 11:05:47
+filename = 2018-09-10_16-44-27_scan
+24/01/2025 11:05:47
+filename = 2018-09-10_16-44-27_scan
+quadratic_pixels = True
+set_min_to_zero = True

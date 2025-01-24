@@ -29,7 +29,7 @@ from configparser import ConfigParser
 import ast # for string to list, dict ... conversion
 
 # from SNOM_AFM_analysis.python_classes_snom import *
-from snom_analysis.main import PlotDefinitions, MeasurementTags
+from snom_analysis.main import PlotDefinitions, MeasurementTags, MeasurementTypes
 from snom_analysis.main import SnomMeasurement, FileHandler, ApproachCurve, Scan3D
 import numpy as np
 
@@ -52,13 +52,13 @@ from lib.channel_textfield import ChannelTextfield
 snom_analysis_config_path = Path(os.path.expanduser('~')) / Path('SNOM_Config') / Path('SNOM_Analysis') / Path('config.ini')
 
 
-class Plotting_Modes(Enum):
-    SNOM = auto()
-    AFM = auto() # not used yet but could be implemented to simplify the gui for afm users like a mode switch
-    APPROACHCURVE = auto()
-    APPROACH3D = auto()
-    SPECTRUM = auto()
-    NONE = auto() # if no plotting type is defined
+# class MeasurementTypes(Enum):
+#     SNOM = auto()
+#     AFM = auto() # not used yet but could be implemented to simplify the gui for afm users like a mode switch
+#     APPROACHCURVE = auto()
+#     APPROACH3D = auto()
+#     SPECTRUM = auto()
+#     NONE = auto() # if no plotting type is defined
 
 
 class MainGui():
@@ -102,6 +102,8 @@ class MainGui():
         self._right_menu()
         self._change_mainwindow_size()
         self._update_scrollframes()
+        # upadate the buttons
+        self._initialize_buttons()
         # self.root.eval('tk::PlaceWindow . center') # does not work...
         
         # configure canvas to scale with window
@@ -135,22 +137,22 @@ class MainGui():
         # for now just use different buttons from which only one can be selected
         self.plotting_mode_switch_frame = ttkb.Frame(self.menu_left_upper)
         self.plotting_mode_switch_frame.grid(column=0, columnspan=2, row=16)
-        self.plotting_mode_switch_1 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="SNOM", command=lambda: self._change_plotting_mode(Plotting_Modes.SNOM.value))
+        self.plotting_mode_switch_1 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="SNOM", command=lambda: self._change_plotting_mode(MeasurementTypes.SNOM))
         self.plotting_mode_switch_1.grid(column=0, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for AFM users, disable certain functions which only work for snom, maybe adjust colormaps or something like that
-        self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(Plotting_Modes.AFM.value))
+        self.plotting_mode_switch_2 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="AFM", command=lambda: self._change_plotting_mode(MeasurementTypes.AFM))
         # self.plotting_mode_switch_2.grid(column=1, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for Approach curves
-        self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACHCURVE.value))
+        self.plotting_mode_switch_3 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="A. Curve", command=lambda: self._change_plotting_mode(MeasurementTypes.APPROACHCURVE))
         self.plotting_mode_switch_3.grid(column=2, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for 3D Measurements (multiple Approach curves)
-        self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="3D Scan", command=lambda: self._change_plotting_mode(Plotting_Modes.APPROACH3D.value))
+        self.plotting_mode_switch_4 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="3D Scan", command=lambda: self._change_plotting_mode(MeasurementTypes.SCAN3D))
         self.plotting_mode_switch_4.grid(column=3, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # for NANO FTIR spectra or so
-        self.plotting_mode_switch_5 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(Plotting_Modes.SPECTRUM.value))
+        self.plotting_mode_switch_5 = ttkb.Button(self.plotting_mode_switch_frame, bootstyle=DANGER, text="Spectra", command=lambda: self._change_plotting_mode(MeasurementTypes.SPECTRUM))
         # self.plotting_mode_switch_5.grid(column=4, row=0, padx=button_padx, pady=button_pady, sticky='nsew')
         # turn on the mode which is currently active if it was found in user defaults for the old measurement
-        self._change_plotting_mode_button_color(self.plotting_mode.value, 1)
+        self._change_plotting_mode_button_color(self.plotting_mode, 1)
 
         # top level controls for plot
         self.get_folder_path_button = ttkb.Button(self.menu_left_upper, text="Select Measurement", bootstyle=PRIMARY, command=lambda:self._get_new_folderpath())
@@ -254,7 +256,7 @@ But data manipulation functions have to be applied manually.
         self.menu_left_help_button.grid(column=0, row=14, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         self.menu_left_clear_plots_button = ttkb.Button(self.menu_left_upper, text='Clear All Plots', bootstyle=DANGER, command=self._clear_all_plots)
-        self.menu_left_clear_plots_button.config(state=DISABLED)
+        self.menu_left_clear_plots_button.config(state=ON)
         self.menu_left_clear_plots_button.grid(column=0, row=15, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         
@@ -653,7 +655,7 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.menu_right_2_create_gif.grid(column=0, row=9, sticky='nsew', padx=button_padx, pady=button_pady)
 
         self.menu_right_2_cut_data = ttkb.Button(self.menu_right_2, text='Cut Data', bootstyle=PRIMARY, command=self._cut_data_manual)
-        self.menu_right_2_cut_data.config(state=ON)
+        self.menu_right_2_cut_data.config(state=DISABLED)
         self.menu_right_2_cut_data.grid(column=0, row=10, sticky='nsew', padx=button_padx, pady=button_pady)
 
 
@@ -771,7 +773,7 @@ for example fourier filtering.
         """
         if self.folder_path == None:
             print('No measurement found!')
-        elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        elif self.plotting_mode is MeasurementTypes.APPROACHCURVE:
             channels = self._get_channels()
             self.measurement = ApproachCurve(self.folder_path, channels=channels)
 
@@ -781,22 +783,20 @@ for example fourier filtering.
             self.menu_right_2_phase_drift_comp.config(state=DISABLED)
             self.menu_right_2_overlay.config(state=DISABLED)
             self.menu_right_2_gaussblurr.config(state=DISABLED)
-            self.menu_left_clear_plots_button.config(state=DISABLED)
+            self.menu_right_2_synccorrection.config(state=DISABLED)
+            self.menu_left_clear_plots_button.config(state=ON)
             self.menu_right_2_shift_phase.config(state=DISABLED)
             self.menu_right_2_create_realpart.config(state=DISABLED)
             self.menu_right_2_height_masking.config(state=DISABLED)
             self.menu_right_2_rotation.config(state=DISABLED)
             self.menu_right_2_transform_log.config(state=DISABLED)
+            self.menu_right_2_cut_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             # todo, add approach curve handling to snom package to make it also possible to store multiple curves in memory
-        elif self.plotting_mode is Plotting_Modes.APPROACH3D:
+        elif self.plotting_mode is MeasurementTypes.SCAN3D:
             channels = self._get_channels()
             self.measurement = Scan3D(self.folder_path, channels=channels)
-            # not fully implemented yet
-            # for now just display the averaged values
-            self.measurement.set_min_to_zero()
-            self.measurement.average_data()
-            self.measurement.display_cutplane_v3(axis='x', line=0, channel=channels[0])
+            
 
             self.generate_plot_button.config(state=ON)
             self.button_save_to_gsftxt.config(state=DISABLED)
@@ -804,14 +804,16 @@ for example fourier filtering.
             self.menu_right_2_phase_drift_comp.config(state=DISABLED)
             self.menu_right_2_overlay.config(state=DISABLED)
             self.menu_right_2_gaussblurr.config(state=DISABLED)
-            self.menu_left_clear_plots_button.config(state=DISABLED)
+            self.menu_right_2_synccorrection.config(state=DISABLED)
+            self.menu_left_clear_plots_button.config(state=ON)
             self.menu_right_2_shift_phase.config(state=DISABLED)
             self.menu_right_2_create_realpart.config(state=DISABLED)
             self.menu_right_2_height_masking.config(state=DISABLED)
             self.menu_right_2_rotation.config(state=DISABLED)
             self.menu_right_2_transform_log.config(state=DISABLED)
+            self.menu_right_2_cut_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
-        elif self.plotting_mode is Plotting_Modes.SNOM or self.plotting_mode is Plotting_Modes.AFM:
+        elif self.plotting_mode is MeasurementTypes.SNOM or self.plotting_mode is MeasurementTypes.AFM:
             if self.checkbox_autoscale.get() == 1:
                 autoscale = True
             else:
@@ -832,12 +834,13 @@ for example fourier filtering.
             self.menu_right_2_rotation.config(state=ON)
             self.menu_right_2_transform_log.config(state=ON)
             self.menu_right_2_create_gif.config(state=ON)
+            self.menu_right_2_cut_data.config(state=ON)
 
             self.save_plot_button.config(state=DISABLED)
             # self.update_plot_button.config(state=DISABLED)
 
             PlotDefinitions.autodelete_all_subplots = False # from now on keep all subplots in memory until they are manually deleted or the program is restarted.
-        elif self.plotting_mode is Plotting_Modes.SPECTRUM:
+        elif self.plotting_mode is MeasurementTypes.SPECTRUM:
             print("Spectra plotting mode is not yet implemented!")
 
     def _get_allowed_channels(self):
@@ -920,11 +923,11 @@ for example fourier filtering.
 
     def _generate_plot(self):
         plt.close(self.fig)
-        # if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        # if self.plotting_mode is MeasurementTypes.APPROACHCURVE:
         #     self.save_plot_button.config(state=ON)
         #     self.measurement.measurement_title = self.measurement_title.get()
         #     self._plot_approach_curve()
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        if self.plotting_mode is MeasurementTypes.APPROACHCURVE:
             self.save_plot_button.config(state=ON)
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._get_channels()
@@ -933,7 +936,7 @@ for example fourier filtering.
             # self.measurement.display_channels(channels) #show_plot=False
             self.measurement.display_channels_v2(channels) #show_plot=False
             # self._fill_canvas()
-        elif self.plotting_mode is Plotting_Modes.SNOM or self.plotting_mode is Plotting_Modes.AFM:
+        elif self.plotting_mode is MeasurementTypes.SNOM or self.plotting_mode is MeasurementTypes.AFM:
             PlotDefinitions.vmin_amp = 1 #to make shure that the values will be initialized with the first plotting command
             PlotDefinitions.vmax_amp = -1
             PlotDefinitions.vmin_real = 0
@@ -998,13 +1001,26 @@ for example fourier filtering.
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._get_channels()
             self.measurement.display_channels(channels) #show_plot=False
-        elif self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        elif self.plotting_mode is MeasurementTypes.APPROACHCURVE:
             if self.checkbox_setmintozero_var.get() == 1:
                 self.measurement.set_min_to_zero()
             PlotDefinitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
             self.measurement.measurement_title = self.measurement_title.get()
             channels = self._get_channels()
             self.measurement.display_channels(channels) #show_plot=False
+        elif self.plotting_mode is MeasurementTypes.SCAN3D:
+            if self.checkbox_setmintozero_var.get() == 1:
+                self.measurement.set_min_to_zero()
+            PlotDefinitions.show_plot = False # make shure the functions inside the snom package dont show plots, the created plots are gathered in the Fill_Canvas function
+            self.measurement.measurement_title = self.measurement_title.get()
+            channels = self._get_channels()
+            # not fully implemented yet
+            # for now just display the averaged values
+            # Generate all cutplane data for the channels.
+            self.measurement.generate_all_cutplane_data()
+            # self.measurement.average_data() # only experimental
+            self.measurement.set_min_to_zero()
+            self.measurement.display_cutplanes(axis='x', line=0, channels=channels)
         else:
             print("Spectra plotting mode is not yet implemented!")
         self._fill_canvas()
@@ -1016,7 +1032,7 @@ for example fourier filtering.
     def _update_plot(self): #todo, right now copy of generate_plot without creation of new measurement!
         # plt.close(self.fig)
         
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        if self.plotting_mode is MeasurementTypes.APPROACHCURVE:
             self._generate_plot()
             '''
             self.save_plot_button.config(state=ON)
@@ -1133,16 +1149,18 @@ for example fourier filtering.
             # get the allowed channels
             self._get_allowed_channels()
             # upadate the buttons
-            self._update_buttons()
+            self._initialize_buttons()
         
         # disable plot button since new measurement has to be loaded first
         self.generate_plot_button.config(state=DISABLED)
 
-    def _update_buttons(self):
+    def _initialize_buttons(self):
         if self.file_type != None:
             self._set_channels(self._get_default_channels())
             # enable all buttons
-            if self.measurement != None:
+            # print('initializing buttons')
+            # print('measurement_type:', self.plotting_mode)
+            if self.measurement != None: # unnecessary should not happen this function is called before the measurement is created
                 self.SnomMeasurement_button.config(state=ON)
                 self.generate_plot_button.config(state=ON)
                 # self.button_save_to_gsftxt.config(state=ON)
@@ -1160,6 +1178,44 @@ for example fourier filtering.
                 self.menu_right_2_create_gif.config(state=ON)
                 # self.save_plot_button.config(state=ON)
                 # self.update_plot_button.config(state=ON)
+            if self.plotting_mode is MeasurementTypes.SNOM or self.plotting_mode is MeasurementTypes.AFM:
+                self.SnomMeasurement_button.config(state=ON)
+                self.generate_plot_button.config(state=DISABLED)
+                # self.button_save_to_gsftxt.config(state=ON)
+                self.menu_right_2_height_leveling.config(state=DISABLED)
+                self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+                self.menu_right_2_overlay.config(state=DISABLED)
+                self.menu_right_2_gaussblurr.config(state=DISABLED)
+                # self.menu_left_clear_plots_button.config(state=ON)
+                self.menu_right_2_shift_phase.config(state=DISABLED)
+                self.menu_right_2_synccorrection.config(state=ON)
+                self.menu_right_2_create_realpart.config(state=DISABLED)
+                self.menu_right_2_height_masking.config(state=DISABLED)
+                self.menu_right_2_rotation.config(state=DISABLED)
+                self.menu_right_2_transform_log.config(state=DISABLED)
+                self.menu_right_2_create_gif.config(state=DISABLED)
+                self.menu_right_2_cut_data.config(state=DISABLED)
+                self.save_plot_button.config(state=DISABLED)
+                self.update_plot_button.config(state=DISABLED)
+            elif self.plotting_mode is MeasurementTypes.APPROACHCURVE or self.plotting_mode is MeasurementTypes.SCAN3D:
+                self.SnomMeasurement_button.config(state=ON)
+                self.generate_plot_button.config(state=DISABLED)
+                # self.button_save_to_gsftxt.config(state=ON)
+                self.menu_right_2_height_leveling.config(state=DISABLED)
+                self.menu_right_2_phase_drift_comp.config(state=DISABLED)
+                self.menu_right_2_overlay.config(state=DISABLED)
+                self.menu_right_2_gaussblurr.config(state=DISABLED)
+                # self.menu_left_clear_plots_button.config(state=ON)
+                self.menu_right_2_shift_phase.config(state=DISABLED)
+                self.menu_right_2_synccorrection.config(state=DISABLED)
+                self.menu_right_2_create_realpart.config(state=DISABLED)
+                self.menu_right_2_height_masking.config(state=DISABLED)
+                self.menu_right_2_rotation.config(state=DISABLED)
+                self.menu_right_2_transform_log.config(state=DISABLED)
+                self.menu_right_2_create_gif.config(state=DISABLED)
+                self.menu_right_2_cut_data.config(state=DISABLED)
+                self.save_plot_button.config(state=DISABLED)
+                self.update_plot_button.config(state=DISABLED)
             else:
                 self.SnomMeasurement_button.config(state=ON)
                 self.generate_plot_button.config(state=DISABLED)
@@ -1200,6 +1256,7 @@ for example fourier filtering.
             self.menu_right_2_rotation.config(state=DISABLED)
             self.menu_right_2_transform_log.config(state=DISABLED)
             self.menu_right_2_create_gif.config(state=DISABLED)
+            self.menu_right_2_cut_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             self.update_plot_button.config(state=DISABLED)
             
@@ -1216,6 +1273,7 @@ for example fourier filtering.
         self._load_user_defaults()
         # get the allowed channels
         self._get_allowed_channels()
+        
 
     def _get_old_folderpath(self) -> bool:
         folder_path = None
@@ -1228,13 +1286,13 @@ for example fourier filtering.
             self.folder_path = Path(folder_path)
             self.initialdir = self.folder_path.parent
             self.file_type = file_type
-            self.plotting_mode = Plotting_Modes(int(plotting_mode_val))
+            self.plotting_mode = MeasurementTypes(int(plotting_mode_val))
             return True
         else:
             self.folder_path = None
             self.initialdir = this_files_path
             self.file_type = None
-            self.plotting_mode = Plotting_Modes.NONE
+            self.plotting_mode = MeasurementTypes.NONE
             return False
         
     def _get_default_channels(self, plotting_mode=None) -> list:
@@ -1245,14 +1303,21 @@ for example fourier filtering.
         if plotting_mode is None:
             plotting_mode = self.plotting_mode
         if self.folder_path != None:
-            if plotting_mode == Plotting_Modes.APPROACHCURVE:
+            if plotting_mode == MeasurementTypes.APPROACHCURVE:
                 channels = self.default_dict['channels_approach_curve']
                 if channels is None:
                     Measurement = ApproachCurve(self.folder_path)
                     channels = Measurement.channels
                     # auto save the new defaults to config since the old ones were not yet implemented
                     self.config[self.file_type]['channels_approach_curve'] = str(channels)
-            elif plotting_mode == Plotting_Modes.SNOM:
+            elif plotting_mode == MeasurementTypes.SCAN3D:
+                channels = self.default_dict['channels_scan3d']
+                if channels is None:
+                    Measurement = Scan3D(self.folder_path)
+                    channels = Measurement.channels
+                    # auto save the new defaults to config since the old ones were not yet implemented
+                    self.config[self.file_type]['channels_scan3d'] = str(channels)
+            elif plotting_mode == MeasurementTypes.SNOM:
                 channels = self.default_dict['channels_snom']
                 # print('default channels: ', channels)
                 if channels is None:
@@ -1261,14 +1326,14 @@ for example fourier filtering.
                     channels = Measurement.channels
                     # auto save the new defaults to config since the old ones were not yet implemented
                     self.config[self.file_type]['channels_snom'] = str(channels)
-            elif plotting_mode == Plotting_Modes.AFM:
+            elif plotting_mode == MeasurementTypes.AFM:
                 channels = self.default_dict['channels_afm']
                 if channels is None:
                     Measurement = SnomMeasurement(self.folder_path)
                     channels = Measurement.height_channels
                     # auto save the new defaults to config since the old ones were not yet implemented
                     self.config[self.file_type]['channels_afm'] = str(channels)
-            elif plotting_mode == Plotting_Modes.SPECTRUM:
+            elif plotting_mode == MeasurementTypes.SPECTRUM:
                 channels = self.default_dict['channels_spectrum']
                 if channels is None:
                     print('Spectrum channels are not yet implemented!')
@@ -1299,23 +1364,24 @@ for example fourier filtering.
                 scan_type = self.measurement_tag_dict[MeasurementTags.SCAN]
             except:
                 # scan_type = None
-                # self.plotting_mode = Plotting_Modes.NONE
+                # self.plotting_mode = MeasurementTypes.NONE
                 # todo, not all filetypes have a scan type, use additional ways to identify the measurement type
                 # for now assume, that all files without a scan type are standard snom measurements
-                plotting_mode = Plotting_Modes.SNOM
+                plotting_mode = MeasurementTypes.SNOM
             else:
                 if 'Approach Curve' in scan_type:
-                    plotting_mode = Plotting_Modes.APPROACHCURVE
+                    plotting_mode = MeasurementTypes.APPROACHCURVE
                 elif '3D' in scan_type:
-                    plotting_mode = Plotting_Modes.APPROACH3D
+                    plotting_mode = MeasurementTypes.SCAN3D
                 elif 'Spectrum' in scan_type: # todo, not implemented yet
-                    plotting_mode = Plotting_Modes.SPECTRUM
+                    plotting_mode = MeasurementTypes.SPECTRUM
                 else:
-                    plotting_mode = Plotting_Modes.SNOM
+                    plotting_mode = MeasurementTypes.SNOM
         else:
-            plotting_mode = Plotting_Modes.NONE
+            plotting_mode = MeasurementTypes.NONE
         # print('plotting mode:', plotting_mode)
-        self._change_plotting_mode(plotting_mode.value)
+        # self._change_plotting_mode(plotting_mode.value)
+        self._change_plotting_mode(plotting_mode)
 
     def _change_mainwindow_size(self):
         # change size of main window to adjust size of plot
@@ -1373,13 +1439,15 @@ for example fourier filtering.
         """Save the user defaults to the config file for the currently active filetype."""
         # get the channels from the text field
         current_channels = self._get_channels()
-        if self.plotting_mode is Plotting_Modes.APPROACHCURVE:
+        if self.plotting_mode is MeasurementTypes.APPROACHCURVE:
             self.default_dict['channels_approach_curve'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.SNOM:
+        elif self.plotting_mode is MeasurementTypes.SCAN3D:
+            self.default_dict['channels_scan3d'] = current_channels
+        elif self.plotting_mode is MeasurementTypes.SNOM:
             self.default_dict['channels_snom'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.AFM:
+        elif self.plotting_mode is MeasurementTypes.AFM:
             self.default_dict['channels_afm'] = current_channels
-        elif self.plotting_mode is Plotting_Modes.SPECTRUM:
+        elif self.plotting_mode is MeasurementTypes.SPECTRUM:
             self.default_dict['channels_spectrum'] = current_channels
         
         
@@ -1388,6 +1456,7 @@ for example fourier filtering.
             'channels_snom'     : self.default_dict['channels_snom'],
             'channels_afm'      : self.default_dict['channels_afm'],
             'channels_approach_curve'     : self.default_dict['channels_approach_curve'],
+            'channels_scan3d'  : self.default_dict['channels_scan3d'],
             'channels_spectrum' : self.default_dict['channels_spectrum'],
             'dpi'               : self.figure_dpi.get(),
             'colorbar_width'    : self.colorbar_width.get(),
@@ -1477,6 +1546,7 @@ for example fourier filtering.
             'channels_snom'     : 'None',
             'channels_afm'      : 'None',
             'channels_approach_curve'     : 'None',
+            'channels_scan3d'  : 'None',
             'channels_spectrum' : 'None',
             'dpi'               : 300,
             'colorbar_width'    : 5,
@@ -1511,6 +1581,7 @@ for example fourier filtering.
             'channels_snom'     : 'None',
             'channels_afm'      : 'None',
             'channels_approach_curve'     : 'None',
+            'channels_scan3d'  : 'None',
             'channels_spectrum' : 'None',
             'dpi'               : 300,
             'colorbar_width'    : 5,
@@ -1582,6 +1653,7 @@ for example fourier filtering.
             'channels_snom'     : 'None',
             'channels_afm'      : 'None',
             'channels_approach_curve'     : 'None',
+            'channels_scan3d'  : 'None',
             'channels_spectrum' : 'None',
             'dpi'               : 300,
             'colorbar_width'    : 5,
@@ -1883,46 +1955,53 @@ for example fourier filtering.
         popup = CutDataPopup_using_package_library(self.root, self.measurement)
         self.measurement = popup.measurement
 
-    def _change_plotting_mode(self, new_button_id):
-        old_button_id = self.plotting_mode.value
-        self.plotting_mode = Plotting_Modes(new_button_id)
+    def _change_plotting_mode(self, new_plotting_mode:MeasurementTypes):
+        # old_button_id = self.plotting_mode.value
+        old_plotting_mode = self.plotting_mode
+        self.plotting_mode = new_plotting_mode
         # change button colors according to current plotting mode and previous plotting mode
         # however, if the buttons are not yet created just change the plotting mode
         try:
-            if new_button_id != old_button_id:
-                if old_button_id != None:
+            if new_plotting_mode != old_plotting_mode:
+                if old_plotting_mode != None:
                     # turn off old button
-                    self._change_plotting_mode_button_color(old_button_id, 0)
+                    self._change_plotting_mode_button_color(old_plotting_mode, 0)
                 # set new plotting mode
                 # change new button color
-                self._change_plotting_mode_button_color(new_button_id, 1)
+                self._change_plotting_mode_button_color(new_plotting_mode, 1)
                 # do stuff after plotting mode was changed
                 self._set_channels(self._get_default_channels())
         except:
             pass
 
-    def _change_plotting_mode_button_color(self, button_id, button_state):
-        if button_id == 1:
+    def _change_plotting_mode_button_color(self, new_plotting_mode:MeasurementTypes, button_state):
+        SNOM = auto()
+#     AFM = auto() # not used yet but could be implemented to simplify the gui for afm users like a mode switch
+#     APPROACHCURVE = auto()
+#     APPROACH3D = auto()
+#     SPECTRUM = auto()
+#     NONE = a
+        if new_plotting_mode == MeasurementTypes.SNOM:
             if button_state == 0:
                 self.plotting_mode_switch_1.config(bootstyle=DANGER)
             elif button_state == 1:
                 self.plotting_mode_switch_1.config(bootstyle=SUCCESS)
-        elif button_id == 2:
+        elif new_plotting_mode == MeasurementTypes.AFM:
             if button_state == 0:
                 self.plotting_mode_switch_2.config(bootstyle=DANGER)
             elif button_state == 1:
                 self.plotting_mode_switch_2.config(bootstyle=SUCCESS)
-        elif button_id == 3:
+        elif new_plotting_mode == MeasurementTypes.APPROACHCURVE:
             if button_state == 0:
                 self.plotting_mode_switch_3.config(bootstyle=DANGER)
             elif button_state == 1:
                 self.plotting_mode_switch_3.config(bootstyle=SUCCESS)
-        elif button_id == 4:
+        elif new_plotting_mode == MeasurementTypes.SCAN3D:
             if button_state == 0:
                 self.plotting_mode_switch_4.config(bootstyle=DANGER)
             elif button_state == 1:
                 self.plotting_mode_switch_4.config(bootstyle=SUCCESS)
-        elif button_id == 5:
+        elif new_plotting_mode == MeasurementTypes.SPECTRUM:
             if button_state == 0:
                 self.plotting_mode_switch_5.config(bootstyle=DANGER)
             elif button_state == 1:

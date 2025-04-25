@@ -1128,7 +1128,7 @@ for example fourier filtering.
         self.initialdir = Path(self.folder_path).parent
 
         # check if filetype has changed
-        old_file_type = self.file_type
+        self.old_file_type = self.file_type
         self._get_measurement_details() # loads various new measurement details also the filetype
 
         # save new old folder path and corresponding filetype to config file
@@ -1156,7 +1156,12 @@ for example fourier filtering.
 
     def _initialize_buttons(self):
         if self.file_type != None:
-            self._set_channels(self._get_default_channels())
+            # set the channels to the default channels, but only if the filetype has not changed
+            try:
+                if self.old_file_type != self.file_type:
+                    self._set_channels(self._get_default_channels())
+            except:
+                self._set_channels(self._get_default_channels())
             # enable all buttons
             # print('initializing buttons')
             # print('measurement_type:', self.plotting_mode)

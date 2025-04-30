@@ -1,7 +1,7 @@
 Description:
 ------------
 
-This repo contains a GUI for the snom-analysis package. The GUI can quickly visualize data,
+This repo contains a GUI for the snom-analysis package (https://github.com/Hajo376/SNOM_AFM_analysis). The GUI can quickly visualize data,
 apply simple modifications and save data or plots with modifications. So far it's mostly for 2D SNOM data,
 but it also supports 3D and approach curve data. Spectra are not yet implemented.
 

@@ -1,7 +1,7 @@
-.venv/
-old/
-testdata/
-dist/
-build/
-__pycache__/
+/.venv
+/old
+/testdata
+/dist
+/build
+/__pycache__
 setup.iss

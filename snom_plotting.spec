@@ -5,7 +5,7 @@ a = Analysis(
     ['snom_plotting_multimeasurements.py'],
     pathex=[],
     binaries=[],
-    datas=[('icon.ico', '.')],
+    datas=[('icon.ico', '.'), ('LICENE.txt', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

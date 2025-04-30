@@ -182,34 +182,38 @@ class MainGui():
         self.generate_all_plot_button = ttkb.Button(self.menu_left_upper, text="Show all Plots", bootstyle=PRIMARY, command=self._generate_all_plot)
         self.generate_all_plot_button.config(state=DISABLED)
         self.generate_all_plot_button.grid(column=0, row=5, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        # delete all plots in memory:
+        self.menu_left_clear_plots_button = ttkb.Button(self.menu_left_upper, text='Clear All Plots', bootstyle=DANGER, command=self._clear_all_plots)
+        self.menu_left_clear_plots_button.config(state=ON)
+        self.menu_left_clear_plots_button.grid(column=0, row=6, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # save button, only enable if plot was generated previously
         self.button_save_to_gsftxt = ttkb.Button(self.menu_left_upper, text='Save Data', bootstyle=SUCCESS, command=self._save_to_gsf_or_txt)
         self.button_save_to_gsftxt.config(state=DISABLED)
-        self.button_save_to_gsftxt.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        self.button_save_to_gsftxt.grid(column=0, row=7, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
         # set dpi for save method
         self.label_figure_dpi = ttkb.Label(self.menu_left_upper, text='DPI:')
-        self.label_figure_dpi.grid(column=0, row=7)
+        self.label_figure_dpi.grid(column=0, row=8)
         self.figure_dpi = ttkb.Entry(self.menu_left_upper, width=input_width, justify='center')
         # self.figure_dpi.insert(0, '100')
         self.figure_dpi.insert(0, self.default_dict['dpi'])
-        self.figure_dpi.grid(column=1, row=7, padx=button_padx, pady=button_pady, sticky='ew')
+        self.figure_dpi.grid(column=1, row=9, padx=button_padx, pady=button_pady, sticky='ew')
         self.save_plot_button = ttkb.Button(self.menu_left_upper, text="Save Plot", bootstyle=SUCCESS, command=lambda:self._save_plot())
         self.save_plot_button.config(state=DISABLED)
-        self.save_plot_button.grid(column=0, row=9, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.save_plot_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
         # exit button, closes everything
         self.exit_button = ttkb.Button(self.menu_left_upper, text='Exit', command=self._exit, bootstyle=DANGER)
-        self.exit_button.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.exit_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         
         # save all defaults:
         self.save_defaults_button = ttkb.Button(self.menu_left_upper, text='Save User Defaults', bootstyle=SUCCESS, command=self._save_user_defaults)
-        self.save_defaults_button.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.save_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # load all defaults:
         self.load_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore User Defaults', bootstyle=WARNING, command=self._restore_user_defaults)
-        self.load_defaults_button.grid(column=0, row=12, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.load_defaults_button.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         # restore all old defaults:
         self.restore_defaults_button = ttkb.Button(self.menu_left_upper, text='Restore Defaults', bootstyle=WARNING, command=self._restore_old_defaults)
-        self.restore_defaults_button.grid(column=0, row=13, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.restore_defaults_button.grid(column=0, row=14, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
         # help button popup
         help_message = """The main functionality of this GUI is to load and display SNOM or AFM data.
@@ -253,11 +257,16 @@ These settings will be loaded automatically when you reopen the GUI, together wi
 But data manipulation functions have to be applied manually.
 """
         self.menu_left_help_button = ttkb.Button(self.menu_left_upper, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'How does this GUI work?', help_message))
-        self.menu_left_help_button.grid(column=0, row=14, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        self.menu_left_help_button.grid(column=0, row=15, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
 
-        self.menu_left_clear_plots_button = ttkb.Button(self.menu_left_upper, text='Clear All Plots', bootstyle=DANGER, command=self._clear_all_plots)
-        self.menu_left_clear_plots_button.config(state=ON)
-        self.menu_left_clear_plots_button.grid(column=0, row=15, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+        license_path = this_files_path / Path('LICENSE.txt')
+        with open(license_path, 'r') as f:
+            license_message = f.read()
+
+        self.menu_left_license_button = ttkb.Button(self.menu_left_upper, text='License', bootstyle=INFO, command=lambda:HelpPopup(self.root, 'License of this GUI and incorporated software', license_message))
+        self.menu_left_license_button.grid(column=0, row=16, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
+
+        
 
         
         

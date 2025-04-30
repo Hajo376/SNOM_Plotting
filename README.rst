@@ -1,8 +1,9 @@
 Description:
 ------------
 
-This repo contains a GUI for the snom-analysis package. The GUI helps to quickly visaulize data,
-the user can also apply certain modifications to the data. The data can also be saved with the modifications.
+This repo contains a GUI for the snom-analysis package. The GUI can quickly visualize data,
+apply simple modifications and save data or plots with modifications. So far it's mostly for 2D SNOM data,
+but it also supports 3D and approach curve data. Spectra are not yet implemented.
 
 Usage:
 ------
@@ -22,6 +23,10 @@ memory as the snom-analysis package, meaning every plot you create will be saved
 The plot memory is only deleted when you close the GUI or when you delete it manually by pressing 'Clear All Plots'.
 Thus, if you want to apply modifications and monitor the changes without adding them to the plot memory, 
 you should use the 'Update Plot' button instead of the 'Plot' button. This will remove the previous plot from the memory.
+
+The GUI uses the same matplotlib style file as the snom-analysis package, which is located in the users home directory.
+You can change the style file to your needs, but be aware that this will also change the style for the snom-analysis package.
+Similarly, you can also change the config.ini which contains the data settings.
 
 If you are unshure about the functions you can check out the snom-analysis package documentation, as the GUI is just a wrapper around the package.
 

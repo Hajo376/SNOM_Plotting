@@ -28,7 +28,7 @@ The GUI uses the same matplotlib style file as the snom-analysis package, which 
 You can change the style file to your needs, but be aware that this will also change the style for the snom-analysis package.
 Similarly, you can also change the config.ini which contains the data settings.
 
-If you are unshure about the functions you can check out the snom-analysis package documentation, as the GUI is just a wrapper around the package.
+If you are unshure about the functions you can check out the snom-analysis package documentation (https://snom-analysis.readthedocs.io/en/latest/index.html), as the GUI is just a wrapper around the package.
 
 Installation:
 -------------

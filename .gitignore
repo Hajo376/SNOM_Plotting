@@ -1,7 +1,6 @@
 /.venv
 /old
 /testdata
-/dist
 /build
 /__pycache__
 setup.iss

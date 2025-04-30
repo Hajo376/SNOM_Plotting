@@ -30,7 +30,7 @@ LicenseFile=C:\Users\Hajo\git_projects\SNOM_Plotting\LICENSE.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=C:\Users\Hajo\git_projects\SNOM_Plotting\dist
+OutputDir=C:\Users\Hajo\git_projects\SNOM_Plotting
 OutputBaseFilename=SNOM_Plotter_WINDOWS_x64_1.0_setup
 SetupIconFile=
 Compression=lzma

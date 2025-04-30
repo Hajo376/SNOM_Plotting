@@ -4,7 +4,7 @@
 #define MyAppName "SNOM Plotter"
 #define MyAppVersion "1.0"
 #define MyAppPublisher "Hajo Schill"
-#define MyAppExeName "SNOMPlotter.exe"
+#define MyAppExeName "SNOM Plotter.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -28,8 +28,8 @@ LicenseFile=C:\Users\Hajo\git_projects\SNOM_Plotting\LICENSE.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=C:\Users\Hajo\git_projects\SNOM_Plotting
-OutputBaseFilename=SNOMPlotter_WINDOWS_1.0_setup
+OutputDir=C:\Users\Hajo\git_projects\SNOM_Plotting\dist
+OutputBaseFilename=SNOM_Plotter_WINDOWS_x64_1.0_setup
 SetupIconFile=
 Compression=lzma
 SolidCompression=yes

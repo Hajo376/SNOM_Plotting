@@ -1,6 +1,21 @@
+##############################################################################
+# Copyright (C) 2023-2025 Hans-Joachim Schill
 
-# heigth = 200
-# width = 200
+# This file is part of snom_plotting.
+
+# snom_plotting is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# snom_plotting is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with snom_plotting.  If not, see <http://www.gnu.org/licenses/>.
+##############################################################################
 
 # https://gist.github.com/mp035/9f2027c3ef9172264532fcd6262f3b01
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +36,6 @@ class ScrollFrame(tk.Frame):
 
         self.full_menu_visible = False
         super().__init__(parent) # create a frame (self)
-        # self.pack(expand=True, fill='both')
 
         if self.canvas_width is None:
             self.canvas = tk.Canvas(self, borderwidth=0, background="#ffffff", height=self.canvas_height)#, height=heigth, width=width          #place canvas on self
@@ -52,11 +66,8 @@ class ScrollFrame(tk.Frame):
         '''Reset the canvas window to encompass inner frame when required'''
         canvas_width = event.width
         self.canvas.itemconfig(self.canvas_window, width = canvas_width)            #whenever the size of the canvas changes alter the window region respectively.
-        # print('test')
-        # self.canvas.configure(height=height) 
 
     def onMouseWheel(self, event):                                                  # cross platform scroll wheel event
-        # print('mosewheel movement')
         if platform.system() == 'Windows':
             self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
         elif platform.system() == 'Darwin':
@@ -68,7 +79,6 @@ class ScrollFrame(tk.Frame):
                 self.canvas.yview_scroll( 1, "units" )
     
     def onEnter(self, event):                                                       # bind wheel events when the cursor enters the control
-        # print('entering scrollzone')
         if platform.system() == 'Linux':
             self.canvas.bind_all("<Button-4>", self.onMouseWheel)
             self.canvas.bind_all("<Button-5>", self.onMouseWheel)
@@ -77,7 +87,6 @@ class ScrollFrame(tk.Frame):
                 self.canvas.bind_all("<MouseWheel>", self.onMouseWheel)
 
     def onLeave(self, event):                                                       # unbind wheel events when the cursorl leaves the control
-        # print('leaving scrollzone')
         if platform.system() == 'Linux':
             self.canvas.unbind_all("<Button-4>")
             self.canvas.unbind_all("<Button-5>")
@@ -86,91 +95,12 @@ class ScrollFrame(tk.Frame):
                 self.canvas.unbind_all("<MouseWheel>")
 
     def changeCanvasHeight(self, height):
-        # self.canvas.itemconfig(self.canvas_window, height=height)  
         self.canvas.configure(height=height)  
-        # print('viewport height: ', self.viewPort.winfo_height())
         if height > self.viewPort.winfo_height():
             self.canvas.unbind_all("<MouseWheel>")
-            # print('unbinding mousewheel')
             self.vsb.pack_forget()    
             self.full_menu_visible = True
         elif height < self.viewPort.winfo_height():
             self.canvas.bind_all("<MouseWheel>")
-            # print('binding mousewheel')
             self.vsb.pack(side="right", fill="y")    
             self.full_menu_visible = False
-
-        # self.viewPort.config(height=height)  
-
-
-
-
-
-
-"""
-from tkinter import ttk
-import tkinter as tk
-
-appHeight = 200
-class ScrollFrame(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent) # create a frame (self)
-
-        s=ttk.Style()
-        s.configure('TFrame', background="#eff0f1")
-
-        #place canvas on self
-        self.canvas = tk.Canvas(self, borderwidth=0, background="#eff0f1", height = appHeight)
-        #place a frame on the canvas, this frame will hold the child widgets
-        self.viewPort = ttk.Frame(self.canvas, style='TFrame')
-        #place a scrollbar on self
-        self.vsb = ttk.Scrollbar(self, orient="vertical")
-        #attach scrollbar action to scroll of canvas
-        self.canvas.configure(yscrollcommand=self.vsb.set)
-
-        #pack scrollbar to right of self
-        self.vsb.pack(side="right", fill="y")
-        #pack canvas to left of self and expand to fil
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.canvas_window = self.canvas.create_window((4,4),
-                                                 #add view port frame to canvas
-                                                 window=self.viewPort, anchor="nw",
-                                                 tags="self.viewPort")
-
-        #bind an event whenever the size of the viewPort frame changes.
-        self.viewPort.bind("<Configure>", self.onFrameConfigure)
-        #bind an event whenever the size of the viewPort frame changes.
-        self.canvas.bind("<Configure>", self.onCanvasConfigure)
-
-        #perform an initial stretch on render, otherwise the scroll region has a tiny border until the first resize
-        self.onFrameConfigure(None)
-
-        self.viewPort.bind('<Enter>', self._bound_to_mousewheel)
-        self.viewPort.bind('<Leave>', self._unbound_to_mousewheel)
-
-    def _bound_to_mousewheel(self, event):
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-    def _unbound_to_mousewheel(self, event):
-        self.canvas.unbind_all("<MouseWheel>")
-
-    def _on_mousewheel(self, event):
-        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-
-    def onFrameConfigure(self, event):
-        '''Reset the scroll region to encompass the inner frame'''
-        #whenever the size of the frame changes, alter the scroll region respectively.
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-
-    def onCanvasConfigure(self, event):
-        '''Reset the canvas window to encompass inner frame when required'''
-        canvas_width = event.width
-        #whenever the size of the canvas changes alter the window region respectively.
-        self.canvas.itemconfig(self.canvas_window, width = canvas_width)
-
-
-
-
-
-
-"""

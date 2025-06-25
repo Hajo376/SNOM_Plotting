@@ -83,7 +83,8 @@ class MainGui():
     def __init__(self):
         self.root = ttkb.Window(themename='darkly') # 'journal', 'darkly', 'superhero', 'solar', 'litera' (default) 
         self.root.minsize(width=main_window_minwidth, height=main_window_minheight)
-        self.root.title("SNOM Plotter")
+        self.application_name = 'SNOM Plotter'
+        self.root.title(self.application_name)
         
         
         # self.root.geometry(f"{1100}x{570}+200+200")
@@ -112,6 +113,7 @@ class MainGui():
         self._load_user_defaults_config()
         # try to load the old defaults from the last measurement
         self._init_old_measurement()
+        self._update_window_title()
         self._main_app()
         
     def _main_app(self):
@@ -794,6 +796,14 @@ for example fourier filtering.
         self.canvas_fig_width.delete(0, END)
         self.canvas_fig_width.insert(0, f'{self.canvas_area.winfo_width()}')
 
+    def _update_window_title(self):
+        """Update the window title with the current measurement folder and plotting mode."""
+        if self.folder_path is not None:
+            title = f'{self.application_name} - {self.folder_path} - {self.plotting_mode.name}'
+        else:
+            title = f'{self.application_name} - No Measurement Loaded'
+        self.root.title(title)
+
     def _create_measurement(self):
         """Create the measurement instance depending on the chosen Measurement folder and plotting mode.
         Also handle which buttons are enabled or disabled depending on plotting mode.
@@ -1177,6 +1187,8 @@ for example fourier filtering.
             self._get_allowed_channels()
             # upadate the buttons
             self._initialize_buttons()
+            # update the window title
+            self._update_window_title()
         
         # disable plot button since new measurement has to be loaded first
         self.generate_plot_button.config(state=DISABLED)

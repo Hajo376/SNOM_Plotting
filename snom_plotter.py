@@ -1443,7 +1443,16 @@ for example fourier filtering.
     def _synccorrection(self): # delete?
         # print('Synccorrection')
         # print(self.measurement.measurement_tag_dict[MeasurementTags.ROTATION])
-        popup = SyncCorrectionPopup(self.root, self.folder_path, self._get_channels(), self.default_dict)
+        # synccorrection needs default phase channel
+        snom_analysis_config = ConfigParser()
+        with open(snom_analysis_config_path, 'r') as f:
+            snom_analysis_config.read_file(f)
+        if self.file_type == None:
+            file_type = 'FILETYPE1' # todo, the snom_analysis config does not account for this none filetype
+        else:
+            file_type = self.file_type
+        preview_phasechannel = self._get_from_config('preview_phasechannel', file_type, snom_analysis_config)
+        popup = SyncCorrectionPopup(self.root, self.folder_path, [preview_phasechannel], self.default_dict)
 
     def _gauss_blurr(self): #todo
         # make it such that channels which are in memory are used instead of loading

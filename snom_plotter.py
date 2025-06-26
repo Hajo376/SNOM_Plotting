@@ -21,6 +21,7 @@ import tkinter as tk
 from tkinter import filedialog
 import ttkbootstrap as ttkb
 from ttkbootstrap.constants import *
+from screeninfo import get_monitors
 # from matplotlib import pyplot as plt
 
 # import matplotlib
@@ -244,7 +245,7 @@ Then you select the channels you want to display or manipulate. Careful, some fu
 E.g. if you want to level your height data this channel must be included in the overal channels entry field. 
 Or the gauss blurr requires amplitude and phase data of the same demodulation order, if not available it will only blurr amplitude and height data.
 
-Did you know that the newest version of this program also supports approach curves?! If you want you can also add functionality for Nano-FTIR spectra!
+Did you know that the newest version of this program also supports approach curves and 3D Scans (partly...)?! If you want you can also add functionality for Nano-FTIR spectra!
 
 The channels entry might also change depending on which functions you apply. The idea being: each data list has a corresponding channel name. 
 If you perform an operation which creates new datalists, like the Overlay function these datalists will be given a new channel name, e.g. if you manipulate
@@ -258,7 +259,7 @@ When you have selected some channels press the \'Load Channels\' button. This wi
 By the way if you change the channels in the entry you should reload the channels, otherwise they will not be accessible to the program.
 Now you can use the \'Plot Channels\' button. This will generate a plot of the specified channels. 
 Careful, from now on you should use the \'Update Plot\' button. The reason is, that whenever you press the \'Plot Channels\' button
-the generated plots will automatically be appended to the all_subplots memory. This is a file in your home directory. 
+the generated plots will automatically be appended to the all_subplots memory. This is a .p file in your home directory under SNOM_Config/SNOM_Analysis. 
 These will be displayed when you click on \'Show all Plots\'. If you don't want to add the plots to this memory, e.g. you want to compare two different
 measurements and have to visualize steps in between, use the \'Update Plot\' button. This does the same but it deletes the version you are updating in the plot memory before adding the updated version.
 The update button will just display the current state of your data. This also includes changes like height leveling or blurring.
@@ -272,7 +273,7 @@ You can then eigther use the matplotlibs save dialog or the build in \'Save Plot
 If simple plotting is not enough for you, you can also play with manipulations in the right menu like adding a gaussian blurr to your data or applying a simple height leveling.
 Most functions are found under the \'Advanced\' tab of the right menu. Most functions also supply some more information under the individual help buttons.
 
-Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a json file in your home directory.
+Once you setteled into a routine or adjusted everything to your liking you can also hit the \'Save User Defaults\' button. This will save most settings to a .ini file in your home directory under SNOM_Config/SNOM_Plotter.
 These settings will be loaded automatically when you reopen the GUI, together with the last opened measurement folder. So go ahead and just hit 'Load Channels' and 'Plot Channels' again.
 But data manipulation functions have to be applied manually.
 """
@@ -486,6 +487,8 @@ But data manipulation functions have to be applied manually.
         self.add_scalebar.grid(column=0, row=10, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
         # add sliders for the subplot parameters like hspace, wspace, etc.
         # wspace 0-1
+        # sadly on creation of the sliders the command is excecuted, so in order to not update the canvas each time we temporaily block it
+        self.block_update_canvas = True # block the update canvas function for the sliders
         self.label_change_subplots_wspace = ttkb.Label(self.menu_left_lower, text='wspace:')
         self.label_change_subplots_wspace.grid(column=0, row=11, columnspan=2, padx=button_padx, pady=button_pady, sticky='nsew')
         self.slider_change_subplots_wspace = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
@@ -522,6 +525,7 @@ But data manipulation functions have to be applied manually.
         self.slider_change_subplots_bottom = ttkb.Scale(self.menu_left_lower, from_=0, to=10, orient=HORIZONTAL, command=self._update_canvas)
         self.slider_change_subplots_bottom.set(str(float(self.default_dict['subplot_bottom'])*20))
         self.slider_change_subplots_bottom.grid(column=0, row=22, columnspan=2, padx=button_padx, pady=button_pady, sticky='ew')
+        self.block_update_canvas = False # unblock the update canvas function for the sliders
 
 
         ################## separator #####################
@@ -1230,7 +1234,7 @@ for example fourier filtering.
                 self.menu_right_2_phase_drift_comp.config(state=DISABLED)
                 self.menu_right_2_overlay.config(state=DISABLED)
                 self.menu_right_2_gaussblurr.config(state=DISABLED)
-                # self.menu_left_clear_plots_button.config(state=ON)
+                self.menu_left_clear_plots_button.config(state=ON)
                 self.menu_right_2_shift_phase.config(state=DISABLED)
                 self.menu_right_2_synccorrection.config(state=ON)
                 self.menu_right_2_create_realpart.config(state=DISABLED)
@@ -1318,7 +1322,6 @@ for example fourier filtering.
         # get the allowed channels
         self._get_allowed_channels()
         
-
     def _get_old_folderpath(self) -> bool:
         folder_path = None
         file_type = None
@@ -1428,19 +1431,34 @@ for example fourier filtering.
         self._change_plotting_mode(plotting_mode)
 
     def _change_mainwindow_size(self):
-        # change size of main window to adjust size of plot
-        self.root.update()
-        new_main_window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
-        new_main_window_height = int(self.canvas_fig_height.get()) +42 #+ self.toolbar.winfo_height() # just for now
-        # new_main_window_height = self.root.winfo_height()
-        self.root.geometry(f'{new_main_window_width}x{new_main_window_height}')# todo, resize of y axis does not work?!
+        """Change the main window size to fit the canvas and the buttons and center it on the screen."""
+        self.root.update_idletasks()
 
-        # get the screen width and height of the display used
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        center_x = int(screen_width/2 - new_main_window_width/2)
-        center_y = int(screen_height/2 - new_main_window_height/2)
-        self.root.geometry(f"{new_main_window_width}x{new_main_window_height}+{center_x}+{center_y}")
+        # Get the window's current position
+        window_x = self.root.winfo_rootx()
+        window_y = self.root.winfo_rooty()
+        window_width = self.root.winfo_width()
+        window_height = self.root.winfo_height()
+
+        # Determine which monitor the window is on
+        for monitor in get_monitors():
+            if (monitor.x <= window_x < monitor.x + monitor.width and
+                    monitor.y <= window_y < monitor.y + monitor.height):
+                screen = monitor
+                break
+        else:
+            # Fallback to primary monitor
+            screen = get_monitors()[0]
+
+        # Calculate position to center the window
+        # update window width and height based on the canvas size
+        window_width = int(self.canvas_fig_width.get()) + int(self.menu_left.winfo_width()) + int(self.menu_right.winfo_width()) + 2*button_padx
+        window_height = int(self.canvas_fig_height.get()) +42 #+ self.toolbar.winfo_height() # just for now
+        x = screen.x + (screen.width - window_width) // 2
+        y = screen.y + (screen.height - window_height) // 2
+
+        # Reposition the window
+        self.root.geometry(f'{window_width}x{window_height}+{x}+{y}')
 
     def _synccorrection_Preview(self):# delete?
         if self.synccorrection_wavelength.get() != '':
@@ -2063,6 +2081,9 @@ for example fourier filtering.
             print('Error occured in change button color for plotting mode selection!')
 
     def _update_canvas(self, event):
+        if self.block_update_canvas:
+            return
+        """Update the canvas size and fill it with the current plot."""
         self._fill_canvas()
 
         

@@ -63,7 +63,7 @@ this_files_path = Path(__file__).parent
 from lib.gui_parameters import *
 from lib.function_popup import SavedataPopup, HeightLevellingPopup, PhaseDriftCompensation, HelpPopup, SyncCorrectionPopup, GifCreationPopup
 from lib.function_popup import CreateRealpartPopup, OverlayChannels, GaussBlurrPopup, PhaseOffsetPopup, HeightMaskingPopup, RotationPopup, LogarithmPopup
-from lib.function_popup import CutDataPopup_using_package_library
+from lib.function_popup import CutDataPopup_using_package_library, DeleteDataPopup
 #for scrollframe
 from lib.scrollframe import ScrollFrame
 from lib.channel_textfield import ChannelTextfield
@@ -691,6 +691,10 @@ If you select the Shared ... range checkboxes all created plots will use the sam
         self.menu_right_2_cut_data.config(state=DISABLED)
         self.menu_right_2_cut_data.grid(column=0, row=10, sticky='nsew', padx=button_padx, pady=button_pady)
 
+        self.menu_right_2_delete_data = ttkb.Button(self.menu_right_2, text='Delete Data', bootstyle=PRIMARY, command=self._delete_data)
+        self.menu_right_2_delete_data.config(state=DISABLED)
+        self.menu_right_2_delete_data.grid(column=0, row=11, sticky='nsew', padx=button_padx, pady=button_pady)
+
 
 
         help_message = """Under the 'Advanced' tab you will find funtions to manipulate the data.
@@ -832,6 +836,7 @@ for example fourier filtering.
             self.menu_right_2_rotation.config(state=DISABLED)
             self.menu_right_2_transform_log.config(state=DISABLED)
             self.menu_right_2_cut_data.config(state=DISABLED)
+            self.menu_right_2_delete_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             # todo, add approach curve handling to snom package to make it also possible to store multiple curves in memory
         elif self.plotting_mode is MeasurementTypes.SCAN3D:
@@ -853,6 +858,7 @@ for example fourier filtering.
             self.menu_right_2_rotation.config(state=DISABLED)
             self.menu_right_2_transform_log.config(state=DISABLED)
             self.menu_right_2_cut_data.config(state=DISABLED)
+            self.menu_right_2_delete_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
         elif self.plotting_mode is MeasurementTypes.SNOM or self.plotting_mode is MeasurementTypes.AFM:
             if self.checkbox_autoscale.get() == 1:
@@ -876,6 +882,7 @@ for example fourier filtering.
             self.menu_right_2_transform_log.config(state=ON)
             self.menu_right_2_create_gif.config(state=ON)
             self.menu_right_2_cut_data.config(state=ON)
+            self.menu_right_2_delete_data.config(state=ON)
 
             self.save_plot_button.config(state=DISABLED)
             # self.update_plot_button.config(state=DISABLED)
@@ -1243,6 +1250,7 @@ for example fourier filtering.
                 self.menu_right_2_transform_log.config(state=DISABLED)
                 self.menu_right_2_create_gif.config(state=DISABLED)
                 self.menu_right_2_cut_data.config(state=DISABLED)
+                self.menu_right_2_delete_data.config(state=DISABLED)
                 self.save_plot_button.config(state=DISABLED)
                 self.update_plot_button.config(state=DISABLED)
             elif self.plotting_mode is MeasurementTypes.APPROACHCURVE or self.plotting_mode is MeasurementTypes.SCAN3D:
@@ -1262,6 +1270,7 @@ for example fourier filtering.
                 self.menu_right_2_transform_log.config(state=DISABLED)
                 self.menu_right_2_create_gif.config(state=DISABLED)
                 self.menu_right_2_cut_data.config(state=DISABLED)
+                self.menu_right_2_delete_data.config(state=DISABLED)
                 self.save_plot_button.config(state=DISABLED)
                 self.update_plot_button.config(state=DISABLED)
             else:
@@ -1305,6 +1314,7 @@ for example fourier filtering.
             self.menu_right_2_transform_log.config(state=DISABLED)
             self.menu_right_2_create_gif.config(state=DISABLED)
             self.menu_right_2_cut_data.config(state=DISABLED)
+            self.menu_right_2_delete_data.config(state=DISABLED)
             self.save_plot_button.config(state=DISABLED)
             self.update_plot_button.config(state=DISABLED)
             
@@ -1555,7 +1565,11 @@ for example fourier filtering.
             'synccorr_phasedir' : self.default_dict['synccorr_phasedir'],
             'pixel_integration_width': self.default_dict['pixel_integration_width'],
             'height_threshold': self.default_dict['height_threshold'],
-            'plotting_mode_id'     : self.plotting_mode.value
+            'plotting_mode_id'     : self.plotting_mode.value,
+            'delete_mechanical' : self.default_dict['delete_mechanical'],
+            'delete_optical'    : self.default_dict['delete_optical'],
+            'delete_images_dir' : self.default_dict['delete_images_dir'],
+            'delete_gwy_file'   : self.default_dict['delete_gwy_file']
         }
         # iterate through all keys in the config file of the current filetype and update the values
         
@@ -1645,7 +1659,11 @@ for example fourier filtering.
             'appendix'          : '<_manipulated>',
             'pixel_integration_width': 1,
             'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
+            'plotting_mode_id'  : 1,
+            'delete_mechanical' : 1,
+            'delete_optical'    : 0,
+            'delete_images_dir' : 1,
+            'delete_gwy_file'   : 1
         }
         plotter_config['FILETYPE1'] = {
             'default_channels'  : snom_analysis_config['FILETYPE1']['preview_channels'],
@@ -1680,7 +1698,11 @@ for example fourier filtering.
             'appendix'          : '<_manipulated>',
             'pixel_integration_width': 1,
             'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
+            'plotting_mode_id'  : 1,
+            'delete_mechanical' : 1,
+            'delete_optical'    : 0,
+            'delete_images_dir' : 1,
+            'delete_gwy_file'   : 1
         }
         plotter_config['FILETYPE2'] = plotter_config['FILETYPE1']
         plotter_config['FILETYPE2']['default_channels'] = snom_analysis_config['FILETYPE2']['preview_channels']
@@ -1747,7 +1769,11 @@ for example fourier filtering.
             'appendix'          : '<_manipulated>',
             'pixel_integration_width': 1,
             'height_threshold'  : 0.5,
-            'plotting_mode_id'  : 1
+            'plotting_mode_id'  : 1,
+            'delete_mechanical' : 1,
+            'delete_optical'    : 0,
+            'delete_images_dir' : 1,
+            'delete_gwy_file'   : 1
         }
         # save the updated config file
         with open(self.config_path, 'w') as f:
@@ -2025,6 +2051,34 @@ for example fourier filtering.
         plt.close(self.fig)
         popup = CutDataPopup_using_package_library(self.root, self.measurement)
         self.measurement = popup.measurement
+
+    def _convert_bool_to_int(self, value):
+        """Convert a boolean value to an integer."""
+        if isinstance(value, bool):
+            return int(value)
+        return value
+
+    def _delete_data(self):
+        initial_values = [int(self.default_dict['delete_mechanical']), 
+                          int(self.default_dict['delete_optical']), 
+                          int(self.default_dict['delete_images_dir']), 
+                          int(self.default_dict['delete_gwy_file'])]
+        popup = DeleteDataPopup(self.root, initial_values)
+        delete_mechanical_channels = popup.delete_mechanical_channels
+        delete_optical_channels = popup.delete_optical_channels
+        delete_images_subfolder = popup.delete_images_subfolder
+        delete_gwy_file = popup.delete_gwy_file
+        # change the default_dict accordingly
+        self.default_dict['delete_mechanical'] = self._convert_bool_to_int(delete_mechanical_channels)
+        self.default_dict['delete_optical'] = self._convert_bool_to_int(delete_optical_channels)
+        self.default_dict['delete_images_dir'] = self._convert_bool_to_int(delete_images_subfolder)
+        self.default_dict['delete_gwy_file'] = self._convert_bool_to_int(delete_gwy_file)
+        # check if at least one option is selected
+        if not (delete_mechanical_channels or delete_optical_channels or delete_images_subfolder or delete_gwy_file):
+            print('No option selected, nothing will be deleted!')
+            return
+        else:
+            self.measurement.delete_unwanted_files(mechanical_channels=delete_mechanical_channels, optical_channels=delete_optical_channels, images_folder=delete_images_subfolder, gwy_file=delete_gwy_file)
 
     def _change_plotting_mode(self, new_plotting_mode:MeasurementTypes):
         # old_button_id = self.plotting_mode.value

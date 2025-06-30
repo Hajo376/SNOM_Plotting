@@ -274,7 +274,7 @@ class HeightLevellingPopup():
     def _level_height_channel(self):
         self.klick_coordinates = self._get_klicker_coordinates()
         if len(self.klick_coordinates) != 3:
-            print('You need to klick on 3 points!\Height data was not leveled!')
+            print('You need to klick on 3 points!\nHeight data was not leveled!')
 
         self.leveled_height_data = self.measurement._level_height_data(self.height_data, self.klick_coordinates, zone=int(self.entry_zone_width.get()))
         self._show_leveled_data()
@@ -1016,7 +1016,6 @@ There is also a maximum scaling factor of 5 to limit the size of the data. If th
         # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
         self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the 3 Point Heigth Leveling Work?', help_message))
         self.button_help.grid(column=0, row=6, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
-
 
 class PhaseOffsetPopup_old():
     def __init__(self, parent, measurement, phase_channel, autoscale) -> None:
@@ -1822,6 +1821,78 @@ class CutDataPopup_using_package_library():
     def _cut_data(self):
         self.measurement.cut_channels()
         
+class DeleteDataPopup():
+    def __init__(self, parent, initial_values) -> None:
+        self.parent = parent
+        self.initial_values = initial_values
+
+        self.window = ttkb.Toplevel(parent)
+        self.window.grab_set()
+        self.window.title('Delete Data')
+        self.window.geometry('500x400')
+        parent.eval(f'tk::PlaceWindow {str(self.window)} center')
+        
+        self._create_input()
+
+        self.window.mainloop()
+
+    def _create_input(self):
+        self.frame = ttkb.Labelframe(self.window, text='Select which data to delete', padding=10)
+        # self.frame.pack()
+        self.frame.pack(pady=20)
+
+        # delete mechanical channels?
+        self.var_select_mechanical_channels = tk.IntVar()
+        self.var_select_mechanical_channels.set(self.initial_values[0])  # default to selected
+        self.switch_select_mechanical_channels = ttkb.Checkbutton(self.frame, text='  Delete mechanical channels', bootstyle='round-toggle', variable=self.var_select_mechanical_channels)
+        self.switch_select_mechanical_channels.grid(column=0, row=1, sticky='nsew', padx=button_padx, pady=button_pady)
+        
+        # delete optical channels?
+        self.var_select_optical_channels = tk.IntVar()
+        self.var_select_optical_channels.set(self.initial_values[1])  # default to unselected
+        self.switch_select_optical_channels = ttkb.Checkbutton(self.frame, text='  Delete optical channels', bootstyle='round-toggle', variable=self.var_select_optical_channels)
+        self.switch_select_optical_channels.grid(column=0, row=2, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # delete images subfolder?
+        self.var_select_images_folder = tk.IntVar()
+        self.var_select_images_folder.set(self.initial_values[2])  # default to selected
+        self.switch_select_images_folder = ttkb.Checkbutton(self.frame, text='  Delete images directory', bootstyle='round-toggle', variable=self.var_select_images_folder)
+        self.switch_select_images_folder.grid(column=0, row=3, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        # delete gwy file?
+        self.var_select_gwy_file = tk.IntVar()
+        self.var_select_gwy_file.set(self.initial_values[3])  # default to selected
+        self.switch_select_gwy_file = ttkb.Checkbutton(self.frame, text='  Delete \'gwy\' file', bootstyle='round-toggle', variable=self.var_select_gwy_file)
+        self.switch_select_gwy_file.grid(column=0, row=4, sticky='nsew', padx=button_padx, pady=button_pady)
+
+        self.button_start_overlay = ttkb.Button(self.frame, text='Permanently Delete Data!', bootstyle=DANGER, command=self._return_inputs)
+        # button_start_overlay.config(state=DISABLED)
+        self.button_start_overlay.grid(column=0, row=5, sticky='nsew', padx=button_padx, pady=button_pady)
+        
+        help_message = """Delete unwanted files to reduce the size of the measurement folder.
+        Careful! This will delete files from the measurement folder, so make sure to have a backup of the data before running this function.
+        If you select the mechanical channels, all mechanical channels will be deleted. This does not include the mechanical amplitude and phase of the first demodulation
+        and not the corrected height channels. This is the recommended choice for SNOM users.
+        If you select the optical channels, all optical channels will be deleted. This in combination with the mechanical channels is the recommended choice for AFM only users.
+        If you select the images folder, the images folder will be deleted. This is the recommended choice for all users as you probably don't use the small preview images.
+        If you select the gwy file, the gwy file will be deleted. This is the recommended choice for all users as you probably don't use the gwy file and it contains an 
+        additional copy of all channels."""
+        # You also have to select the channels of which the data should be saved. Select none and all channels will be saved.'''
+        self.button_help = ttkb.Button(self.frame, text='Help', bootstyle=INFO, command=lambda:HelpPopup(self.parent, 'How does the Delete Data Method Work?', help_message))
+        self.button_help.grid(column=0, row=8, columnspan=2, sticky='nsew', padx=button_padx, pady=button_pady)
+        
+        self.window.update()
+        
+    def _return_inputs(self):
+        self.delete_mechanical_channels = self.switch_select_mechanical_channels.instate(['selected'])
+        self.delete_optical_channels = self.switch_select_optical_channels.instate(['selected'])
+        self.delete_images_subfolder = self.switch_select_images_folder.instate(['selected'])
+        self.delete_gwy_file = self.switch_select_gwy_file.instate(['selected'])
+
+        
+        self.window.quit()
+        self.window.destroy()
+
 
 def main():
     root = ttkb.Window(themename='darkly')

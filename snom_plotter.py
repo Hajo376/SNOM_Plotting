@@ -1404,7 +1404,9 @@ for example fourier filtering.
         if self.folder_path != None:
             Measurement = FileHandler(self.folder_path)
             self.file_type = Measurement.file_type
-            self.measurement_tag_dict = Measurement.measurement_tag_dict
+            # not every measurement has a measurement_tag_dict, currently the measurement dict is only used for the filetype recognition
+            try: self.measurement_tag_dict = Measurement.measurement_tag_dict
+            except: self.measurement_tag_dict = None
         else:
             self.file_type = None
             self.measurement_tag_dict = None

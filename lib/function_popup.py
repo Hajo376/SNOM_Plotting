@@ -293,6 +293,8 @@ class HeightLevellingPopup():
 
     def _save_leveled_data(self):
         self.measurement._write_to_logfile('height_leveling_coordinates', self.klick_coordinates)
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -458,6 +460,8 @@ class PhaseDriftCompensation():
         self._fill_canvas()
 
     def _save_leveled_data(self):
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -758,6 +762,8 @@ class GaussBlurrPopup():
         self.scaling = int(self.entry_scaling.get())
         self.sigma = int(self.gaussblurr_sigma.get())
         self.channels = self.select_gaussblurr_channel.get().split(',')
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -957,6 +963,8 @@ class PhaseOffsetPopup():
     def _save_leveled_data(self):
         # self.measurement._write_to_logfile('height_leveling_coordinates', self.klick_coordinates)
         self.phase_offset = float(self.entry_slider.get())
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -1388,6 +1396,8 @@ class HeightMaskingPopup():
             # self.measurement._Auto_cut_channels(self.mask_channels)
             self.measurement.cut_channels(self.mask_channels, autocut=True)
         
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -1538,7 +1548,8 @@ class RotationPopup():
         for i in range(rotations):
             self.measurement.rotate_90_deg()
 
-        
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
@@ -1673,7 +1684,8 @@ class LogarithmPopup():
                 self.measurement.channels_label[channel_index] = self.measurement.channels_label[channel_index] + '_log' # eigentlich ueberfluessig
 
         self.measurement._write_to_logfile('logarithm', self.logarithm_channels)
-        
+        # close open plots
+        plt.close('all')
         self.window.quit()
         self.window.destroy()
 
